@@ -1,0 +1,27 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/ServerList
+type: text/vnd.tiddlywiki
+
+<ul>
+  <$list filter="[prefix[$:/state/tw-mobile-sync/server/]]">
+    {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}
+  </$list>
+</ul>
+
+<$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="myconfig"/>
+
+<$button>
+  新增服务器
+  <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
+</$button>
+
+<div style="display: flex; flex-direction: row;">
+  <div style="display: flex; flex-direction: column;">
+    <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text"/>
+    <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="name"/>
+    <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="ipAddress"/>
+  </div>
+  <$button>
+    智能识别
+    <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
+  </$button>
+</div>

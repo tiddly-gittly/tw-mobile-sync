@@ -1,0 +1,16 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate
+type: text/vnd.tiddlywiki
+
+<li>
+  <div style="display: flex; flex-direction: row;">
+    <div style="display: flex; flex-direction: column;">
+      <h3>{{!!name}}</h3>
+      <div>{{!!ipAddress}}</div>
+      <div>{{!!status}}</div>
+    </div>
+    <$button>
+      Sync
+      <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
+    </$button>
+  </div>
+</li>

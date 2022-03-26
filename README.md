@@ -2,6 +2,14 @@
 
 Sync data between Mobile HTML (Tiddloid) <-> Desktop App (TidGi).
 
+## Why this plugin
+
+To enjoy the [REST API of TiddlyWiki](https://tiddlywiki.com/#WebServer%20API) and **privacy of local stored** data, we choose to use [TidGi](https://github.com/tiddly-gittly/TidGi-Desktop) on the Desktop.
+
+We can open localhost wiki on the [Tiddloid](https://github.com/donmor/Tiddloid) or on a browser on the Mobile, but it's not possible to sync data back to the desktop, if the ip of desktop wiki has changed. (Mobile don't know where is the desktop wiki to sync back.) So we need a plugin to keep track of the known ip of the desktop wiki, allow user to click on a desktop ip and sync data back to that desktop wiki.
+
+And you may write some tiddlers in the subway when you getting home, these tiddlers may have conflict with the one in your home's desktop wiki, we need this plugin to handle it.
+
 ## How this works
 
 和手机同步的插件，不做成 saver，就是做成一个按钮，以保证不和 saver 冲突。
