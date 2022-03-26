@@ -1,45 +1,19 @@
-# Typescript plugin template for TiddlyWiki5
+# TiddlyWiki5 Mobile Sync
 
-This template will help you automatically package zipped multiple-file plugin for nodejs wiki, and single file JSON plugin for HTML wiki.
+Sync data between Mobile HTML (Tiddloid) <-> Desktop App (TidGi).
 
-## What need to change after apply the template
+## How this works
 
-### Basic
+和手机同步的插件，不做成 saver，就是做成一个按钮，以保证不和 saver 冲突。
 
-1. update `title`, `author` and `description` in the [src/plugin.info](src/plugin.info), update `url` field in the [package.json](package.json).
-1. write your plugin code in the [src/](src/) directory, use `index.ts` as your ts code's entry point.
-1. other tid files just put in the src directory, they will be copy to the plugin automatically.
-   1. You can use folder to organize the files, like `src/filters/` to place the filter tiddlers, and that structure will be preserved in the nodejs multiple-file plugin
-   1. In the JSON plugin, the structure will strictly follow the tiddler title.
-1. update demo site tiddlers in the [demo/](demo/) directory.
-1. update this readme.md
+保存一个服务器列表和相应的最近同步时间（如果服务器重启 wifi 之后 ip 变了，时间会归古）
+在手机上点击同步按钮后，筛选本地创建或修改时间晚于同步时间的条目，以及上次同步时间，POST 给 nodejs 端的 API。
+nodejs 端写一个服务端 api 来接收 POST 请求，如果服务端修改时间都早于上次同步时间，就用客户端的覆盖，如果服务端有晚于上次同步时间的要被覆盖了，就用 conflict mark 把两边的内容合到一起去，然后用 server send 来催促界面更新。
+然后服务端同样返回一个 JSON 列表，把覆盖操作后的，上次同步以来的条目返回给 HTML 端，HTML 端同样覆盖内容到本地。
 
-## During development
+如果有冲突的地方是字段内容就麻烦了，比如 modify time 就肯定会冲突。所以干脆忽略字段的冲突，用一个配置项来规定字段冲突时使用哪一边的，默认用手机端的。
 
-There are some scripts you can run to boost your development.
+如果能用 git 获取到上一个版本，则用 https://www.npmjs.com/package/node-diff3 圈定比较准确的冲突范围给用户看。实际上冲突应该不多，所以这个应该不常运行。
 
-After `npm i`:
-
-- `npm run dev-demo` to setup the demo site locally. Re-run this command and refresh browser to see changes to local code and tiddlers.
-- `npm run dev` to pack the plugin in the `dist/` directory.
-
-### Add a second ts file
-
-Add new file name (without `.ts`) to `package.json`'s `tsFiles` field. And build script will read it and compile files in it.
-
-## After the plugin is complete
-
-### Publish
-
-Enable github action in your repo (in your github repo - setting - action - general) if it is not allowed, and when you tagging a new version `vx.x.x` in a git commit and push, it will automatically publish to the github release.
-
-### Demo
-
-You will get a Github Pages demo site automatically after publish. If it is 404, you may need to manually enable Github Pages in your github repo:
-
-Settings - Pages (on left side) - Source - choose `gh-pages` branch
-
-## Examples
-
-- https://github.com/tiddly-gittly/tw-react
-- https://github.com/tiddly-gittly/slate-write
+按下同步按钮后会弹出一个服务器列表，可以新建。然后每个服务器上有一个绿灯表示可连通（所以还需要一个 get 的 status API 表示已安装同步插件）
+还显示上次同步时间到现在的距离。
