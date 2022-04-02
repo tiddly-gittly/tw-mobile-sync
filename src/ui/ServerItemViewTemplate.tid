@@ -11,7 +11,7 @@ type: text/vnd.tiddlywiki
 
     <$reveal type="match" state=<<currentTiddler>> text="online">
       <$button>
-        启用同步
+        启用同步并立即同步
         <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
       </$button>
     </$reveal>

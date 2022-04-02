@@ -35,7 +35,7 @@ interface IServerInfoTiddler extends Tiddler {
 class BackgroundSyncManager {
   loop: ReturnType<typeof setInterval> | undefined;
   loopInterval = 1000 * 60 * 5; // 5 minutes
-  /** lock the sync while last one is still on progress */
+  /** lock the sync for `this.syncWithServer`, while last sync is still on progress */
   lock: boolean = false;
 
   constructor() {
@@ -43,19 +43,48 @@ class BackgroundSyncManager {
     this.loopInterval = 1000 * 60 * 5; // 5 minutes
   }
 
-  start() {
+  setupListener() {
+    $tw.rootWidget.addEventListener('tw-mobile-sync-get-server-status', (event) => this.getServerStatus());
+    $tw.rootWidget.addEventListener('tw-mobile-sync-set-active-server-and-sync', async (event) => {
+      const titleToActive = event.title as string | undefined;
+      await this.setActiveServerAndSync(titleToActive);
+    });
+    $tw.rootWidget.addEventListener('tw-mobile-sync-sync-start', (event) => this.start());
+  }
+
+  start(skipStatusCheck?: boolean) {
     this.loop = setInterval(async () => {
       if (this.lock) {
         return;
       }
       this.lock = true;
       try {
-        await this.getServerStatus();
+        if (skipStatusCheck === true) {
+          await this.getServerStatus();
+        }
         await this.syncWithServer();
       } finally {
         this.lock = false;
       }
     }, this.loopInterval);
+  }
+
+  async setActiveServerAndSync(titleToActive: string | undefined) {
+    if (typeof titleToActive === 'string') {
+      if ($tw.wiki.getTiddler(titleToActive) !== undefined) {
+        // update status first
+        await this.getServerStatus();
+        // get latest tiddler
+        const serverToActive = $tw.wiki.getTiddler(titleToActive);
+        if (serverToActive !== undefined) {
+          const newStatus = [ServerState.onlineActive, ServerState.offlineActive].includes(serverToActive.fields.status as ServerState)
+            ? ServerState.onlineActive
+            : ServerState.offlineActive;
+          $tw.wiki.setTiddlerData(serverToActive.fields.title, undefined, { ...serverToActive.fields, status: newStatus });
+          await this.start(true);
+        }
+      }
+    }
   }
 
   async getServerStatus() {
