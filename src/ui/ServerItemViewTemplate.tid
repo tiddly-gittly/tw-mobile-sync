@@ -8,9 +8,20 @@ type: text/vnd.tiddlywiki
       <div>{{!!ipAddress}}</div>
       <div>{{!!status}}</div>
     </div>
-    <$button>
-      Sync
-      <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
-    </$button>
+
+    <$reveal type="match" state=<<currentTiddler>> text="online">
+      <$button>
+        启用同步
+        <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
+      </$button>
+    </$reveal>
+
+    <$reveal type="match" state=<<currentTiddler>> text="onlineActive">
+      <$button>
+        立即同步
+        <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
+      </$button>
+    </$reveal>
+
   </div>
 </li>

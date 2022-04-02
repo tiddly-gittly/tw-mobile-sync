@@ -1,6 +1,6 @@
-import type { Widget as IWidget, Tiddler, IServerStatus } from 'tiddlywiki';
+import type { Widget as IWidget, Tiddler, IServerStatus, ITiddlerFields } from 'tiddlywiki';
 import { activeServerStateTiddlerTitle } from './constants';
-import { getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
+import { getFilterServerEndPoint, getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
 
 exports.name = 'browser-background-sync';
 exports.platforms = ['browser'];
@@ -8,8 +8,6 @@ exports.platforms = ['browser'];
 // not blocking rendering
 exports.after = ['render'];
 exports.synchronous = true;
-
-const Widget = (require('$:/core/modules/widgets/widget.js') as { widget: typeof IWidget }).widget;
 
 enum ServerState {
   /** online and selected by the user */
@@ -27,6 +25,10 @@ interface IServerInfoTiddler extends Tiddler {
     name: string;
     ipAddress: string;
     port: number;
+    /**
+     * Last synced time, be undefined if never synced
+     */
+    lastSync: number | undefined;
   };
 }
 
@@ -92,16 +94,49 @@ class BackgroundSyncManager {
   }
 
   async syncWithServer() {
-    const onlineActiveServer = this.serverList.find((serverInfoTiddler) => {
-      return serverInfoTiddler?.fields?.status === ServerState.onlineActive;
-    });
+    const onlineActiveServer = this.onlineActiveServer;
 
     if (onlineActiveServer !== undefined) {
-      const diffFromServer = await fetch(getSyncEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port), {
+      const changedTiddlersFromServer: Tiddler[] = await fetch(
+        getFilterServerEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port, this.getDiffFilter(onlineActiveServer.fields.lastSync)),
+      ).then((response) => response.json());
+      const changedTiddlersFromClient = this.currentModifiedTiddlers.map((tiddler) => tiddler.fields);
+      // TODO: handle conflict, find intersection of changedTiddlersFromServer and changedTiddlersFromClient, and write changes to each other
+      // send modified tiddlers to server
+      await fetch(getSyncEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port), {
         method: 'POST',
+        body: JSON.stringify(changedTiddlersFromClient),
         // TODO: add auth token in header, after we can scan QR code to get token easily
       }).then((response) => response.json());
+      changedTiddlersFromServer.forEach((tiddler) => {
+        // TODO: handle conflict
+        $tw.wiki.addTiddler(tiddler);
+      });
     }
+  }
+
+  get onlineActiveServer() {
+    return this.serverList.find((serverInfoTiddler) => {
+      return serverInfoTiddler?.fields?.status === ServerState.onlineActive;
+    });
+  }
+
+  getDiffFilter(lastSync: number | undefined) {
+    return `[all[]!is[system]] :filter[get[modified]compare:date:gt[${lastSync ?? ''}]]`;
+  }
+
+  get currentModifiedTiddlers() {
+    const onlineActiveServer = this.onlineActiveServer;
+
+    if (onlineActiveServer === undefined) {
+      return [];
+    }
+    const lastSync = onlineActiveServer.fields.lastSync;
+    const diffTiddlersFilter: string = this.getDiffFilter(lastSync);
+    const diffTiddlers: string[] = $tw.wiki.compileFilter(diffTiddlersFilter)() ?? [];
+    return diffTiddlers.map((title) => {
+      return $tw.wiki.getTiddler(title)!;
+    });
   }
 
   get serverList() {

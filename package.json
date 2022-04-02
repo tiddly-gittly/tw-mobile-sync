@@ -1,7 +1,8 @@
 {
   "url": "https://github.com/tiddly-gittly/tw-example-plugin",
   "tsFiles": [
-    "index"
+    "browser-background-sync",
+    "server-sync-endpoint"
   ],
   "license": "MIT",
   "version": "0.0.1",
