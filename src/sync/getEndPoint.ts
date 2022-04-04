@@ -1,5 +1,5 @@
 export const syncRoute = '/tw-mobile-sync/html-node-sync';
-export const statusRoute = '/status';
+export const statusRoute = '/tw-mobile-sync/status';
 
 /**
  * Our custom endpoint that used to sync with the server

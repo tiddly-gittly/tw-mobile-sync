@@ -2,7 +2,8 @@
   "url": "https://github.com/tiddly-gittly/tw-example-plugin",
   "tsFiles": [
     "browser-background-sync",
-    "server-sync-endpoint"
+    "server-sync-endpoint",
+    "server-status-endpoint"
   ],
   "license": "MIT",
   "version": "0.0.1",
@@ -10,7 +11,7 @@
   "files": [],
   "scripts": {
     "make": "npm run clean && npm run build",
-    "dev-demo": "npm run dev && zx ./scripts/build-demo-html.mjs && cd ./dist/output && serve .",
+    "dev-demo": "npm run dev && zx ./scripts/build-demo-html.mjs && zx scripts/run-demo.mjs",
     "dev": "npm run make && npm run run-action",
     "clean": "rm -rf ./dist",
     "build": "zx esbuild.config.mjs && zx scripts/after-build.mjs",

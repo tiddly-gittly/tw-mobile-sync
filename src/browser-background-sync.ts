@@ -21,14 +21,14 @@ enum ServerState {
 
 interface IServerInfoTiddler extends Tiddler {
   fields: Tiddler['fields'] & {
-    status: ServerState;
+    text: ServerState;
     name: string;
     ipAddress: string;
     port: number;
     /**
      * Last synced time, be undefined if never synced
      */
-    lastSync: number | undefined;
+    lastSync: string | undefined;
   };
 }
 
@@ -41,19 +41,23 @@ class BackgroundSyncManager {
   constructor() {
     // TODO: get this from setting
     this.loopInterval = 1000 * 60 * 5; // 5 minutes
+    this.setupListener();
   }
 
   setupListener() {
     $tw.rootWidget.addEventListener('tw-mobile-sync-get-server-status', (event) => this.getServerStatus());
     $tw.rootWidget.addEventListener('tw-mobile-sync-set-active-server-and-sync', async (event) => {
-      const titleToActive = event.title as string | undefined;
+      const titleToActive = event.paramObject?.title as string | undefined;
       await this.setActiveServerAndSync(titleToActive);
     });
     $tw.rootWidget.addEventListener('tw-mobile-sync-sync-start', (event) => this.start());
   }
 
-  start(skipStatusCheck?: boolean) {
-    this.loop = setInterval(async () => {
+  async start(skipStatusCheck?: boolean) {
+    if (this.loop) {
+      clearInterval(this.loop);
+    }
+    const loopHandler = async () => {
       if (this.lock) {
         return;
       }
@@ -66,7 +70,9 @@ class BackgroundSyncManager {
       } finally {
         this.lock = false;
       }
-    }, this.loopInterval);
+    };
+    await loopHandler();
+    this.loop = setInterval(loopHandler, this.loopInterval);
   }
 
   async setActiveServerAndSync(titleToActive: string | undefined) {
@@ -77,18 +83,27 @@ class BackgroundSyncManager {
         // get latest tiddler
         const serverToActive = $tw.wiki.getTiddler(titleToActive);
         if (serverToActive !== undefined) {
-          const newStatus = [ServerState.onlineActive, ServerState.offlineActive].includes(serverToActive.fields.status as ServerState)
+          const newStatus = [ServerState.onlineActive, ServerState.online].includes(serverToActive.fields.text as ServerState)
             ? ServerState.onlineActive
             : ServerState.offlineActive;
-          $tw.wiki.setTiddlerData(serverToActive.fields.title, undefined, { ...serverToActive.fields, status: newStatus });
+          $tw.wiki.addTiddler({ ...serverToActive.fields, text: newStatus });
+          this.setActiveServerTiddlerTitle(titleToActive);
           await this.start(true);
         }
       }
     }
   }
 
+  getActiveServerTiddlerTitle() {
+    return $tw.wiki.getTiddlerText(activeServerStateTiddlerTitle);
+  }
+
+  setActiveServerTiddlerTitle(title: string) {
+    $tw.wiki.addTiddler({ title: activeServerStateTiddlerTitle, text: title });
+  }
+
   async getServerStatus() {
-    const activeTiddlerTitle = $tw.wiki.getTiddlerText(activeServerStateTiddlerTitle);
+    const activeTiddlerTitle = this.getActiveServerTiddlerTitle();
     const serverListWithUpdatedStatus = await Promise.all(
       this.serverList.map(async (serverInfoTiddler) => {
         const active = serverInfoTiddler.fields.title === activeTiddlerTitle;
@@ -101,7 +116,7 @@ class BackgroundSyncManager {
               ...serverInfoTiddler,
               fields: {
                 ...serverInfoTiddler.fields,
-                status: active ? ServerState.onlineActive : ServerState.online,
+                text: active ? ServerState.onlineActive : ServerState.online,
               },
             };
           }
@@ -112,13 +127,13 @@ class BackgroundSyncManager {
           ...serverInfoTiddler,
           fields: {
             ...serverInfoTiddler.fields,
-            status: active ? ServerState.offlineActive : ServerState.offline,
+            text: active ? ServerState.offlineActive : ServerState.offline,
           },
         };
       }),
     );
     serverListWithUpdatedStatus.forEach((tiddler) => {
-      $tw.wiki.setTiddlerData(tiddler.fields.title, undefined, tiddler.fields);
+      $tw.wiki.addTiddler(tiddler.fields);
     });
   }
 
@@ -141,16 +156,24 @@ class BackgroundSyncManager {
         // TODO: handle conflict
         $tw.wiki.addTiddler(tiddler);
       });
+      onlineActiveServer.fields.lastSync = this.getLastSyncString();
     }
   }
 
   get onlineActiveServer() {
     return this.serverList.find((serverInfoTiddler) => {
-      return serverInfoTiddler?.fields?.status === ServerState.onlineActive;
+      return serverInfoTiddler?.fields?.text === ServerState.onlineActive;
     });
   }
 
-  getDiffFilter(lastSync: number | undefined) {
+  /**
+   *  update last sync using <<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">>
+   */
+  getLastSyncString() {
+    return $tw.utils.formatDateString(new Date(), '[UTC]YYYY0MM0DD0hh0mm0ssXXX');
+  }
+
+  getDiffFilter(lastSync: string | undefined) {
     return `[all[]!is[system]] :filter[get[modified]compare:date:gt[${lastSync ?? ''}]]`;
   }
 

@@ -10,6 +10,8 @@ exports.path = /^\/tw-mobile-sync\/html-node-sync$/;
 // TODO: use this custom endpoint to handle conflict on server side
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   const tiddlers: Tiddler[] = $tw.utils.parseJSONSafe(context.data);
+  // DEBUG: console
+  console.log(`tiddlers`, tiddlers);
   if (!Array.isArray(tiddlers)) {
     response.writeHead(400, { 'Content-Type': 'application/json' });
     response.end(`Bad request body, not a tiddler list. ${String(tiddlers)}`, 'utf8');

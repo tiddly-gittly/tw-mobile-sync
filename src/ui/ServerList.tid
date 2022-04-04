@@ -35,7 +35,7 @@ type: text/vnd.tiddlywiki
     <$action-sendmessage
       $message="tm-new-tiddler"
       title={{{ [<now "YYYY-MM-DD">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
-      text="{{!!name}} {{!!ipAddress}}:{{!!port}}"
+      text="offline"
       name={{$:/state/tw-mobile-sync/server/new!!name}}
       caption={{$:/state/tw-mobile-sync/server/new!!name}}
       ipAddress={{$:/state/tw-mobile-sync/server/new!!ipAddress}}
