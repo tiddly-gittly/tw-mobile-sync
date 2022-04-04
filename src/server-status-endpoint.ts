@@ -23,6 +23,4 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   response.writeHead(200, { 'Content-Type': 'application/json' });
   response.end(text, 'utf8');
 };
-// DEBUG: console
-console.log(`handler`, handler);
 exports.handler = handler;

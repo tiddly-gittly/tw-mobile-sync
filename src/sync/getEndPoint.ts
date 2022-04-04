@@ -8,10 +8,6 @@ export function getSyncEndPoint(ipAddress: string, port: number): string {
   return `http://${ipAddress}:${port}${syncRoute}`;
 }
 
-export function getFilterServerEndPoint(ipAddress: string, port: number, filter: string): string {
-  return `http://${ipAddress}:${port}/recipes/default/tiddlers.json?filter=${encodeURIComponent(filter)}`;
-}
-
 /**
  * Official status endpoint
  */

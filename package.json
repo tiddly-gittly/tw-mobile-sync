@@ -3,6 +3,7 @@
   "tsFiles": [
     "browser-background-sync",
     "server-sync-endpoint",
+    "server-sync-endpoint-options",
     "server-status-endpoint"
   ],
   "license": "MIT",
