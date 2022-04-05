@@ -5,4 +5,4 @@ modifier: 林一二
 title: $:/DefaultTiddlers
 type: text/vnd.tiddlywiki
 
-Index $:/plugins/linonetwo/tw-mobile-sync/ui/ServerList
+Index $:/plugins/linonetwo/tw-mobile-sync/ui/ServerList $:/plugins/linonetwo/tw-mobile-sync/readme

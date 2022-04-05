@@ -1,6 +1,6 @@
 {
   "description": "Basic client-server edition",
-  "plugins": [],
+  "plugins": ["tiddlywiki/qrcode"],
   "themes": [
     "tiddlywiki/vanilla"
   ],

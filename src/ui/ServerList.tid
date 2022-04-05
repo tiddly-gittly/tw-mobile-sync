@@ -2,7 +2,7 @@ title: $:/plugins/linonetwo/tw-mobile-sync/ui/ServerList
 type: text/vnd.tiddlywiki
 
 <ul>
-  <$list filter="[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]]">
+  <$list filter="[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new][$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]]">
     {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}
   </$list>
 </ul>
@@ -12,10 +12,29 @@ type: text/vnd.tiddlywiki
     <fieldset>
       <legend>智能识别黏贴框</legend>
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text" default="" />
+
+      <$button>
+        智能识别
+        <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" $param="$:/state/tw-mobile-sync/server/new"/>
+      </$button>
+
+      <$reveal type="nomatch" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
         <$button>
-          智能识别
-          <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" $param="$:/state/tw-mobile-sync/server/new"/>
+          扫二维码
+          <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true" />
         </$button>
+      </$reveal>
+      <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
+        <$button>
+          停止扫码
+          <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="false" />
+        </$button>
+      </$reveal>
+
+      <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
+        <$ScanQRWidget outputTiddlerTitle="$:/state/tw-mobile-sync/server/new" />
+      </$reveal>
+
     </fieldset>
     <fieldset>
       <legend>服务器名</legend>

@@ -4,6 +4,7 @@
     "browser-background-sync",
     "server-sync-endpoint",
     "server-sync-endpoint-options",
+    "scan-qr-widget",
     "smart-recognize-ip-address",
     "server-status-endpoint"
   ],
@@ -32,6 +33,7 @@
     "@typescript-eslint/parser": "5.16.0",
     "archiver": "5.3.0",
     "browserslist": "4.20.2",
+    "default-gateway": "^6.0.3",
     "esbuild": "0.14.28",
     "esbuild-plugin-browserslist": "0.4.8",
     "eslint": "8.12.0",
@@ -66,6 +68,7 @@
     "zx": "6.0.7"
   },
   "dependencies": {
+    "jsqr-es6": "^1.4.0-1",
     "lodash": "^4.17.21"
   }
 }

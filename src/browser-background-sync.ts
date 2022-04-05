@@ -1,6 +1,6 @@
 import type { Tiddler, IServerStatus } from 'tiddlywiki';
 import { activeServerStateTiddlerTitle } from './constants';
-import { getDiffFilter } from './filters';
+import { getDiffFilter, serverListFilter } from './filters';
 import { getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
 import { ISyncEndPointRequest } from './types';
 
@@ -197,7 +197,6 @@ class BackgroundSyncManager {
 
   get serverList() {
     // get server list using filter
-    const serverListFilter: string = `[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]]`;
     const serverList: string[] = $tw.wiki.compileFilter(serverListFilter)() ?? [];
     return serverList.map((serverInfoTiddlerTitle) => {
       return $tw.wiki.getTiddler(serverInfoTiddlerTitle) as IServerInfoTiddler;
