@@ -21,11 +21,6 @@ await fs.copy(path.join(repoDirectory, 'demo'), distDirectory);
 await fs.copy(path.join(distDirectory, 'out', jsonPluginFileName), path.join(distDirectory, 'tiddlers', jsonPluginFileName));
 
 /**
- * Make demo html file
- */
-const htmlPath = `${distDirectory}/output/index.html`;
-
-/**
  * Same as `cross-env TIDDLYWIKI_PLUGIN_PATH='node_modules/tiddlywiki/plugins/published' TIDDLYWIKI_THEME_PATH='${wikiFolderName}/themes'`
  *
  * But we don't need this, because we put the JSON plugin into the dist folder, it will be loaded automatically
@@ -33,10 +28,4 @@ const htmlPath = `${distDirectory}/output/index.html`;
 // process.env.TIDDLYWIKI_PLUGIN_PATH = `${distDir}/plugins`;
 
 cd(distDirectory);
-await $`tiddlywiki ${distDirectory} --build externalimages`;
-await $`tiddlywiki ${distDirectory} --build externaljs`;
-// build dll.js and config tw to load it
-// original filename contains invalid char, will cause static server unable to load it
-const htmlContent = fs.readFileSync(htmlPath, 'utf8');
-const htmlContentWithCorrectJsPath = htmlContent.replaceAll('%24%3A%2Fcore%2Ftemplates%2Ftiddlywiki5.js', 'tiddlywiki5.js');
-await fs.writeFile(htmlPath, htmlContentWithCorrectJsPath);
+await $`tiddlywiki . --build index`;

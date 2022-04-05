@@ -2,13 +2,19 @@ title: $:/plugins/linonetwo/tw-mobile-sync/readme
 creator: LinOnetwo
 type: text/vnd.tiddlywiki
 
+\define image()
+<img src=<<makeqr text:"""$(url)$""" size:"350">>/>
+\end
+
 !! Server list
 
 [[Server List|$:/plugins/linonetwo/tw-mobile-sync/ui/ServerList]] contains syncable servers, and button to add new server.
 
 !! QrCode of current server
 
-<img src=<<makeqr text={{$:/info/url/full}} size:"350">> />
+<$set name="url" value={{$:/info/url/full}}>
+  <<image>>
+</$set>
 
 Scan to add this server ({{$:/info/url/full}}).
 
