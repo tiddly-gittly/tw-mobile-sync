@@ -197,7 +197,7 @@ class BackgroundSyncManager {
 
   get serverList() {
     // get server list using filter
-    const serverListFilter: string = `[prefix[$:/state/tw-mobile-sync/server/]]`;
+    const serverListFilter: string = `[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]]`;
     const serverList: string[] = $tw.wiki.compileFilter(serverListFilter)() ?? [];
     return serverList.map((serverInfoTiddlerTitle) => {
       return $tw.wiki.getTiddler(serverInfoTiddlerTitle) as IServerInfoTiddler;

@@ -14,7 +14,7 @@ type: text/vnd.tiddlywiki
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text" default="" />
         <$button>
           智能识别
-          <$action-sendmessage $message="tm-notify" $param="SampleNotification"/>
+          <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" $param="$:/state/tw-mobile-sync/server/new"/>
         </$button>
     </fieldset>
     <fieldset>
