@@ -59,6 +59,7 @@ type: text/vnd.tiddlywiki
       caption={{$:/state/tw-mobile-sync/server/new!!name}}
       ipAddress={{$:/state/tw-mobile-sync/server/new!!ipAddress}}
       port={{$:/state/tw-mobile-sync/server/new!!port}}
+      lastSync=<<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">>
     />
     <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new" text="" name="" ipAddress="" port="" />
   </$button>
