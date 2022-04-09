@@ -84,7 +84,7 @@ class BackgroundSyncManager {
         // update status first
         await this.getServerStatus();
         // get latest tiddler
-        const serverToActive = $tw.wiki.getTiddler(titleToActive) as IServerInfoTiddler | undefined;
+        const serverToActive = $tw.wiki.getTiddler<IServerInfoTiddler>(titleToActive);
         if (serverToActive !== undefined) {
           const newStatus = [ServerState.onlineActive, ServerState.online].includes(serverToActive.fields.text as ServerState)
             ? ServerState.onlineActive
