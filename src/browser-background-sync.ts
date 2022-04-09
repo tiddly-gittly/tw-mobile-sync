@@ -1,5 +1,6 @@
 import type { Tiddler, IServerStatus } from 'tiddlywiki';
-import { activeServerStateTiddlerTitle } from './constants';
+import mapValues from 'lodash/mapValues';
+import { activeServerStateTiddlerTitle, twDefaultDateTimeFormat } from './constants';
 import { getDiffFilter, serverListFilter } from './filters';
 import { getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
 import { ISyncEndPointRequest } from './types';
@@ -83,13 +84,13 @@ class BackgroundSyncManager {
         // update status first
         await this.getServerStatus();
         // get latest tiddler
-        const serverToActive = $tw.wiki.getTiddler(titleToActive);
+        const serverToActive = $tw.wiki.getTiddler(titleToActive) as IServerInfoTiddler | undefined;
         if (serverToActive !== undefined) {
           const newStatus = [ServerState.onlineActive, ServerState.online].includes(serverToActive.fields.text as ServerState)
             ? ServerState.onlineActive
             : ServerState.offlineActive;
           $tw.wiki.addTiddler({ ...serverToActive.fields, text: newStatus });
-          this.setActiveServerTiddlerTitle(titleToActive);
+          this.setActiveServerTiddlerTitle(titleToActive, serverToActive.fields.lastSync);
           await this.start(true);
         }
       }
@@ -100,8 +101,14 @@ class BackgroundSyncManager {
     return $tw.wiki.getTiddlerText(activeServerStateTiddlerTitle);
   }
 
-  setActiveServerTiddlerTitle(title: string, lastSync?: string) {
+  setActiveServerTiddlerTitle(title: string, lastSync: string | undefined) {
+    // update active server record in `activeServerStateTiddlerTitle`, this is a pointer tiddler point to actual server tiddler
     $tw.wiki.addTiddler({ title: activeServerStateTiddlerTitle, text: title, lastSync });
+    // update server's last sync
+    const serverToActive = $tw.wiki.getTiddler(title);
+    if (serverToActive !== undefined) {
+      $tw.wiki.addTiddler({ ...serverToActive.fields, lastSync });
+    }
   }
 
   async getServerStatus() {
@@ -144,7 +151,7 @@ class BackgroundSyncManager {
 
     if (onlineActiveServer !== undefined) {
       try {
-        const changedTiddlersFromClient = this.currentModifiedTiddlers.map((tiddler) => tiddler.fields);
+        const changedTiddlersFromClient = this.currentModifiedTiddlers;
         // TODO: handle conflict, find intersection of changedTiddlersFromServer and changedTiddlersFromClient, and write changes to each other
         // send modified tiddlers to server
         const changedTiddlersFromServer: Tiddler[] = await fetch(getSyncEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port), {
@@ -178,7 +185,7 @@ class BackgroundSyncManager {
    *  update last sync using <<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">>
    */
   getLastSyncString() {
-    return $tw.utils.formatDateString(new Date(), '[UTC]YYYY0MM0DD0hh0mm0ssXXX');
+    return $tw.utils.formatDateString(new Date(), twDefaultDateTimeFormat);
   }
 
   get currentModifiedTiddlers() {
@@ -190,9 +197,19 @@ class BackgroundSyncManager {
     const lastSync = onlineActiveServer.fields.lastSync;
     const diffTiddlersFilter: string = getDiffFilter(lastSync);
     const diffTiddlers: string[] = $tw.wiki.compileFilter(diffTiddlersFilter)() ?? [];
-    return diffTiddlers.map((title) => {
-      return $tw.wiki.getTiddler(title)!;
-    });
+    return diffTiddlers
+      .map((title) => {
+        return $tw.wiki.getTiddler(title);
+      })
+      .filter((tiddler): tiddler is Tiddler => tiddler !== undefined)
+      .map((tiddler) =>
+        mapValues(tiddler.fields, (value) => {
+          if (value instanceof Date) {
+            return $tw.utils.formatDateString(value, twDefaultDateTimeFormat);
+          }
+          return value;
+        }),
+      );
   }
 
   get serverList() {
