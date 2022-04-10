@@ -185,7 +185,7 @@ class BackgroundSyncManager {
    *  update last sync using <<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">>
    */
   getLastSyncString() {
-    return $tw.utils.formatDateString(new Date(), twDefaultDateTimeFormat);
+    return $tw.utils.stringifyDate(new Date());
   }
 
   get currentModifiedTiddlers() {
@@ -205,7 +205,7 @@ class BackgroundSyncManager {
       .map((tiddler) =>
         mapValues(tiddler.fields, (value) => {
           if (value instanceof Date) {
-            return $tw.utils.formatDateString(value, twDefaultDateTimeFormat);
+            return $tw.utils.stringifyDate(value);
           }
           return value;
         }),
