@@ -2,13 +2,13 @@
   "url": "https://github.com/tiddly-gittly/tw-example-plugin",
   "tsFiles": [
     "browser-background-sync",
-    "server-sync-endpoint",
-    "server-sync-endpoint-options",
-    "server-get-html-endpoint",
-    "server-get-html-endpoint-options",
+    "server/server-sync-endpoint",
+    "server/server-sync-endpoint-options",
+    "server/server-get-html-endpoint",
+    "server/server-get-html-endpoint-options",
     "scan-qr-widget",
     "smart-recognize-ip-address",
-    "server-status-endpoint"
+    "server/server-status-endpoint"
   ],
   "license": "MIT",
   "version": "0.0.1",
