@@ -4,6 +4,8 @@
     "browser-background-sync",
     "server-sync-endpoint",
     "server-sync-endpoint-options",
+    "server-get-html-endpoint",
+    "server-get-html-endpoint-options",
     "scan-qr-widget",
     "smart-recognize-ip-address",
     "server-status-endpoint"

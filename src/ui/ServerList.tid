@@ -69,3 +69,7 @@ type: text/vnd.tiddlywiki
     <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new" text="" name="" ipAddress="" port="" />
   </$button>
 </div>
+
+<div>
+  {{$:/plugins/linonetwo/tw-mobile-sync/ui/DownloadFullHtml}}
+</div>

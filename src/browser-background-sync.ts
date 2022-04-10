@@ -2,7 +2,7 @@ import type { Tiddler, IServerStatus } from 'tiddlywiki';
 import mapValues from 'lodash/mapValues';
 import { activeServerStateTiddlerTitle, twDefaultDateTimeFormat } from './constants';
 import { getDiffFilter, serverListFilter } from './filters';
-import { getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
+import { getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
 import { ISyncEndPointRequest } from './types';
 
 exports.name = 'browser-background-sync';
@@ -54,11 +54,13 @@ class BackgroundSyncManager {
       await this.setActiveServerAndSync(titleToActive);
     });
     $tw.rootWidget.addEventListener('tw-mobile-sync-sync-start', (event) => this.start());
+    $tw.rootWidget.addEventListener('tw-mobile-sync-download-full-html', (event) => this.downloadFullHtmlAndApplyToWiki());
   }
 
   async start(skipStatusCheck?: boolean) {
     if (this.loop) {
       clearInterval(this.loop);
+      this.lock = false;
     }
     const loopHandler = async () => {
       if (this.lock) {
@@ -79,21 +81,25 @@ class BackgroundSyncManager {
   }
 
   async setActiveServerAndSync(titleToActive: string | undefined) {
-    if (typeof titleToActive === 'string') {
-      if ($tw.wiki.getTiddler(titleToActive) !== undefined) {
-        // update status first
-        await this.getServerStatus();
-        // get latest tiddler
-        const serverToActive = $tw.wiki.getTiddler<IServerInfoTiddler>(titleToActive);
-        if (serverToActive !== undefined) {
-          const newStatus = [ServerState.onlineActive, ServerState.online].includes(serverToActive.fields.text as ServerState)
-            ? ServerState.onlineActive
-            : ServerState.offlineActive;
-          $tw.wiki.addTiddler({ ...serverToActive.fields, text: newStatus });
-          this.setActiveServerTiddlerTitle(titleToActive, serverToActive.fields.lastSync);
-          await this.start(true);
+    try {
+      if (typeof titleToActive === 'string') {
+        if ($tw.wiki.getTiddler(titleToActive) !== undefined) {
+          // update status first
+          await this.getServerStatus();
+          // get latest tiddler
+          const serverToActive = $tw.wiki.getTiddler<IServerInfoTiddler>(titleToActive);
+          if (serverToActive !== undefined) {
+            const newStatus = [ServerState.onlineActive, ServerState.online].includes(serverToActive.fields.text as ServerState)
+              ? ServerState.onlineActive
+              : ServerState.offlineActive;
+            $tw.wiki.addTiddler({ ...serverToActive.fields, text: newStatus });
+            this.setActiveServerTiddlerTitle(titleToActive, serverToActive.fields.lastSync);
+            await this.start(true);
+          }
         }
       }
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -112,14 +118,18 @@ class BackgroundSyncManager {
   }
 
   async getServerStatus() {
+    const timeout = 1000;
     const activeTiddlerTitle = this.getActiveServerTiddlerTitle();
     const serverListWithUpdatedStatus = await Promise.all(
       this.serverList.map(async (serverInfoTiddler) => {
         const active = serverInfoTiddler.fields.title === activeTiddlerTitle;
         try {
-          const response: IServerStatus = await fetch(getStatusEndPoint(serverInfoTiddler.fields.ipAddress, serverInfoTiddler.fields.port)).then((response) =>
-            response.json(),
-          );
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), timeout);
+          const response: IServerStatus = await fetch(getStatusEndPoint(serverInfoTiddler.fields.ipAddress, serverInfoTiddler.fields.port), {
+            signal: controller.signal,
+          }).then((response) => response.json());
+          clearTimeout(id);
           if (typeof response.tiddlywiki_version === 'string') {
             return {
               ...serverInfoTiddler,
@@ -175,8 +185,37 @@ class BackgroundSyncManager {
     }
   }
 
+  async downloadFullHtmlAndApplyToWiki() {
+    const onlineActiveServer = this.onlineActiveServer;
+
+    if (onlineActiveServer !== undefined) {
+      try {
+        const fullHtml = await fetch(getFullHtmlEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port), {
+          mode: 'cors',
+          headers: {
+            'X-Requested-With': 'TiddlyWiki',
+            'Content-Type': 'application/json',
+          },
+        }).then((response) => response.text());
+        this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
+        // get all state tiddlers we need, before document is overwritten
+        const serverList = this.serverList;
+
+        // overwrite
+        document.write(fullHtml);
+        document.close();
+
+        // write back
+        $tw.wiki.addTiddlers(serverList);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
   get onlineActiveServer() {
     return this.serverList.find((serverInfoTiddler) => {
+      // TODO: compile to lower es for browser support
       return serverInfoTiddler?.fields?.text === ServerState.onlineActive;
     });
   }
