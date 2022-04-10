@@ -4,6 +4,7 @@ import { activeServerStateTiddlerTitle, twDefaultDateTimeFormat } from './consta
 import { getDiffFilter, serverListFilter } from './filters';
 import { getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
 import { ISyncEndPointRequest } from './types';
+import cloneDeep from 'lodash/cloneDeep';
 
 exports.name = 'browser-background-sync';
 exports.platforms = ['browser'];
@@ -199,14 +200,14 @@ class BackgroundSyncManager {
         }).then((response) => response.text());
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
         // get all state tiddlers we need, before document is overwritten
-        const serverList = this.serverList;
+        const serverList = cloneDeep(this.serverList);
 
         // overwrite
         document.write(fullHtml);
         document.close();
 
         // write back
-        $tw.wiki.addTiddlers(serverList);
+        $tw.wiki.addTiddlers(serverList.map((tiddler) => tiddler.fields));
       } catch (error) {
         console.error(error);
       }
