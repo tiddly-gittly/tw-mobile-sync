@@ -4,6 +4,6 @@
   "description": "Sync data between Mobile HTML (Tiddloid) <-> Desktop NodeJS App (TidGi) ",
   "core-version": ">=5.1.22",
   "plugin-type": "plugin",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "list": "readme ui/ServerList"
 }

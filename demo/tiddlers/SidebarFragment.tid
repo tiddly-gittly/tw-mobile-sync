@@ -3,6 +3,7 @@ type: text/vnd.tiddlywiki
 tags: $:/tags/SideBarSegment
 
 <!-- only display plugin fragment in Tiddloid, which will use content scheme to load -->
-<$reveal type="match" state="$:/info/url/protocol" text="content:">
+<!-- this change match to nomatch so it show in the demo site -->
+<$reveal type="nomatch" state="$:/info/url/protocol" text="content:">
   {{$:/plugins/linonetwo/tw-mobile-sync/ui/SidebarField}}
 </$reveal>
