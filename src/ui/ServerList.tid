@@ -1,21 +1,21 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/ServerList
 type: text/vnd.tiddlywiki
 
-<ul>
+<div class="tw-mobile-sync-server-list">
   <$list filter="[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]]">
     {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}
   </$list>
-</ul>
+</div>
 
 <div style="display: flex; flex-direction: row;">
-  <div style="display: flex; flex-direction: column;">
+  <div class="tw-mobile-sync-new-server-field-fields-container-outer">
     <fieldset>
       <legend>智能识别黏贴框</legend>
 
-      <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+      <div class="tw-mobile-sync-new-server-field-fields-container">
         <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text" default="" />
 
-        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div class="tw-mobile-sync-new-server-field-fields-buttons">
           <$button>
             智能识别
             <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" $param="$:/state/tw-mobile-sync/server/new"/>
@@ -54,7 +54,7 @@ type: text/vnd.tiddlywiki
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="port" default="" />
     </fieldset>
   </div>
-  <$button>
+  <$button style="width: 160px; margin-top: 10px;">
     新增服务器
     <$action-sendmessage
       $message="tm-new-tiddler"

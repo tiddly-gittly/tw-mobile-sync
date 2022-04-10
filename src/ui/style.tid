@@ -2,10 +2,51 @@ title: $:/plugins/linonetwo/tw-mobile-sync/ui/style.css
 tags: $:/tags/Stylesheet
 type: text/css
 
+.tw-mobile-sync-server-list {
+  padding-left: 0;
+  max-width: 500px;
+}
+
 .tw-mobile-sync-sync-button {
   width: 100%; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  max-width: 300px;
 }
 
 .tw-mobile-sync-sync-reveal {
-  width: 100%; margin-left: 20px;
+  margin-left: 20px;
+}
+
+.tw-mobile-sync-new-server-field-fields-container-outer textarea,
+.tw-mobile-sync-new-server-field-fields-container-outer input {
+  width: 100%;
+}
+.tw-mobile-sync-new-server-field-fields-container-outer {
+  display: flex; flex-direction: column; width: 340px;
+}
+.tw-mobile-sync-new-server-field-fields-container {
+  display: flex; flex-direction: row; justify-content: center; align-items: center;
+}
+.tw-mobile-sync-new-server-field-fields-buttons {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+@media (max-width: 535px) {
+  .tw-mobile-sync-new-server-field-fields-container {
+    flex-direction: column;
+  }
+  .tw-mobile-sync-new-server-field-fields-buttons {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+}
+
+
+.tw-mobile-sync-sicebar-fieldset {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+
+.tw-mobile-sync-server-list-item {
+  display: flex; flex-direction: row; align-items: center;
+  justify-content: space-between;
 }
