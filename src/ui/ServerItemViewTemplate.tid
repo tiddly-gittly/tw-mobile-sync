@@ -4,26 +4,28 @@ type: text/vnd.tiddlywiki
 <li>
   <div style="display: flex; flex-direction: row; align-items: center;">
     <div style="display: flex; flex-direction: column;">
-      <h3>
+      <h3 style="margin-top: 0;">
         <$link to={{!!title}}>
           <$text text={{!!name}}/>
         </$link>
       </h3>
-      <div>{{!!ipAddress}}:{{!!port}}</div>
+      <div style="margin-bottom: 10px;">{{!!ipAddress}}:{{!!port}}</div>
       <!-- we use text as status field -->
       <div>{{!!text}}</div>
     </div>
 
-    <$reveal type="nomatch" state=<<currentTiddler>> text="onlineActive">
-      <$button style="width: 100px; height: 100px; border-radius: 100px;">
-        启用同步并立即同步
+    <$reveal type="nomatch" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
+      <$button class="tw-mobile-sync-sync-button">
+        <div><$text text={{!!name}}/></div>
+        <div>启用同步并立即同步</div>
         <$action-sendmessage $message="tw-mobile-sync-set-active-server-and-sync" title={{!!title}} />
       </$button>
     </$reveal>
 
-    <$reveal type="match" state=<<currentTiddler>> text="onlineActive"  >
-      <$button style="width: 100px; height: 100px; border-radius: 100px;" >
-        立即同步
+    <$reveal type="match" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
+      <$button class="tw-mobile-sync-sync-button">
+        <div><$text text={{!!name}}/></div>
+        <div>立即同步</div>
         <$action-sendmessage $message="tw-mobile-sync-sync-start" />
       </$button>
     </$reveal>

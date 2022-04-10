@@ -1,0 +1,15 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/SidebarFragment
+type: text/vnd.tiddlywiki
+tags: $:/tags/SideBarSegment
+
+<!-- only display plugin fragment in Tiddloid, which will use content scheme to load -->
+<$reveal type="match" state="$:/info/url/protocol" text="content:">
+  <fieldset>
+    <legend>与桌面端同步</legend>
+
+    {{{[prefix[$:/state/tw-mobile-sync/server/]field:text[onlineActive]] ~[prefix[$:/state/tw-mobile-sync/server/]field:text[online]first[]]||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}}
+
+    [[服务器列表|$:/plugins/linonetwo/tw-mobile-sync/ui/ServerList]]
+
+  </fieldset>
+</$reveal>
