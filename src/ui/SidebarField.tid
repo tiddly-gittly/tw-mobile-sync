@@ -2,7 +2,7 @@ title: $:/plugins/linonetwo/tw-mobile-sync/ui/SidebarField
 type: text/vnd.tiddlywiki
 
 <fieldset class="tw-mobile-sync-sicebar-fieldset">
-  <legend>与桌面端同步</legend>
+  <legend>与桌面端同步 Sync With Desktop</legend>
 
   {{{[prefix[$:/state/tw-mobile-sync/server/]field:text[onlineActive]] ~[prefix[$:/state/tw-mobile-sync/server/]field:text[online]first[]]||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}}
 

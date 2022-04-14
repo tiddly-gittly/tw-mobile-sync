@@ -4,15 +4,17 @@ type: text/vnd.tiddlywiki
 <$list filter="[prefix[$:/state/tw-mobile-sync/server/]field:text[onlineActive]]">
 <details>
   <summary>
-  拉取并覆盖
+  拉取并覆盖 Pull and override
   </summary>
   <fieldset>
-    <legend>拉取服务端最新完整内容覆盖本地所有内容</legend>
+    <legend>拉取服务端最新完整内容覆盖本地所有内容 Pull the latest complete content from the server to cover all local content</legend>
     <div>普通同步没法更新插件和导入的内容，如果你在电脑端更新或安装了插件，则需要在移动端点下面的按钮做一次完整拉取。</div>
+    <div>If you have updated or installed the plugin on your computer, you will need to do a full pull on the mobile side by clicking the button below.</div>
     <div>请慎重点击，本地若有未同步内容将丢失！如果确保本地没有未同步内容，则可以放心拉取。</div>
+    <div>Please click carefully, local unsynced content will be lost if there is any! If you make sure there is no unsynced content locally, you can pull it without worry.</div>
     <$button>
       <div>{{!!name}}</div>
-      <div>拉取内容覆盖本地</div>
+      <div>拉取内容覆盖本地 Pull content to cover local</div>
       <$action-sendmessage $message="tw-mobile-sync-download-full-html" />
     </$button>
   </fieldset>

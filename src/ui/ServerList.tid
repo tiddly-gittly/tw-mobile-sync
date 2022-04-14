@@ -10,26 +10,26 @@ type: text/vnd.tiddlywiki
 <div style="display: flex; flex-direction: row;">
   <div class="tw-mobile-sync-new-server-field-fields-container-outer">
     <fieldset>
-      <legend>智能识别黏贴框</legend>
+      <legend>智能识别黏贴框 Smart Identify Sticky Box</legend>
 
       <div class="tw-mobile-sync-new-server-field-fields-container">
         <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text" default="" />
 
         <div class="tw-mobile-sync-new-server-field-fields-buttons">
           <$button>
-            智能识别
+            智能识别 Smart Identify
             <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" $param="$:/state/tw-mobile-sync/server/new"/>
           </$button>
 
           <$reveal type="nomatch" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
             <$button>
-              扫二维码
+              扫二维码 Scan QR
               <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true" />
             </$button>
           </$reveal>
           <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
             <$button>
-              停止扫码
+              停止扫码 Stop Scan
               <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="false" />
             </$button>
           </$reveal>
@@ -42,20 +42,20 @@ type: text/vnd.tiddlywiki
 
     </fieldset>
     <fieldset>
-      <legend>服务器名</legend>
+      <legend>服务器名 Server Name</legend>
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="name" default="" />
     </fieldset>
     <fieldset>
-      <legend>服务器IP</legend>
+      <legend>服务器IP Server IP</legend>
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="ipAddress" default="" />
     </fieldset>
     <fieldset>
-      <legend>服务器端口</legend>
+      <legend>服务器端口 Server Port</legend>
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="port" default="" />
     </fieldset>
   </div>
   <$button style="width: 160px; margin-top: 10px;">
-    新增服务器
+    新增服务器 Add New
     <$action-sendmessage
       $message="tm-new-tiddler"
       title={{{ [<now "YYYY-MM-DD">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
