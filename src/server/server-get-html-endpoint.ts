@@ -10,13 +10,15 @@ exports.path = /^\/tw-mobile-sync\/get-full-html$/;
 // TODO: move to /server folder
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
-  const templateName = (context.wiki.getTiddlerText('$:/config/SaveWikiButton/Template', context.wiki.getTiddlerText('$:/config/SaveWikiButton/Template', '$:/core/save/all'))).trim()
+  // lazy image ?? $:/plugins/tiddlywiki/tiddlyweb/save/offline
+  const templateName: string =
+    context.server.get('root-tiddler') ?? context.wiki.getTiddlerText('$:/config/SaveWikiButton/Template', '$:/core/save/all').trim();
 
-  const downloadType = 'text/plain';
+  const downloadType = context.server.get('root-render-type') ?? 'text/plain';
   const exportedHTMLContent = context.wiki.renderTiddler(downloadType, templateName);
 
   try {
-    response.writeHead(200, { 'Content-Type': downloadType });
+    response.writeHead(200, { 'Content-Type': context.server.get('root-serve-type') ?? downloadType });
     response.end(exportedHTMLContent, 'utf8');
   } catch (error) {
     response.writeHead(500);
