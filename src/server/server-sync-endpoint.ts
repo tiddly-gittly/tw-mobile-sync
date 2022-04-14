@@ -29,6 +29,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     .map((tiddler) => tiddler.fields);
 
   try {
+    // TODO: trigger client fetch changes using server sent event, see https://github.com/Jermolene/TiddlyWiki5/pull/5279
     context.wiki.addTiddlers(tiddlers);
     response.writeHead(201, { 'Content-Type': 'application/json' });
     response.end(JSON.stringify(changedTiddlersFromServer), 'utf8');
