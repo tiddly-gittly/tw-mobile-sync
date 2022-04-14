@@ -16,7 +16,8 @@ type: text/vnd.tiddlywiki
   <$reveal type="nomatch" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
     <$button class="tw-mobile-sync-sync-button">
       <div><$text text={{!!name}}/></div>
-      <div>启用同步并立即同步 Enable and Sync Now</div>
+      <div>启用同步并立即同步</div>
+      <div>Enable and Sync Now</div>
       <$action-sendmessage $message="tw-mobile-sync-set-active-server-and-sync" title={{!!title}} />
     </$button>
   </$reveal>
@@ -24,7 +25,8 @@ type: text/vnd.tiddlywiki
   <$reveal type="match" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
     <$button class="tw-mobile-sync-sync-button">
       <div><$text text={{!!name}}/></div>
-      <div>立即同步 Sync Now</div>
+      <div>立即同步</div>
+      <div>Sync Now</div>
       <$action-sendmessage $message="tw-mobile-sync-sync-start" />
     </$button>
   </$reveal>

@@ -55,7 +55,8 @@ type: text/vnd.tiddlywiki
     </fieldset>
   </div>
   <$button style="width: 160px; margin-top: 10px;">
-    新增服务器 Add New
+    <div>新增服务器</div>
+    <div>Add New</div>
     <$action-sendmessage
       $message="tm-new-tiddler"
       title={{{ [<now "YYYY-MM-DD">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
