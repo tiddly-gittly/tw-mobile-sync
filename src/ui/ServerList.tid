@@ -59,7 +59,7 @@ type: text/vnd.tiddlywiki
     <div>Add New</div>
     <$action-sendmessage
       $message="tm-new-tiddler"
-      title={{{ [<now "YYYY-MM-DD">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
+      $param={{{ [<now "YYYY-MM-DD-0hh0mm0ss">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
       text="offline"
       name={{$:/state/tw-mobile-sync/server/new!!name}}
       caption={{$:/state/tw-mobile-sync/server/new!!name}}

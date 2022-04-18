@@ -57,3 +57,11 @@ Scan to add this server 扫码以添加此服务器 ({{$:/info/url/full}}).
 （二维码：当前服务器的地址）
 
 Needs official QR plugin [[$:/plugins/tiddlywiki/qrcode]] to work. 需要安装官方二维码插件 [[$:/plugins/tiddlywiki/qrcode]] 才会有二维码出现在上面
+
+!! FAQ 常见问题
+
+!!! 在外面用了一天之后回家添加服务器，却无法同步到电脑端 When you come home to add a server after using it outside for a day, it won't sync to the computer side
+
+就是因为你新添加服务器后，它只会同步新建服务器之后新建的条目。这是又因为新建服务器时会根据当前时间添加一个 lastSync 字段，目前在点击同步按钮时，只会同步这个时间点之后的内容。你可以手动把服务器条目里这个字段的时间改早一天，这样就会同步你今天添加的内容了。未来我们将会添加更智能的同步方式，就不再需要这个字段了，就不会遇到这个问题了。
+
+This is because when you add a new server, it only syncs the new entries created after the new server is created. This is again because when you create a new server you add a lastSync field based on the current time, and currently when you click the sync button it will only sync after this point in time. You can manually change the time of this field in the server entry to one day earlier, and it will sync the content you added today. In the future we will add a smarter way of syncing so that this field is no longer needed and you won't encounter this problem.
