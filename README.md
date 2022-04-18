@@ -10,7 +10,11 @@ We can open localhost wiki on the [Tiddloid](https://github.com/donmor/Tiddloid)
 
 And you may write some tiddlers in the subway when you getting home, these tiddlers may have conflict with the one in your home's desktop wiki, we need this plugin to handle it.
 
-## How this works
+## Usage
+
+See [Demo site](http://tiddly-gittly.github.io/tw-mobile-sync/) or [src/readme.tid](src/readme.tid).
+
+## How this works (TODO)
 
 和手机同步的插件，不做成 saver，就是做成一个按钮，以保证不和 saver 冲突。
 
