@@ -10,6 +10,10 @@ type: text/css
 .tw-mobile-sync-sync-button {
   width: 100%; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
   max-width: 300px;
+  min-width: 175px;
+}
+.tw-mobile-sync-copy-button {
+  height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
 }
 
 .tw-mobile-sync-sync-reveal {

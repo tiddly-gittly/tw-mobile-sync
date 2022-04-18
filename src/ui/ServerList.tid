@@ -3,7 +3,10 @@ type: text/vnd.tiddlywiki
 
 <div class="tw-mobile-sync-server-list">
   <$list filter="[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]]">
-    {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}
+    <div class="tw-mobile-sync-server-list-item">
+      {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}
+      {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemCopyTemplate}}
+    </div>
   </$list>
 </div>
 
@@ -57,9 +60,8 @@ type: text/vnd.tiddlywiki
   <$button style="width: 160px; margin-top: 10px;">
     <div>新增服务器</div>
     <div>Add New</div>
-    <$action-sendmessage
-      $message="tm-new-tiddler"
-      $param={{{ [<now "YYYY-MM-DD-0hh0mm0ss">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
+    <$action-createtiddler
+      $basetitle={{{ [<now "YYYY-MM-DD-0hh0mm0ss">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
       text="offline"
       name={{$:/state/tw-mobile-sync/server/new!!name}}
       caption={{$:/state/tw-mobile-sync/server/new!!name}}
