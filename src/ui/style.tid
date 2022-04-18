@@ -53,4 +53,5 @@ type: text/css
 .tw-mobile-sync-server-list-item {
   display: flex; flex-direction: row; align-items: center;
   justify-content: space-between;
+  min-width: 400px;
 }
