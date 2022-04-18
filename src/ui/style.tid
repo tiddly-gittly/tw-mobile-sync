@@ -5,6 +5,8 @@ type: text/css
 .tw-mobile-sync-server-list {
   padding-left: 0;
   max-width: 500px;
+  overflow: auto;
+  overflow: overlay;
 }
 
 .tw-mobile-sync-sync-button {
@@ -14,6 +16,7 @@ type: text/css
 }
 .tw-mobile-sync-copy-button {
   height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  margin-left: 10px !important;
 }
 
 .tw-mobile-sync-sync-reveal {
