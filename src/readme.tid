@@ -2,6 +2,10 @@ title: $:/plugins/linonetwo/tw-mobile-sync/readme
 creator: LinOnetwo
 type: text/vnd.tiddlywiki
 
+\define image()
+  <img src=<<makeqr text:"""$(url)$""" size:"350">>/>
+\end
+
 ! Sync Between NodeJS and Mobile HTML 在桌面端（NodeJS）和移动端（HTML文件）之间同步
 
 本插件可以让你在基于NodeJS技术的桌面应用（例如太记）和基于HTML文件的手机端（例如Tiddloid安卓应用）之间同步数据。
@@ -43,10 +47,6 @@ Translated with www.DeepL.com/Translator (free version)
 [[Server List|$:/plugins/linonetwo/tw-mobile-sync/ui/ServerList]] contains syncable servers, and button to add new server.
 
 !! QrCode of current server 当前服务器的二维码
-
-\define image()
-<img src=<<makeqr text:"""$(url)$""" size:"350">>/>
-\end
 
 <$set name="url" value={{$:/info/url/full}}>
   <<image>>

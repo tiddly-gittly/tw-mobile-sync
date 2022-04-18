@@ -179,10 +179,19 @@ class BackgroundSyncManager {
           // TODO: handle conflict
           $tw.wiki.addTiddler(tiddler);
         });
+        $tw.wiki.addTiddler({
+          title: '$:/state/notification/tw-mobile-sync/notification',
+          text: `Sync Complete ↑ ${changedTiddlersFromClient.length} ↓ ${changedTiddlersFromServer.length}`,
+        });
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
       } catch (error) {
         console.error(error);
+        $tw.wiki.addTiddler({
+          title: '$:/state/notification/tw-mobile-sync/notification',
+          text: `Sync Failed ${(error as Error).message}`,
+        });
       }
+      $tw.notifier.display('$:/state/notification/tw-mobile-sync/notification');
     }
   }
 
