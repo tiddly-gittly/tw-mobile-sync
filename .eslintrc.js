@@ -17,7 +17,7 @@ module.exports = {
     },
     'import/resolver': {
       node: {
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs'],
       },
       typescript: {
         alwaysTryTypes: true,
@@ -27,12 +27,12 @@ module.exports = {
           ['@', './src'],
           ['@services', './src/services'],
         ],
-        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs'],
       },
     },
   },
   rules: {
-    'no-use-before-define': ['error', { ignoreTypeReferences: true, functions: false }],
+    // 'no-use-before-define': ['error', { ignoreTypeReferences: true, functions: false }],
     'unicorn/prevent-abbreviations': [
       'error',
       {
@@ -72,6 +72,10 @@ module.exports = {
     'unicorn/no-array-for-each': 'off',
     'multiline-ternary': 'off',
     'security/detect-object-injection': 'off',
+    'unicorn/prefer-dom-node-append': 'off',
+    'unicorn/prefer-modern-dom-apis': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    'unicorn/prefer-add-event-listener': 'off',
     'security/detect-non-literal-fs-filename': 'off',
     'unicorn/filename-case': [
       0,
@@ -85,8 +89,6 @@ module.exports = {
     'unicorn/prefer-ternary': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    'unicorn/prefer-dom-node-append': 'off',
     semi: [0],
     '@typescript-eslint/no-use-before-define': [1],
     '@typescript-eslint/no-unused-vars': [
@@ -103,6 +105,7 @@ module.exports = {
     'standard',
     'plugin:security/recommended',
     'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
     'plugin:unicorn/recommended',
     'plugin:prettier/recommended',
     'standard-with-typescript',
@@ -128,6 +131,8 @@ module.exports = {
     'react-hooks',
     'security',
     'security-node',
+    'autofix',
+    'unused-imports',
   ],
   env: {
     browser: true,

@@ -8,8 +8,6 @@
 import path from 'path';
 import fs from 'fs-extra';
 import esbuild from 'esbuild';
-import browserslist from 'browserslist';
-import { esbuildPluginBrowserslist } from 'esbuild-plugin-browserslist';
 import tw from 'tiddlywiki';
 import { walkFilesAsync } from './utils.mjs';
 import { config } from '../esbuild.config.mjs';

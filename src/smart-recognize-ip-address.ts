@@ -42,5 +42,9 @@ function recognize(tiddlerName: string | undefined) {
 }
 
 exports.startup = () => {
-  $tw.rootWidget.addEventListener('tw-mobile-sync-smart-recognize-ip-address', (event) => recognize(event.param));
+  // DEBUG: console
+  console.log(`$tw`, $tw);
+  if (typeof $tw.rootWidget !== 'undefined') {
+    $tw.rootWidget.addEventListener('tw-mobile-sync-smart-recognize-ip-address', (event) => recognize(event.param));
+  }
 };
