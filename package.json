@@ -10,7 +10,14 @@
     "smart-recognize-ip-address",
     "server/server-status-endpoint"
   ],
-  "ignoredExtensionsWhenBuildPlugin": [".ts", ".tsx", ".snap", ".tldr", ".md", ".json"],
+  "ignoredExtensionsWhenBuildPlugin": [
+    ".ts",
+    ".tsx",
+    ".snap",
+    ".tldr",
+    ".md",
+    ".json"
+  ],
   "license": "MIT",
   "version": "0.0.1",
   "types": "",
@@ -27,7 +34,6 @@
     "build:types": "tsc --emitDeclarationOnly",
     "installType": "typesync"
   },
-
   "dependencies": {
     "jsqr-es6": "^1.4.0-1",
     "lodash": "^4.17.21"
@@ -38,6 +44,7 @@
     "@types/eslint-plugin-prettier": "3.1.0",
     "@types/fs-extra": "9.0.13",
     "@types/jest": "29.2.4",
+    "@types/lodash": "^4.14.191",
     "@types/prettier": "2.7.1",
     "@typescript-eslint/eslint-plugin": "5.45.1",
     "@typescript-eslint/parser": "5.45.1",

@@ -1,4 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import trim from 'lodash/trim';
+
+// copy from core's core/modules/startup/rootwidget.js
+exports.platforms = ['browser'];
+// https://tiddlywiki.com/dev/#StartupMechanism
+exports.after = ['rootwidget'];
 
 function recognize(tiddlerName: string | undefined) {
   if (tiddlerName === undefined) {
@@ -12,7 +18,7 @@ function recognize(tiddlerName: string | undefined) {
     return;
   }
   // example input is like `http://192.168.10.103:5214/#%E6%89%93%E5%BC%80CDDA%E5%9C%A8Mac%E4%B8%8A%E7%9A%84%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%A4%B9`
-  const regex = /((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[\.。]){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))[:：]([0-9]{2,5})/gm;
+  const regex = /(((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])[.。]){3}(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))[:：](\d{2,5})/gm;
   let match: RegExpExecArray | null;
   let ipAddress: string | undefined;
   let port: string | undefined;
@@ -21,7 +27,6 @@ function recognize(tiddlerName: string | undefined) {
       regex.lastIndex++;
     }
     match.forEach((match, groupIndex) => {
-      console.log(`Found match, group ${groupIndex}: ${match}`);
       if (groupIndex === 1) {
         ipAddress = match;
       }
@@ -42,9 +47,5 @@ function recognize(tiddlerName: string | undefined) {
 }
 
 exports.startup = () => {
-  // DEBUG: console
-  console.log(`$tw`, $tw);
-  if (typeof $tw.rootWidget !== 'undefined') {
-    $tw.rootWidget.addEventListener('tw-mobile-sync-smart-recognize-ip-address', (event) => recognize(event.param));
-  }
+  $tw.rootWidget.addEventListener('tw-mobile-sync-smart-recognize-ip-address', (event) => recognize(event.param));
 };
