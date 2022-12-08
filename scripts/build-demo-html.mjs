@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -21,11 +22,7 @@ await fs.copy(path.join(repoDirectory, 'demo'), distDirectory);
 await fs.copy(path.join(distDirectory, 'out', jsonPluginFileName), path.join(distDirectory, 'tiddlers', jsonPluginFileName));
 
 /**
- * Same as `cross-env TIDDLYWIKI_PLUGIN_PATH='node_modules/tiddlywiki/plugins/published' TIDDLYWIKI_THEME_PATH='${wikiFolderName}/themes'`
- *
- * But we don't need this, because we put the JSON plugin into the dist folder, it will be loaded automatically
+ * Make demo html file
  */
-// process.env.TIDDLYWIKI_PLUGIN_PATH = `${distDir}/plugins`;
-
 cd(distDirectory);
-await $`tiddlywiki . --build index`;
+await $`tiddlywiki ${distDirectory} --build index`;
