@@ -1,6 +1,6 @@
-import { ITiddlerFields } from 'tiddlywiki';
+import { ITiddlerFields, ITiddlerFieldsParam } from 'tiddlywiki';
 
 export interface ISyncEndPointRequest {
-  tiddlers: ITiddlerFields[];
   lastSync: string | undefined;
+  tiddlers: Array<Partial<ITiddlerFieldsParam> | Partial<ITiddlerFields>>;
 }

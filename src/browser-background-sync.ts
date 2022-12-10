@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-array-callback-reference */
-import type { Tiddler, IServerStatus, ITiddlerFields } from 'tiddlywiki';
+import type { Tiddler, IServerStatus, ITiddlerFields, ITiddlerFieldsParam } from 'tiddlywiki';
 import mapValues from 'lodash/mapValues';
-import { activeServerStateTiddlerTitle, twDefaultDateTimeFormat } from './constants';
+import { activeServerStateTiddlerTitle } from './constants';
 import { getDiffFilter, serverListFilter } from './filters';
 import { getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
 import { ISyncEndPointRequest } from './types';
@@ -240,7 +240,7 @@ class BackgroundSyncManager {
     return $tw.utils.stringifyDate(new Date());
   }
 
-  get currentModifiedTiddlers(): ITiddlerFields[] {
+  get currentModifiedTiddlers(): ITiddlerFieldsParam[] {
     const onlineActiveServer = this.onlineActiveServer;
 
     if (onlineActiveServer === undefined) {
@@ -252,13 +252,14 @@ class BackgroundSyncManager {
     return diffTiddlers
       .map($tw.wiki.getTiddler)
       .filter((tiddler): tiddler is Tiddler => tiddler !== undefined)
-      .map((tiddler) =>
-        mapValues(tiddler.fields, (value) => {
-          if (value instanceof Date) {
-            return $tw.utils.stringifyDate(value);
-          }
-          return value;
-        }),
+      .map(
+        (tiddler): ITiddlerFieldsParam =>
+          mapValues(tiddler.fields, (value) => {
+            if (value instanceof Date) {
+              return $tw.utils.stringifyDate(value);
+            }
+            return value as string;
+          }),
       );
   }
 
@@ -271,7 +272,8 @@ class BackgroundSyncManager {
   }
 }
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.startup = () => {
   const syncManager = new BackgroundSyncManager();
-  syncManager.start();
+  void syncManager.start();
 };
