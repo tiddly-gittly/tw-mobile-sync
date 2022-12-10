@@ -1,0 +1,13 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/SidebarMobileContent
+type: text/vnd.tiddlywiki
+
+<fieldset class="tw-mobile-sync-sidebar-fieldset">
+  <legend>与桌面端同步 Sync With Desktop</legend>
+
+  <div class="tw-mobile-sync-server-list-item">
+    {{{[prefix[$:/state/tw-mobile-sync/server/]field:text[onlineActive]] ~[prefix[$:/state/tw-mobile-sync/server/]field:text[online]first[]]||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}}
+  </div>
+
+  [[服务器列表|$:/plugins/linonetwo/tw-mobile-sync/ui/ServerList]]
+
+</fieldset>

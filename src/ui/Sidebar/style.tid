@@ -1,0 +1,24 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/style.css
+tags: $:/tags/Stylesheet
+type: text/vnd.tiddlywiki
+
+<$importvariables filter="[[$:/themes/tiddlywiki/vanilla/base]]">
+
+.tw-mobile-sync-sidebar-mobile-content, .tw-mobile-sync-sidebar-desktop-content {
+  width: 100%;
+  display: flex;
+}
+
+@media (min-width: <<sidebarbreakpoint>>) {
+  .tw-mobile-sync-sidebar-mobile-content {
+    display: none;
+  }
+}
+
+@media (max-width: <<sidebarbreakpoint>>) {
+  .tw-mobile-sync-sidebar-desktop-content {
+    display: none;
+  }
+}
+
+</$importvariables>

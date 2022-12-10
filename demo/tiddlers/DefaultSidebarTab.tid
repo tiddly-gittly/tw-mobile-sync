@@ -1,0 +1,5 @@
+creator: LinOnetwo
+title: $:/config/DefaultSidebarTab
+type: text/vnd.tiddlywiki
+
+$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/SidebarTab
