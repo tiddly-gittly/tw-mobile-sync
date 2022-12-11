@@ -4,7 +4,6 @@ type: text/css
 
 .tw-mobile-sync-server-list {
   padding-left: 0;
-  max-width: 500px;
   overflow: auto;
   overflow: overlay;
 }
@@ -15,7 +14,8 @@ type: text/css
   min-width: 175px;
 }
 .tw-mobile-sync-copy-button {
-  height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  height: 100%;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
   margin-left: 10px !important;
 }
 
@@ -28,7 +28,7 @@ type: text/css
   width: 100%;
 }
 .tw-mobile-sync-new-server-field-fields-container-outer {
-  display: flex; flex-direction: column; width: 340px;
+  display: flex; flex-direction: column;
 }
 .tw-mobile-sync-new-server-field-fields-container {
   display: flex; flex-direction: row; justify-content: center; align-items: center;
@@ -57,5 +57,4 @@ type: text/css
 .tw-mobile-sync-server-list-item {
   display: flex; flex-direction: row; align-items: center;
   justify-content: space-between;
-  <!-- min-width: 400px; -->
 }

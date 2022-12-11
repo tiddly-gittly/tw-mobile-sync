@@ -6,7 +6,10 @@ type: text/vnd.tiddlywiki
 
 .tw-mobile-sync-sidebar-mobile-content, .tw-mobile-sync-sidebar-desktop-content {
   width: 100%;
-  display: flex;
+display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 @media (min-width: <<sidebarbreakpoint>>) {

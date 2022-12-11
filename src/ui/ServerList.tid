@@ -16,7 +16,7 @@ type: text/vnd.tiddlywiki
       <legend>智能识别黏贴框 Smart Identify Sticky Box</legend>
 
       <div class="tw-mobile-sync-new-server-field-fields-container">
-        <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text" default="" />
+        <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text" default=""/>
 
         <div class="tw-mobile-sync-new-server-field-fields-buttons">
           <$button>
