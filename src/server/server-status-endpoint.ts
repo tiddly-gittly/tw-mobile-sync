@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type Http from 'http';
 
@@ -11,7 +13,7 @@ exports.path = /^\/tw-mobile-sync\/status$/;
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   // mostly copied from the official repo's core/modules/server/routes/get-status.js
   const text = JSON.stringify({
-    username: context.authenticatedUsername || context.server.get('anon-username') || '',
+    username: context.authenticatedUsername ?? (context.server.get('anon-username') as string | undefined) ?? '',
     anonymous: !context.authenticatedUsername,
     read_only: !context.server.isAuthorized('writers', context.authenticatedUsername),
     space: {

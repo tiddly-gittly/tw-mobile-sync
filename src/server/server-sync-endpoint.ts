@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { ServerEndpointHandler, Tiddler } from 'tiddlywiki';
 import type Http from 'http';
 import { ISyncEndPointRequest } from '../types';
@@ -25,7 +26,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     .map((title) => {
       return $tw.wiki.getTiddler(title);
     })
-    .filter((i): i is Tiddler => i !== undefined)
+    .filter((index): index is Tiddler => index !== undefined)
     .map((tiddler) => tiddler.fields);
 
   try {
@@ -35,7 +36,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     response.end(JSON.stringify(changedTiddlersFromServer), 'utf8');
   } catch (error) {
     response.writeHead(500);
-    response.end(`Failed to add tiddlers ${(error as Error).message} ${(error as Error).stack}`, 'utf8');
+    response.end(`Failed to add tiddlers ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
   }
 };
 

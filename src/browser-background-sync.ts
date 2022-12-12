@@ -57,6 +57,7 @@ class BackgroundSyncManager {
       const titleToActive = event.paramObject?.title as string | undefined;
       await this.setActiveServerAndSync(titleToActive);
     });
+    /** handle events from src/ui/ServerItemViewTemplate.tid 's $:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate */
     $tw.rootWidget.addEventListener('tw-mobile-sync-sync-start', async (event) => await this.start());
     $tw.rootWidget.addEventListener('tw-mobile-sync-download-full-html', async (event) => await this.downloadFullHtmlAndApplyToWiki());
   }
