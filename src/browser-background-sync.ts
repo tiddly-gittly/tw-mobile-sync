@@ -219,7 +219,9 @@ class BackgroundSyncManager {
           changedTiddlersFromServer.length > changedTitleDisplayLimit ? `And ${changedTiddlersFromServer.length - changedTitleDisplayLimit} more` : '';
         $tw.wiki.addTiddler({
           title: '$:/state/notification/tw-mobile-sync/notification',
-          text: `Sync Complete ↑ ${changedTiddlersFromClient.length} ↓ ${changedTiddlersFromServer.length}\n\n↑: ${clientText} ${clientCount}\n\n↓: ${serverText} ${serverCount}`,
+          text: `Sync Complete ↑ ${changedTiddlersFromClient.length} ↓ ${changedTiddlersFromServer.length}${
+            changedTiddlersFromClient.length > 0 ? `\n\n↑: ${clientText} ${clientCount}` : ''
+          }${changedTiddlersFromServer.length > 0 ? `\n\n↓: ${serverText} ${serverCount}` : ''}`,
         });
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
       } catch (error) {
