@@ -6,6 +6,7 @@ import { getDiffFilter, serverListFilter } from './filters';
 import { getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
 import { ISyncEndPointRequest } from './types';
 import cloneDeep from 'lodash/cloneDeep';
+import take from 'lodash/take';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.name = 'browser-background-sync';
@@ -164,28 +165,49 @@ class BackgroundSyncManager {
     const onlineActiveServer = this.onlineActiveServer;
 
     if (onlineActiveServer !== undefined) {
+      const tiddlersToNotSync = new Set(
+        ($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersToNotSync') ?? '')
+          .split(' ')
+          .map((tiddlerName) => tiddlerName.replace('[[', '').replace(']]', '')),
+      );
       try {
-        const changedTiddlersFromClient = this.currentModifiedTiddlers;
+        const changedTiddlersFromClient = this.currentModifiedTiddlers.filter(
+          (tiddler: ITiddlerFieldsParam) => !tiddlersToNotSync.has(tiddler.title as string),
+        );
         const requestBody: ISyncEndPointRequest = { tiddlers: changedTiddlersFromClient, lastSync: onlineActiveServer.fields.lastSync };
         // TODO: handle conflict, find intersection of changedTiddlersFromServer and changedTiddlersFromClient, and write changes to each other
         // send modified tiddlers to server
-        const changedTiddlersFromServer: Tiddler[] = await fetch(getSyncEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port), {
-          method: 'POST',
-          mode: 'cors',
-          body: JSON.stringify(requestBody),
-          headers: {
-            'X-Requested-With': 'TiddlyWiki',
-            'Content-Type': 'application/json',
+        const changedTiddlersFromServer: ITiddlerFieldsParam[] = await fetch(
+          getSyncEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port),
+          {
+            method: 'POST',
+            mode: 'cors',
+            body: JSON.stringify(requestBody),
+            headers: {
+              'X-Requested-With': 'TiddlyWiki',
+              'Content-Type': 'application/json',
+            },
+            // TODO: add auth token in header, after we can scan QR code to get token easily
           },
-          // TODO: add auth token in header, after we can scan QR code to get token easily
-        }).then(async (response) => (await response.json()) as Tiddler[]);
+        ).then(async (response) => ((await response.json()) as ITiddlerFieldsParam[]).filter((tiddler) => !tiddlersToNotSync.has(tiddler.title as string)));
         changedTiddlersFromServer.forEach((tiddler) => {
           // TODO: handle conflict
           $tw.wiki.addTiddler(tiddler);
         });
+        const changedTitleDisplayLimit = 3;
+        const clientText = take(changedTiddlersFromClient, changedTitleDisplayLimit)
+          .map((tiddler) => tiddler.title as string)
+          .join(' ');
+        const clientCount =
+          changedTiddlersFromClient.length > changedTitleDisplayLimit ? `And ${changedTiddlersFromClient.length - changedTitleDisplayLimit} more` : '';
+        const serverText = take(changedTiddlersFromServer, changedTitleDisplayLimit)
+          .map((tiddler) => tiddler.title as string)
+          .join(' ');
+        const serverCount =
+          changedTiddlersFromServer.length > changedTitleDisplayLimit ? `And ${changedTiddlersFromServer.length - changedTitleDisplayLimit} more` : '';
         $tw.wiki.addTiddler({
           title: '$:/state/notification/tw-mobile-sync/notification',
-          text: `Sync Complete ↑ ${changedTiddlersFromClient.length} ↓ ${changedTiddlersFromServer.length}`,
+          text: `Sync Complete ↑ ${changedTiddlersFromClient.length} ↓ ${changedTiddlersFromServer.length}\n\n↑: ${clientText} ${clientCount}\n\n↓: ${serverText} ${serverCount}`,
         });
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
       } catch (error) {
