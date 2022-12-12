@@ -6,7 +6,7 @@ type: text/vnd.tiddlywiki
 \end
 
 <div class="tw-mobile-sync-sidebar-qrcode">
-  <$let content={{$:/info/url/full}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}search-replace[px],[]] }}} >
+  <$let content={{$:/info/url/full}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}search-replace[px],[]search-replace[vw],[]] }}} >
     <<image>>
   </$let>
 </div>
