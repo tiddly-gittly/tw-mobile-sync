@@ -123,7 +123,7 @@ class BackgroundSyncManager {
   }
 
   async getServerStatus() {
-    const timeout = 1000;
+    const timeout = 3000;
     const activeTiddlerTitle = this.getActiveServerTiddlerTitle();
     const serverListWithUpdatedStatus = await Promise.all(
       this.serverList.map(async (serverInfoTiddler) => {
@@ -145,8 +145,20 @@ class BackgroundSyncManager {
             };
           }
         } catch (error) {
-          console.error(`${(error as Error).message} ${serverInfoTiddler.fields.name}`);
+          if ((error as Error).message.includes('The operation was aborted')) {
+            $tw.wiki.addTiddler({
+              title: '$:/state/notification/tw-mobile-sync/notification',
+              text: `GetServerStatus Timeout after ${timeout / 1000}s`,
+            });
+          } else {
+            console.error(`getServerStatus() ${(error as Error).message} ${serverInfoTiddler.fields.name} ${(error as Error).stack ?? ''}`);
+            $tw.wiki.addTiddler({
+              title: '$:/state/notification/tw-mobile-sync/notification',
+              text: `GetServerStatus Failed ${(error as Error).message}`,
+            });
+          }
         }
+        $tw.notifier.display('$:/state/notification/tw-mobile-sync/notification');
         return {
           ...serverInfoTiddler,
           fields: {
