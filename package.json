@@ -24,7 +24,7 @@
   "files": [],
   "scripts": {
     "dev": "cross-env NODE_ENV=development npm run make && zx scripts/dev/development.mjs",
-    "devNodeJSServer": "tiddlywiki ./dist --listen port=3001",
+    "devNodeJSServer": "tiddlywiki ./dist --listen port=3001 sse-enabled=yes",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config=jest.config.js",
     "dev-html": "cross-env CI=true NODE_ENV=production npm run make && npm run run-action && zx ./scripts/build-demo-html.mjs && cd ./dist/output && serve .",
     "make": "npm run clean && npm run build",
