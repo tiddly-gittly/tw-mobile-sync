@@ -3,6 +3,7 @@
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type Http from 'http';
 import type { ClientInfoStore } from '../data/clientInfoStoreClass';
+import { getClientInfo } from '../data/getClientInfo';
 
 exports.method = 'GET';
 
@@ -12,11 +13,7 @@ exports.path = /^\/tw-mobile-sync\/status$/;
 
 /** a /status endpoint with CORS (the original one will say CORS error) */
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest & Http.InformationEvent, response: Http.ServerResponse, context) {
-  const clientInfo = {
-    Origin: request.rawHeaders[request.rawHeaders.indexOf('Origin') + 1] ?? request.rawHeaders[request.rawHeaders.indexOf('Referer') + 1],
-    'User-Agent': request.rawHeaders[request.rawHeaders.indexOf('User-Agent') + 1],
-    timestamp: Date.now(),
-  };
+  const clientInfo = getClientInfo(request);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const clientInfoStore: ClientInfoStore = require('$:/plugins/linonetwo/tw-mobile-sync/clientInfoStore.js').store;
   clientInfoStore.updateClient(clientInfo.Origin, clientInfo);
