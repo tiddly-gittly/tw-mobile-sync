@@ -5,6 +5,7 @@ type: text/vnd.tiddlywiki
 <img src=<<makeqr text:"""$(content)$""" size:"""$(size)$""">>/>
 \end
 
+QRCode of Current Server
 <div class="tw-mobile-sync-sidebar-qrcode">
   <$let content={{$:/info/url/full}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}search-replace[px],[]search-replace[vw],[]] }}} >
     <<image>>
@@ -12,11 +13,16 @@ type: text/vnd.tiddlywiki
 </div>
 
 
-<fieldset class="tw-mobile-sync-sidebar-fieldset">
+<fieldset class="tw-mobile-sync-sidebar-fieldset tw-mobile-sync-sidebar-desktop">
   <legend>已连接客户端</legend>
 
-  <$list filter="[prefix[$:/state/tw-mobile-sync/clientStatus/]]">
-    <h3>{{!!Origin}}</h3>
-    <p>{{!!User-Agent}}</p>
-  </$list>
+  <$vars compare-put-host-to-end="[get[Origin]prefix[http]else[1]]" compare-put-active-to-start="[get[state]prefix[onlineActive]else[1]]">
+    <$list filter="[prefix[$:/state/tw-mobile-sync/clientStatus/]sortsub:number<compare-put-active-to-start>sortsub:number<compare-put-host-to-end>]">
+      <div class="tw-mobile-sync-sidebar-desktop-server-item">
+        <h3><$text text={{!!Origin}} /></h3>
+        <h5>{{!!state}}</h5>
+        <p>{{!!User-Agent}}</p>
+      </div>
+    </$list>
+  </$vars>
 </fieldset>

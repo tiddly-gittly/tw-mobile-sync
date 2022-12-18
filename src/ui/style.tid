@@ -54,6 +54,22 @@ type: text/css
   width: 100%;
 }
 
+.tw-mobile-sync-sidebar-desktop-server-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.tw-mobile-sync-sidebar-desktop-server-item h3, .tw-mobile-sync-sidebar-desktop-server-item h5 {
+  margin: 0;
+}
+.tw-mobile-sync-sidebar-desktop-server-item h5 {
+  font-weight: 700;
+}
+.tw-mobile-sync-sidebar-desktop-server-item p:last-child {
+  margin-bottom: 15px;
+}
+
 .tw-mobile-sync-server-list-item {
   display: flex; flex-direction: row; align-items: center;
   justify-content: space-between;
