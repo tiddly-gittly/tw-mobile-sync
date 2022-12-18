@@ -9,8 +9,10 @@ specifiers:
   '@types/lodash': ^4.14.191
   '@types/node': ^18.11.16
   '@types/prettier': 2.7.1
+  '@types/ungap__structured-clone': ^0.3.0
   '@typescript-eslint/eslint-plugin': 5.46.1
   '@typescript-eslint/parser': 5.46.1
+  '@ungap/structured-clone': ^1.0.1
   archiver: 5.3.1
   browserslist: 4.21.4
   chokidar: ^3.5.3
@@ -57,6 +59,7 @@ specifiers:
   zx: 7.1.1
 
 dependencies:
+  '@ungap/structured-clone': 1.0.1
   jsqr-es6: 1.4.0-1
   lodash: 4.17.21
 
@@ -69,6 +72,7 @@ devDependencies:
   '@types/lodash': 4.14.191
   '@types/node': 18.11.16
   '@types/prettier': 2.7.1
+  '@types/ungap__structured-clone': 0.3.0
   '@typescript-eslint/eslint-plugin': 5.46.1_mqzxmroayievgzgel6yrqgih5i
   '@typescript-eslint/parser': 5.46.1_lzzuuodtsqwxnvqeq4g4likcqa
   archiver: 5.3.1
@@ -1270,6 +1274,10 @@ packages:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
     dev: true
 
+  /@types/ungap__structured-clone/0.3.0:
+    resolution: {integrity: sha512-eBWREUhVUGPze+bUW22AgUr05k8u+vETzuYdLYSvWqGTUe0KOf+zVnOB1qER5wMcw8V6D9Ar4DfJmVvD1yu0kQ==}
+    dev: true
+
   /@types/which/2.0.1:
     resolution: {integrity: sha512-Jjakcv8Roqtio6w1gr0D7y6twbhx6gGgFGF5BLwajPpnOIOxFkakFhCq+LmyyeAz7BX6ULrjBOxdKaCDy+4+dQ==}
     dev: true
@@ -1425,6 +1433,10 @@ packages:
       '@typescript-eslint/types': 5.46.1
       eslint-visitor-keys: 3.3.0
     dev: true
+
+  /@ungap/structured-clone/1.0.1:
+    resolution: {integrity: sha512-zKVyTt6rELvPXYwcVPTJcPFtY0AckN5A7xWuc7owBqR0FdtuDYhE9MZZUi6IY1kZUQFSXV1B3UOOIyLkVHYd2w==}
+    dev: false
 
   /@zeit/schemas/2.21.0:
     resolution: {integrity: sha512-/J4WBTpWtQ4itN1rb3ao8LfClmVcmz2pO6oYb7Qd4h7VSqUhIbJIvrykz9Ew1WMg6eFWsKdsMHc5uPbFxqlCpg==}

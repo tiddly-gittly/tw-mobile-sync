@@ -14,4 +14,9 @@ type: text/vnd.tiddlywiki
 
 <fieldset class="tw-mobile-sync-sidebar-fieldset">
   <legend>已连接客户端</legend>
+
+  <$list filter="[prefix[$:/state/tw-mobile-sync/clientStatus/]]">
+    <h3>{{!!Origin}}</h3>
+    <p>{{!!User-Agent}}</p>
+  </$list>
 </fieldset>

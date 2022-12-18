@@ -1,10 +1,11 @@
 /* eslint-disable unicorn/no-array-callback-reference */
-import type { Tiddler, IServerStatus, ITiddlerFields, ITiddlerFieldsParam } from 'tiddlywiki';
+import type { Tiddler, IServerStatus, ITiddlerFieldsParam } from 'tiddlywiki';
 import mapValues from 'lodash/mapValues';
-import { activeServerStateTiddlerTitle } from './constants';
-import { getDiffFilter, serverListFilter } from './filters';
-import { getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './sync/getEndPoint';
-import { ISyncEndPointRequest } from './types';
+import { activeServerStateTiddlerTitle, clientStatusStateTiddlerTitle, loopInterval } from './data/constants';
+import { getDiffFilter, serverListFilter } from './data/filters';
+import { getClientInfoPoint, getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './data/getEndPoint';
+import type { ISyncEndPointRequest, IClientInfo } from './types';
+import { ConnectionState } from './types';
 import cloneDeep from 'lodash/cloneDeep';
 import take from 'lodash/take';
 
@@ -17,16 +18,6 @@ exports.after = ['render'];
 exports.synchronous = true;
 /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
-enum ServerState {
-  offline = 'offline',
-  /** once selected by the user, but now offlined */
-  offlineActive = 'offlineActive',
-  /** online and not selected by the user */
-  online = 'online',
-  /** online and selected by the user */
-  onlineActive = 'onlineActive',
-}
-
 interface IServerInfoTiddler extends Tiddler {
   fields: Tiddler['fields'] & {
     ipAddress: string;
@@ -36,19 +27,19 @@ interface IServerInfoTiddler extends Tiddler {
     lastSync: string | undefined;
     name: string;
     port: number;
-    text: ServerState;
+    text: ConnectionState;
   };
 }
 
 class BackgroundSyncManager {
   loop: ReturnType<typeof setInterval> | undefined;
-  loopInterval = 1000 * 60 * 5; // 5 minutes
+  loopInterval: number;
   /** lock the sync for `this.syncWithServer`, while last sync is still on progress */
   lock = false;
 
   constructor() {
     // TODO: get this from setting
-    this.loopInterval = 1000 * 60 * 5; // 5 minutes
+    this.loopInterval = loopInterval;
     this.setupListener();
   }
 
@@ -69,6 +60,7 @@ class BackgroundSyncManager {
       this.lock = false;
     }
     const loopHandler = async () => {
+      void this.getConnectedClientStatus();
       if (this.lock) {
         return;
       }
@@ -95,9 +87,9 @@ class BackgroundSyncManager {
         // get latest tiddler
         const serverToActive = $tw.wiki.getTiddler<IServerInfoTiddler>(titleToActive);
         if (serverToActive !== undefined) {
-          const newStatus = [ServerState.onlineActive, ServerState.online].includes(serverToActive.fields.text as ServerState)
-            ? ServerState.onlineActive
-            : ServerState.offlineActive;
+          const newStatus = [ConnectionState.onlineActive, ConnectionState.online].includes(serverToActive.fields.text as ConnectionState)
+            ? ConnectionState.onlineActive
+            : ConnectionState.offlineActive;
           $tw.wiki.addTiddler({ ...serverToActive.fields, text: newStatus });
           this.setActiveServerTiddlerTitle(titleToActive, serverToActive.fields.lastSync);
           await this.start(true);
@@ -122,6 +114,20 @@ class BackgroundSyncManager {
     }
   }
 
+  /** On TidGi desktop, get connected client info */
+  async getConnectedClientStatus() {
+    const response: Record<string, IClientInfo> = await fetch(getClientInfoPoint()).then(
+      async (response) => (await response.json()) as Record<string, IClientInfo>,
+    );
+    Object.values(response).forEach((clientInfo) => {
+      $tw.wiki.addTiddler({
+        title: `${clientStatusStateTiddlerTitle}/${clientInfo.Origin}`,
+        ...clientInfo,
+      });
+    });
+  }
+
+  /** On Tiddloid mobile, get TidGi server status */
   async getServerStatus() {
     const timeout = 3000;
     const activeTiddlerTitle = this.getActiveServerTiddlerTitle();
@@ -140,7 +146,7 @@ class BackgroundSyncManager {
               ...serverInfoTiddler,
               fields: {
                 ...serverInfoTiddler.fields,
-                text: active ? ServerState.onlineActive : ServerState.online,
+                text: active ? ConnectionState.onlineActive : ConnectionState.online,
               },
             };
           }
@@ -163,7 +169,7 @@ class BackgroundSyncManager {
           ...serverInfoTiddler,
           fields: {
             ...serverInfoTiddler.fields,
-            text: active ? ServerState.offlineActive : ServerState.offline,
+            text: active ? ConnectionState.offlineActive : ConnectionState.offline,
           },
         };
       }),
@@ -269,7 +275,7 @@ class BackgroundSyncManager {
   get onlineActiveServer() {
     return this.serverList.find((serverInfoTiddler) => {
       // TODO: compile to lower es for browser support
-      return serverInfoTiddler?.fields?.text === ServerState.onlineActive;
+      return serverInfoTiddler?.fields?.text === ConnectionState.onlineActive;
     });
   }
 

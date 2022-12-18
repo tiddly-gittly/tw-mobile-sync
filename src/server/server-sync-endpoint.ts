@@ -2,7 +2,7 @@
 import type { ServerEndpointHandler, Tiddler } from 'tiddlywiki';
 import type Http from 'http';
 import { ISyncEndPointRequest } from '../types';
-import { getDiffFilter } from '../filters';
+import { getDiffFilter } from '../data/filters';
 
 exports.method = 'POST';
 

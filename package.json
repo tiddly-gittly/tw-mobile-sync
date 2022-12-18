@@ -6,6 +6,7 @@
     "server/server-sync-endpoint-options",
     "server/server-get-html-endpoint",
     "server/server-get-html-endpoint-options",
+    "data/clientInfoStore",
     "scan-qr-widget",
     "smart-recognize-ip-address",
     "server/server-status-endpoint"
@@ -36,6 +37,7 @@
     "installType": "typesync"
   },
   "dependencies": {
+    "@ungap/structured-clone": "^1.0.1",
     "jsqr-es6": "^1.4.0-1",
     "lodash": "^4.17.21"
   },
@@ -48,6 +50,7 @@
     "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.16",
     "@types/prettier": "2.7.1",
+    "@types/ungap__structured-clone": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "5.46.1",
     "@typescript-eslint/parser": "5.46.1",
     "archiver": "5.3.1",

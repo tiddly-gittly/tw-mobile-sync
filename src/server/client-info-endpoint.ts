@@ -6,30 +6,14 @@ import type { ClientInfoStore } from '../data/clientInfoStoreClass';
 
 exports.method = 'GET';
 
-// route should start with something https://github.com/Jermolene/TiddlyWiki5/issues/4807
-// route is also in src/sync/getEndPoint.ts
-exports.path = /^\/tw-mobile-sync\/status$/;
+exports.path = /^\/tw-mobile-sync\/client-info$/;
 
 /** a /status endpoint with CORS (the original one will say CORS error) */
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest & Http.InformationEvent, response: Http.ServerResponse, context) {
-  const clientInfo = {
-    Origin: request.rawHeaders[request.rawHeaders.indexOf('Origin') + 1] ?? request.rawHeaders[request.rawHeaders.indexOf('Referer') + 1],
-    'User-Agent': request.rawHeaders[request.rawHeaders.indexOf('User-Agent') + 1],
-    timestamp: Date.now(),
-  };
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const clientInfoStore: ClientInfoStore = require('$:/plugins/linonetwo/tw-mobile-sync/clientInfoStore.js').store;
-  clientInfoStore.updateClient(clientInfo.Origin, clientInfo);
   // mostly copied from the official repo's core/modules/server/routes/get-status.js
-  const text = JSON.stringify({
-    username: context.authenticatedUsername ?? (context.server.get('anon-username') as string | undefined) ?? '',
-    anonymous: !context.authenticatedUsername,
-    read_only: !context.server.isAuthorized('writers', context.authenticatedUsername),
-    space: {
-      recipe: 'default',
-    },
-    tiddlywiki_version: $tw.version,
-  });
+  const text = JSON.stringify(clientInfoStore.allClient);
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.writeHead(200, { 'Content-Type': 'application/json' });
   response.end(text, 'utf8');

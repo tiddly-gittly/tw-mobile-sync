@@ -5,4 +5,4 @@ export function getDiffFilter(lastSync: string | undefined) {
 /**
  * also in src/ui/ServerList.tid 's list widget
  */
-export const serverListFilter: string = `[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]]`;
+export const serverListFilter = `[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]]`;
