@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-array-callback-reference */
 import type { Tiddler, IServerStatus, ITiddlerFieldsParam } from 'tiddlywiki';
 import mapValues from 'lodash/mapValues';
-import { activeServerStateTiddlerTitle, clientStatusStateTiddlerTitle, loopInterval } from './data/constants';
+import { activeServerStateTiddlerTitle, clientStatusStateTiddlerTitle, getLoopInterval } from './data/constants';
 import { getDiffFilter, serverListFilter } from './data/filters';
 import { getClientInfoPoint, getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './data/getEndPoint';
 import type { ISyncEndPointRequest, IClientInfo } from './types';
@@ -39,7 +39,7 @@ class BackgroundSyncManager {
 
   constructor() {
     // TODO: get this from setting
-    this.loopInterval = loopInterval;
+    this.loopInterval = getLoopInterval();
     this.setupListener();
   }
 

@@ -1,15 +1,15 @@
 import structuredClone from '@ungap/structured-clone';
 import { ConnectionState, IClientInfo } from '../types';
-import { loopInterval } from './constants';
-
-const keyOfflineTimeout = loopInterval * 2;
-const keyDeleteTimeout = loopInterval * 10;
+import { getLoopInterval } from './constants';
 
 export class ClientInfoStore {
   #clients: Record<string, IClientInfo> = {};
   loopHandel: NodeJS.Timer;
 
   constructor() {
+    const loopInterval = getLoopInterval();
+    const keyOfflineTimeout = loopInterval * 2;
+    const keyDeleteTimeout = loopInterval * 10;
     this.loopHandel = setInterval(() => {
       Object.keys(this.#clients).forEach((key) => {
         const timestamp = this.#clients[key].timestamp;
