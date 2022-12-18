@@ -182,10 +182,13 @@ class BackgroundSyncManager {
           .split(' ')
           .map((tiddlerName) => tiddlerName.replace('[[', '').replace(']]', '')),
       );
+      const prefixToNotSync = ($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersPrefixToNotSync') ?? '')
+        .split(' ')
+        .map((tiddlerName) => tiddlerName.replace('[[', '').replace(']]', ''));
       try {
-        const changedTiddlersFromClient = this.currentModifiedTiddlers.filter(
-          (tiddler: ITiddlerFieldsParam) => !tiddlersToNotSync.has(tiddler.title as string),
-        );
+        const changedTiddlersFromClient = this.currentModifiedTiddlers
+          .filter((tiddler: ITiddlerFieldsParam) => !prefixToNotSync.some((prefix) => (tiddler.title as string).startsWith(prefix)))
+          .filter((tiddler: ITiddlerFieldsParam) => !tiddlersToNotSync.has(tiddler.title as string));
         const requestBody: ISyncEndPointRequest = { tiddlers: changedTiddlersFromClient, lastSync: onlineActiveServer.fields.lastSync };
         // TODO: handle conflict, find intersection of changedTiddlersFromServer and changedTiddlersFromClient, and write changes to each other
         // send modified tiddlers to server
