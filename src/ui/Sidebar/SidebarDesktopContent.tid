@@ -7,7 +7,7 @@ type: text/vnd.tiddlywiki
 
 QRCode of Current Server
 <div class="tw-mobile-sync-sidebar-qrcode">
-  <$let content={{$:/info/url/full}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}search-replace[px],[]search-replace[vw],[]] }}} >
+  <$let content={{$:/info/url/full}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}} >
     <<image>>
   </$let>
 </div>

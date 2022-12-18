@@ -1,6 +1,8 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/style.css
 tags: $:/tags/Stylesheet
-type: text/css
+type: text/vnd.tiddlywiki
+
+<$importvariables filter="[[$:/themes/tiddlywiki/vanilla/base]]">
 
 .tw-mobile-sync-server-list {
   padding-left: 0;
@@ -74,3 +76,14 @@ type: text/css
   display: flex; flex-direction: row; align-items: center;
   justify-content: space-between;
 }
+
+.tw-mobile-sync-sidebar-qrcode {
+  width: auto;
+  height: auto;
+}
+.tw-mobile-sync-sidebar-qrcode img {
+  width: {{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}};
+  height: {{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}};
+}
+
+</$importvariables>

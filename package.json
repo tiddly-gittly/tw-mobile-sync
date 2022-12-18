@@ -6,6 +6,7 @@
     "server/server-sync-endpoint-options",
     "server/server-get-html-endpoint",
     "server/server-get-html-endpoint-options",
+    "ui/Sidebar/getSidebarWidthInPx",
     "data/clientInfoStore",
     "scan-qr-widget",
     "smart-recognize-ip-address",
