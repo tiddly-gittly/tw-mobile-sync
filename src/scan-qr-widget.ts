@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import type { Widget as IWidget, IChangedTiddlers } from 'tiddlywiki';
 import jsQR from 'jsqr-es6';
 import type { Point } from 'jsqr-es6/dist/locator';
@@ -5,10 +6,6 @@ import type { Point } from 'jsqr-es6/dist/locator';
 const Widget = (require('$:/core/modules/widgets/widget.js') as { widget: typeof IWidget }).widget;
 
 class ScanQRWidget extends Widget {
-  // constructor(parseTreeNode: any, options: any) {
-  //   super(parseTreeNode, options);
-  // }
-
   refresh(_changedTiddlers: IChangedTiddlers) {
     return false;
   }
@@ -21,9 +18,22 @@ class ScanQRWidget extends Widget {
    */
   render(parent: Node, _nextSibling: Node) {
     this.parentDomNode = parent;
+    this.computeAttributes();
     this.execute();
 
-    const outputTiddlerTitle = this.getAttribute('outputTiddlerTitle');
+    /** tiddler to put the result */
+    const outputTiddler = this.getAttribute('outputTiddler');
+    /**
+     * tiddler contains the open state of this widget. For example:
+     * 
+     * ```tw5
+     *  <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes">
+          <$ScanQRWidget outputTiddler="$:/state/tw-mobile-sync/server/new" stopOnDetect="yes" stateTiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" />
+        </$reveal>
+     * ```
+     */
+    const stateTiddler = this.getAttribute('stateTiddler');
+    const stopOnDetect = this.getAttribute('stopOnDetect') === 'yes' || this.getAttribute('stopOnDetect') === 'true';
 
     const containerElement = document.createElement('div');
     containerElement.innerHTML = `
@@ -40,11 +50,11 @@ class ScanQRWidget extends Widget {
     this.loopId += 1;
     const loopId = this.loopId;
     // wait till dom created
-    requestAnimationFrame(() => void this.jsqr(loopId, containerElement, outputTiddlerTitle));
+    requestAnimationFrame(() => void this.jsqr(loopId, containerElement, { outputTiddler, stopOnDetect, stateTiddler }));
     parent.appendChild(containerElement);
   }
 
-  async jsqr(loopId: number, containerElement: HTMLDivElement, outputTiddlerTitle?: string | undefined) {
+  async jsqr(loopId: number, containerElement: HTMLDivElement, options: { outputTiddler?: string; stateTiddler?: string; stopOnDetect: boolean }) {
     const video = document.createElement('video');
     const canvasElement = document.querySelector<HTMLCanvasElement>('#scan-qr-widget-canvas');
     if (canvasElement === null) {
@@ -77,6 +87,7 @@ class ScanQRWidget extends Widget {
     }
 
     let lastResult: string | undefined;
+    let hasDetectedResult = false;
 
     const tick = () => {
       if (
@@ -127,6 +138,7 @@ class ScanQRWidget extends Widget {
           drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, '#FF3B58');
           drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, '#FF3B58');
           result = code.data;
+          hasDetectedResult = true;
         }
 
         if (result !== lastResult) {
@@ -134,27 +146,35 @@ class ScanQRWidget extends Widget {
           outputData.textContent += `${result}\n`;
           lastResult = result;
           // fast check of ip address
-          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-          if (outputTiddlerTitle && result.includes(':')) {
-            const textFieldTiddler = $tw.wiki.getTiddler(outputTiddlerTitle);
+          if (options.outputTiddler) {
+            const textFieldTiddler = $tw.wiki.getTiddler(options.outputTiddler);
             const newServerInfoTiddler = {
-              title: outputTiddlerTitle,
-              text: result,
               ...textFieldTiddler?.fields,
+              title: options.outputTiddler,
+              text: result,
             };
+            // create if not exists
             $tw.wiki.addTiddler(newServerInfoTiddler);
           }
         }
       }
-      // if new loop happened, this.loopId will > loopId, stop current loop
-      if (this.loopId === loopId && containerElement.offsetParent !== null) {
-        requestAnimationFrame(tick);
-      } else {
+      const stopDueToHasResult = options.stopOnDetect && hasDetectedResult;
+      /** if new loop happened, this.loopId will > loopId, stop current loop */
+      const canContinueCurrentLoop = this.loopId === loopId && containerElement.offsetParent !== null;
+      if (!canContinueCurrentLoop) {
         stream.getTracks().forEach(function (track) {
           track.stop();
         });
       }
+      if (stopDueToHasResult && options?.stateTiddler) {
+        $tw.wiki.addTiddler({ title: options.stateTiddler, text: 'no' });
+      }
+      if (canContinueCurrentLoop && !stopDueToHasResult) {
+        requestAnimationFrame(tick);
+      }
     };
+
+    // initialize the first tick
     video.srcObject = stream;
     video.setAttribute('playsinline', 'true'); // required to tell iOS safari we don't want fullscreen
     await video.play();

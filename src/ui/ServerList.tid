@@ -24,23 +24,23 @@ type: text/vnd.tiddlywiki
             <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" $param="$:/state/tw-mobile-sync/server/new"/>
           </$button>
 
-          <$reveal type="nomatch" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
+          <$reveal type="nomatch" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes">
             <$button>
               扫二维码 Scan QR
-              <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true" />
+              <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes" />
             </$button>
           </$reveal>
-          <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
+          <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes">
             <$button>
               停止扫码 Stop Scan
-              <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="false" />
+              <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="no" />
             </$button>
           </$reveal>
         </div>
       </div>
 
-      <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="true">
-        <$ScanQRWidget outputTiddlerTitle="$:/state/tw-mobile-sync/server/new" />
+      <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes">
+        <$ScanQRWidget outputTiddler="$:/state/tw-mobile-sync/server/new" stopOnDetect="yes" stateTiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" />
       </$reveal>
 
     </fieldset>
