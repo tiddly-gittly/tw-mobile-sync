@@ -6,15 +6,16 @@ exports.platforms = ['browser'];
 // https://tiddlywiki.com/dev/#StartupMechanism
 exports.after = ['rootwidget'];
 
-function recognize(tiddlerName: string | undefined) {
-  if (tiddlerName === undefined) {
+function recognize(sourceTiddlerName: string | undefined, tiddlerToFill: string | undefined, fieldName = 'text') {
+  if (sourceTiddlerName === undefined || tiddlerToFill === undefined) {
     return;
   }
-  const textFieldTiddler = $tw.wiki.getTiddler(tiddlerName);
+  const textFieldTiddler = $tw.wiki.getTiddler(sourceTiddlerName);
   if (textFieldTiddler === undefined) {
     return;
   }
-  if (typeof textFieldTiddler.fields.text !== 'string' || trim(textFieldTiddler.fields.text).length === 0) {
+  const text = textFieldTiddler.fields[fieldName];
+  if (typeof text !== 'string' || trim(text).length === 0) {
     return;
   }
   // example input is like `http://192.168.10.103:5214/#%E6%89%93%E5%BC%80CDDA%E5%9C%A8Mac%E4%B8%8A%E7%9A%84%E6%95%B0%E6%8D%AE%E6%96%87%E4%BB%B6%E5%A4%B9`
@@ -22,7 +23,7 @@ function recognize(tiddlerName: string | undefined) {
   let match: RegExpExecArray | null;
   let ipAddress: string | undefined;
   let port: string | undefined;
-  while ((match = regex.exec(textFieldTiddler.fields.text)) !== null) {
+  while ((match = regex.exec(text)) !== null) {
     if (match.index === regex.lastIndex) {
       regex.lastIndex++;
     }
@@ -36,9 +37,10 @@ function recognize(tiddlerName: string | undefined) {
     });
   }
   if (ipAddress !== undefined || port !== undefined) {
+    const oldServerInfoTiddler = $tw.wiki.getTiddler(tiddlerToFill);
     const newServerInfoTiddler = {
-      title: tiddlerName,
-      text: textFieldTiddler.fields.text,
+      ...oldServerInfoTiddler?.fields,
+      title: tiddlerToFill,
       ipAddress,
       port,
     };
@@ -47,5 +49,7 @@ function recognize(tiddlerName: string | undefined) {
 }
 
 exports.startup = () => {
-  $tw.rootWidget.addEventListener('tw-mobile-sync-smart-recognize-ip-address', (event) => recognize(event.param));
+  $tw.rootWidget.addEventListener('tw-mobile-sync-smart-recognize-ip-address', (event) =>
+    recognize(event.paramObject?.from as string, (event.paramObject?.to as string) ?? event.paramObject?.from, event.paramObject?.field as string),
+  );
 };

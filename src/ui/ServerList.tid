@@ -4,7 +4,7 @@ type: text/vnd.tiddlywiki
 <div class="tw-mobile-sync-server-list">
   <$list filter="[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]]">
     <div class="tw-mobile-sync-server-list-item">
-      {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate}}
+      {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplateBasic}}
       {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemCopyTemplate}}
     </div>
   </$list>
@@ -21,7 +21,7 @@ type: text/vnd.tiddlywiki
         <div class="tw-mobile-sync-new-server-field-fields-buttons">
           <$button>
             智能识别 Smart Identify
-            <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" $param="$:/state/tw-mobile-sync/server/new"/>
+            <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" from="$:/state/tw-mobile-sync/server/new"/>
           </$button>
 
           <$reveal type="nomatch" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes">

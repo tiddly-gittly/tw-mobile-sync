@@ -50,6 +50,13 @@ type: text/vnd.tiddlywiki
   }
 }
 
+.tw-mobile-sync-existed-server-field-fields-container {
+  display: flex; flex-direction: row;
+}
+.tw-mobile-sync-existed-server-field-fields-buttons {
+  display: flex; flex-direction: row; justify-content: space-between;
+}
+
 
 .tw-mobile-sync-sidebar-fieldset {
   display: flex; flex-direction: column; justify-content: center; align-items: center;

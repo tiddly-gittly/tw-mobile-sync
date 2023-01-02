@@ -33,6 +33,7 @@ class ScanQRWidget extends Widget {
      * ```
      */
     const stateTiddler = this.getAttribute('stateTiddler');
+    const outputField = this.getAttribute('field') || 'text';
     const stopOnDetect = this.getAttribute('stopOnDetect') === 'yes' || this.getAttribute('stopOnDetect') === 'true';
 
     const containerElement = document.createElement('div');
@@ -50,11 +51,15 @@ class ScanQRWidget extends Widget {
     this.loopId += 1;
     const loopId = this.loopId;
     // wait till dom created
-    requestAnimationFrame(() => void this.jsqr(loopId, containerElement, { outputTiddler, stopOnDetect, stateTiddler }));
+    requestAnimationFrame(() => void this.jsqr(loopId, containerElement, { outputTiddler, stopOnDetect, stateTiddler, outputField }));
     parent.appendChild(containerElement);
   }
 
-  async jsqr(loopId: number, containerElement: HTMLDivElement, options: { outputTiddler?: string; stateTiddler?: string; stopOnDetect: boolean }) {
+  async jsqr(
+    loopId: number,
+    containerElement: HTMLDivElement,
+    options: { outputField: string; outputTiddler?: string; stateTiddler?: string; stopOnDetect: boolean },
+  ) {
     const video = document.createElement('video');
     const canvasElement = document.querySelector<HTMLCanvasElement>('#scan-qr-widget-canvas');
     if (canvasElement === null) {
@@ -151,7 +156,7 @@ class ScanQRWidget extends Widget {
             const newServerInfoTiddler = {
               ...textFieldTiddler?.fields,
               title: options.outputTiddler,
-              text: result,
+              [options.outputField]: result,
             };
             // create if not exists
             $tw.wiki.addTiddler(newServerInfoTiddler);
