@@ -2,15 +2,16 @@
   "url": "https://github.com/tiddly-gittly/tw-example-plugin",
   "tsFiles": [
     "browser-background-sync",
-    "server/server-sync-endpoint",
-    "server/server-sync-endpoint-options",
-    "server/server-get-html-endpoint",
+    "server/client-info-endpoint",
     "server/server-get-html-endpoint-options",
+    "server/server-get-html-endpoint",
+    "server/server-status-endpoint",
+    "server/server-sync-endpoint-options",
+    "server/server-sync-endpoint",
     "ui/Sidebar/getSidebarWidthInPx",
     "data/clientInfoStore",
     "scan-qr-widget",
-    "smart-recognize-ip-address",
-    "server/server-status-endpoint"
+    "smart-recognize-ip-address"
   ],
   "ignoredExtensionsWhenBuildPlugin": [
     ".ts",
