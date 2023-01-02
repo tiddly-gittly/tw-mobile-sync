@@ -40,23 +40,23 @@ class ScanQRWidget extends Widget {
     this.loopId += 1;
     const loopId = this.loopId;
     // wait till dom created
-    requestAnimationFrame(() => this.jsqr(loopId, containerElement, outputTiddlerTitle));
+    requestAnimationFrame(() => void this.jsqr(loopId, containerElement, outputTiddlerTitle));
     parent.appendChild(containerElement);
   }
 
   async jsqr(loopId: number, containerElement: HTMLDivElement, outputTiddlerTitle?: string | undefined) {
-    let video = document.createElement('video');
-    let canvasElement = document.getElementById('scan-qr-widget-canvas') as HTMLCanvasElement | null;
-    if (!canvasElement) {
+    const video = document.createElement('video');
+    const canvasElement = document.querySelector<HTMLCanvasElement>('#scan-qr-widget-canvas');
+    if (canvasElement === null) {
       console.warn('ScanQRWidget: canvasElement is null');
       return;
     }
-    let canvas = canvasElement.getContext('2d');
-    let loadingMessage = document.getElementById('scan-qr-widget-loadingMessage');
-    let outputContainer = document.getElementById('scan-qr-widget-output');
-    let outputMessage = document.getElementById('scan-qr-widget-outputMessage');
-    let outputData = document.getElementById('scan-qr-widget-outputData');
-    if (!canvas || !outputData) {
+    const canvas = canvasElement.getContext('2d');
+    const loadingMessage = document.querySelector<HTMLDivElement>('#scan-qr-widget-loadingMessage');
+    const outputContainer = document.querySelector<HTMLDivElement>('#scan-qr-widget-output');
+    const outputMessage = document.querySelector<HTMLDivElement>('#scan-qr-widget-outputMessage');
+    const outputData = document.querySelector<HTMLSpanElement>('#scan-qr-widget-outputData');
+    if (canvas === null || outputData === null) {
       console.warn('ScanQRWidget: canvas or outputData is null', { canvas, outputData });
       return;
     }
@@ -65,7 +65,7 @@ class ScanQRWidget extends Widget {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
 
     function drawLine(begin: Point, end: Point, color: string | CanvasGradient | CanvasPattern) {
-      if (!canvas) {
+      if (canvas === null) {
         return;
       }
       canvas.beginPath();
@@ -79,7 +79,15 @@ class ScanQRWidget extends Widget {
     let lastResult: string | undefined;
 
     const tick = () => {
-      if (!loadingMessage || !canvasElement || !outputContainer || !canvas || !outputMessage || !outputData || !outputData.parentElement) {
+      if (
+        loadingMessage === null ||
+        canvasElement === null ||
+        outputContainer === null ||
+        canvas === null ||
+        outputMessage === null ||
+        outputData === null ||
+        outputData.parentElement === null
+      ) {
         console.warn(
           'ScanQRWidget: !loadingMessage || !canvasElement || !outputContainer || !canvas || !outputMessage || !outputData || !outputData.parentElement, it is null',
           {
@@ -89,13 +97,13 @@ class ScanQRWidget extends Widget {
             canvas,
             outputMessage,
             outputData,
-            'outputData.parentElement': outputData && outputData.parentElement,
+            'outputData.parentElement': outputData?.parentElement,
           },
         );
 
         return;
       }
-      loadingMessage.innerText = '⌛ Loading video...';
+      loadingMessage.textContent = '⌛ Loading video...';
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
         loadingMessage.hidden = true;
         canvasElement.hidden = false;
@@ -104,27 +112,29 @@ class ScanQRWidget extends Widget {
         canvasElement.height = video.videoHeight;
         canvasElement.width = video.videoWidth;
         canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-        let imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-        let code = jsQR(imageData.data, imageData.width, imageData.height, {
+        const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
           inversionAttempts: 'dontInvert',
         });
         outputMessage.hidden = true;
         outputData.parentElement.hidden = false;
         let result;
-        if (code) {
+        if (code === null) {
+          result = 'No code detected';
+        } else {
           drawLine(code.location.topLeftCorner, code.location.topRightCorner, '#FF3B58');
           drawLine(code.location.topRightCorner, code.location.bottomRightCorner, '#FF3B58');
           drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, '#FF3B58');
           drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, '#FF3B58');
           result = code.data;
-        } else {
-          result = 'No code detected';
         }
 
         if (result !== lastResult) {
-          outputData.innerText += result + '\n';
+          outputData.textContent = outputData.textContent ?? '';
+          outputData.textContent += `${result}\n`;
           lastResult = result;
           // fast check of ip address
+          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
           if (outputTiddlerTitle && result.includes(':')) {
             const textFieldTiddler = $tw.wiki.getTiddler(outputTiddlerTitle);
             const newServerInfoTiddler = {
@@ -147,10 +157,11 @@ class ScanQRWidget extends Widget {
     };
     video.srcObject = stream;
     video.setAttribute('playsinline', 'true'); // required to tell iOS safari we don't want fullscreen
-    video.play();
+    await video.play();
     requestAnimationFrame(tick);
   }
 }
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.widget = ScanQRWidget;
 exports.ScanQRWidget = ScanQRWidget;
