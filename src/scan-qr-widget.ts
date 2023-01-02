@@ -166,7 +166,9 @@ class ScanQRWidget extends Widget {
       const stopDueToHasResult = options.stopOnDetect && hasDetectedResult;
       /** if new loop happened, this.loopId will > loopId, stop current loop */
       const canContinueCurrentLoop = this.loopId === loopId && containerElement.offsetParent !== null;
-      if (!canContinueCurrentLoop) {
+      if (!canContinueCurrentLoop || stopDueToHasResult) {
+        video.pause();
+        video.parentElement?.removeChild(video);
         stream.getTracks().forEach(function (track) {
           track.stop();
         });
