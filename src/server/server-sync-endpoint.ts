@@ -6,6 +6,7 @@ import { getDiffFilter } from '../data/filters';
 import type { ClientInfoStore } from 'src/data/clientInfoStoreClass';
 import { getClientInfo } from '../data/getClientInfo';
 import { getSyncedTiddlersText } from 'src/getSyncedTiddlersText';
+import { filterOutNotSyncedTiddlers } from 'src/data/filterOutNotSyncedTiddlers';
 
 exports.method = 'POST';
 
@@ -17,7 +18,8 @@ exports.path = /^\/tw-mobile-sync\/html-node-sync$/;
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest & Http.InformationEvent, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
 
-  const { tiddlers: changedTiddlersFromClient, lastSync } = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
+  const { tiddlers, lastSync } = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
+  const changedTiddlersFromClient = filterOutNotSyncedTiddlers(tiddlers);
   if (!Array.isArray(changedTiddlersFromClient)) {
     response.writeHead(400, { 'Content-Type': 'application/json' });
     response.end(`Bad request body, not a tiddler list. ${String(changedTiddlersFromClient)}`, 'utf8');
@@ -25,12 +27,14 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   // get changed tiddlers
   const diffTiddlersFilter: string = getDiffFilter(lastSync);
   const diffTiddlers: string[] = $tw.wiki.compileFilter(diffTiddlersFilter)() ?? [];
-  const changedTiddlersFromServer = diffTiddlers
-    .map((title) => {
-      return $tw.wiki.getTiddler(title);
-    })
-    .filter((index): index is Tiddler => index !== undefined)
-    .map((tiddler) => tiddler.fields);
+  const changedTiddlersFromServer = filterOutNotSyncedTiddlers(
+    diffTiddlers
+      .map((title) => {
+        return $tw.wiki.getTiddler(title);
+      })
+      .filter((index): index is Tiddler => index !== undefined)
+      .map((tiddler) => tiddler.fields),
+  );
 
   try {
     // TODO: trigger client fetch changes using server sent event, see https://github.com/Jermolene/TiddlyWiki5/pull/5279
@@ -43,7 +47,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     if (clientInfo.Origin !== undefined) {
       clientInfoStore.updateClient(`${clientInfo.Origin ?? ''}${clientInfo['User-Agent'] ?? ''}`, {
         ...clientInfo,
-        recentlySyncedString: getSyncedTiddlersText(changedTiddlersFromClient, changedTiddlersFromServer),
+        recentlySyncedString: getSyncedTiddlersText(changedTiddlersFromClient, changedTiddlersFromServer, { reverse: true }),
       });
     }
   } catch (error) {

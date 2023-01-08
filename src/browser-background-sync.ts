@@ -8,6 +8,7 @@ import type { ISyncEndPointRequest, IClientInfo } from './types';
 import { ConnectionState } from './types';
 import cloneDeep from 'lodash/cloneDeep';
 import { getSyncedTiddlersText } from './getSyncedTiddlersText';
+import { filterOutNotSyncedTiddlers } from './data/filterOutNotSyncedTiddlers';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.name = 'browser-background-sync';
@@ -183,18 +184,9 @@ class BackgroundSyncManager {
     const onlineActiveServer = this.onlineActiveServer;
 
     if (onlineActiveServer !== undefined) {
-      const tiddlersToNotSync = new Set(
-        ($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersToNotSync') ?? '')
-          .split(' ')
-          .map((tiddlerName) => tiddlerName.replace('[[', '').replace(']]', '')),
-      );
-      const prefixToNotSync = ($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersPrefixToNotSync') ?? '')
-        .split(' ')
-        .map((tiddlerName) => tiddlerName.replace('[[', '').replace(']]', ''));
       try {
-        const changedTiddlersFromClient = this.currentModifiedTiddlers
-          .filter((tiddler: ITiddlerFieldsParam) => !prefixToNotSync.some((prefix) => (tiddler.title as string).startsWith(prefix)))
-          .filter((tiddler: ITiddlerFieldsParam) => !tiddlersToNotSync.has(tiddler.title as string));
+        const changedTiddlersFromClient = filterOutNotSyncedTiddlers(this.currentModifiedTiddlers);
+
         const requestBody: ISyncEndPointRequest = { tiddlers: changedTiddlersFromClient, lastSync: onlineActiveServer.fields.lastSync };
         // TODO: handle conflict, find intersection of changedTiddlersFromServer and changedTiddlersFromClient, and write changes to each other
         // send modified tiddlers to server
@@ -210,7 +202,7 @@ class BackgroundSyncManager {
             },
             // TODO: add auth token in header, after we can scan QR code to get token easily
           },
-        ).then(async (response) => ((await response.json()) as ITiddlerFieldsParam[]).filter((tiddler) => !tiddlersToNotSync.has(tiddler.title as string)));
+        ).then(async (response) => filterOutNotSyncedTiddlers((await response.json()) as ITiddlerFieldsParam[]));
         changedTiddlersFromServer.forEach((tiddler) => {
           // TODO: handle conflict
           $tw.wiki.addTiddler(tiddler);
