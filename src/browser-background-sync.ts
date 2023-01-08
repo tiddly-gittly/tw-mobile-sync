@@ -244,11 +244,13 @@ class BackgroundSyncManager {
         // overwrite
         document.write(fullHtml);
         document.close();
+        this.#showNotification(`Full html applied, set server list back.`);
 
         // write back
         $tw.wiki.addTiddlers(serverList.map((tiddler) => tiddler.fields));
       } catch (error) {
         console.error(error);
+        this.#showNotification(`Full html apply failed ${(error as Error).message}`);
       }
     }
   }
@@ -296,6 +298,14 @@ class BackgroundSyncManager {
     return serverList.map((serverInfoTiddlerTitle) => {
       return $tw.wiki.getTiddler(serverInfoTiddlerTitle) as IServerInfoTiddler;
     });
+  }
+
+  #showNotification(text: string) {
+    $tw.wiki.addTiddler({
+      title: '$:/state/notification/tw-mobile-sync/notification',
+      text,
+    });
+    $tw.notifier.display('$:/state/notification/tw-mobile-sync/notification');
   }
 }
 
