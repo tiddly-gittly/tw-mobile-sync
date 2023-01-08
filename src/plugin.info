@@ -7,6 +7,7 @@
   "version": "0.2.4",
   "list": "readme ui/ServerList",
   "dependents": [
-    "$:/plugins/tiddlywiki/qrcode"
+    "$:/plugins/tiddlywiki/qrcode",
+    "$:/plugins/kixam/datepicker"
   ]
 }

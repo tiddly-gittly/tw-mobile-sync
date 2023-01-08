@@ -8,9 +8,10 @@ type: text/vnd.tiddlywiki
         <$text text={{!!name}}/>
       </$link>
     </h3>
-    <div style="margin-bottom: 10px;">{{!!ipAddress}}:{{!!port}}</div>
+    <div style="margin-bottom: 5px;">{{!!ipAddress}}:{{!!port}}</div>
     <!-- we use text as status field -->
     <div>{{!!text}}</div>
+    <div><$view field=lastSync format=date template="YYYY-0MM-0DD 0hh:0mm:0ss" /></div>
   </div>
 
   <$reveal type="nomatch" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">

@@ -3,6 +3,17 @@ type: text/vnd.tiddlywiki
 
 {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplateBasic}}
 
+<fieldset class="tw-mobile-sync-update-last-sync-fieldset">
+  <legend>更新日期 Last Sync</legend>
+
+  只会同步修改日期在这个日期之后的条目。 Only tiddlers' modified is after this time are synced.
+
+  <div><$view field=lastSync format=date template="YYYY-0MM-0DD 0hh:0mm:0ss" /></div>
+
+  <$edit-date field="lastSync">
+
+</fieldset>
+
 <!-- allow update server info using scan qr code -->
 <div class="tw-mobile-sync-existed-server-field-fields-container">
   <$edit-text tiddler="$:/state/tw-mobile-sync/server/existed/update" default="" tag="input" />
