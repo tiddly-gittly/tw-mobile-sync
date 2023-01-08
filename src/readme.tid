@@ -48,7 +48,8 @@ Translated with www.DeepL.com/Translator (free version)
 
 !! QrCode of current server 当前服务器的二维码
 
-<$set name="url" value={{$:/info/url/full}}>
+<$set name="content" value={{{ [{$:/info/url/host}addprefix[//]addprefix{$:/info/url/protocol}addsuffix[/tw-mobile-sync/get-full-html]] }}}>
+  <<content>>
   <<image>>
 </$set>
 
