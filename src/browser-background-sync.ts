@@ -60,24 +60,25 @@ class BackgroundSyncManager {
       clearInterval(this.loop);
       this.lock = false;
     }
-    const loopHandler = async () => {
-      void this.getConnectedClientStatus();
-      if (this.lock) {
-        return;
+    await this.onSyncStart(skipStatusCheck);
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/promise-function-async
+    this.loop = setInterval(() => this.onSyncStart(skipStatusCheck), this.loopInterval);
+  }
+
+  async onSyncStart(skipStatusCheck?: boolean) {
+    void this.getConnectedClientStatus();
+    if (this.lock) {
+      return;
+    }
+    this.lock = true;
+    try {
+      if (skipStatusCheck !== true) {
+        await this.getServerStatus();
       }
-      this.lock = true;
-      try {
-        if (skipStatusCheck !== true) {
-          await this.getServerStatus();
-        }
-        await this.syncWithServer();
-      } finally {
-        this.lock = false;
-      }
-    };
-    await loopHandler();
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.loop = setInterval(loopHandler, this.loopInterval);
+      await this.syncWithServer();
+    } finally {
+      this.lock = false;
+    }
   }
 
   async setActiveServerAndSync(titleToActive: string | undefined) {
