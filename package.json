@@ -27,7 +27,7 @@
   "files": [],
   "scripts": {
     "dev": "cross-env NODE_ENV=development npm run make && zx scripts/dev/development.mjs",
-    "devNodeJSServer": "tiddlywiki ./dist --listen port=3001 sse-enabled=yes",
+    "devNodeJSServer": "zx scripts/runDevelopmentNodeJSServer.mjs",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --config=jest.config.js",
     "dev-html": "cross-env CI=true NODE_ENV=production npm run make && npm run run-action && zx ./scripts/build-demo-html.mjs && cd ./dist/output && serve .",
     "make": "npm run clean && npm run build",
@@ -41,7 +41,8 @@
   "dependencies": {
     "@ungap/structured-clone": "^1.0.1",
     "jsqr-es6": "^1.4.0-1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "ua-parser-js": "^1.0.32"
   },
   "devDependencies": {
     "@types/archiver": "5.3.1",
@@ -52,6 +53,7 @@
     "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.16",
     "@types/prettier": "2.7.1",
+    "@types/ua-parser-js": "^0.7.36",
     "@types/ungap__structured-clone": "^0.3.0",
     "@typescript-eslint/eslint-plugin": "5.46.1",
     "@typescript-eslint/parser": "5.46.1",
@@ -59,6 +61,7 @@
     "browserslist": "4.21.4",
     "chokidar": "^3.5.3",
     "cross-env": "^7.0.3",
+    "default-gateway": "^6.0.3",
     "esbuild": "0.16.8",
     "esbuild-plugin-browserslist": "0.6.0",
     "eslint": "8.30.0",
@@ -83,7 +86,9 @@
     "eslint-plugin-unused-imports": "2.0.0",
     "fs-extra": "11.1.0",
     "get-port": "^6.1.2",
+    "get-port-please": "^3.0.1",
     "github-action-ts-run-api": "2.3.0",
+    "internal-ip": "^7.0.0",
     "jest": "29.3.1",
     "prettier": "2.8.1",
     "rimraf": "^3.0.2",

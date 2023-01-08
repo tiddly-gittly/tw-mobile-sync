@@ -8,6 +8,9 @@ export interface ISyncEndPointRequest {
 export interface IClientInfo {
   Origin: string;
   'User-Agent': string;
+  model?: string;
+  name: string;
+  os?: string;
   state?: ConnectionState;
   timestamp: number;
 }

@@ -19,9 +19,9 @@ QRCode of Current Server
   <$vars compare-put-host-to-end="[get[Origin]prefix[http]else[1]]" compare-put-active-to-start="[get[state]prefix[onlineActive]else[1]]">
     <$list filter="[prefix[$:/state/tw-mobile-sync/clientStatus/]sortsub:number<compare-put-active-to-start>sortsub:number<compare-put-host-to-end>]">
       <div class="tw-mobile-sync-sidebar-desktop-server-item">
-        <h3><$text text={{!!Origin}} /></h3>
+        <h3><$text text={{!!name}} /></h3>
         <h5>{{!!state}}</h5>
-        <p>{{!!User-Agent}}</p>
+        <span>{{!!os}}</span>
       </div>
     </$list>
   </$vars>

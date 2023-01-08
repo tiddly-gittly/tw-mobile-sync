@@ -9,6 +9,7 @@ specifiers:
   '@types/lodash': ^4.14.191
   '@types/node': ^18.11.16
   '@types/prettier': 2.7.1
+  '@types/ua-parser-js': ^0.7.36
   '@types/ungap__structured-clone': ^0.3.0
   '@typescript-eslint/eslint-plugin': 5.46.1
   '@typescript-eslint/parser': 5.46.1
@@ -17,6 +18,7 @@ specifiers:
   browserslist: 4.21.4
   chokidar: ^3.5.3
   cross-env: ^7.0.3
+  default-gateway: ^6.0.3
   esbuild: 0.16.8
   esbuild-plugin-browserslist: 0.6.0
   eslint: 8.30.0
@@ -41,7 +43,9 @@ specifiers:
   eslint-plugin-unused-imports: 2.0.0
   fs-extra: 11.1.0
   get-port: ^6.1.2
+  get-port-please: ^3.0.1
   github-action-ts-run-api: 2.3.0
+  internal-ip: ^7.0.0
   jest: 29.3.1
   jsqr-es6: ^1.4.0-1
   lodash: ^4.17.21
@@ -55,6 +59,7 @@ specifiers:
   tw5-typed: 0.2.14
   typescript: 4.9.4
   typesync: 0.9.2
+  ua-parser-js: ^1.0.32
   ws: ^8.11.0
   zx: 7.1.1
 
@@ -62,6 +67,7 @@ dependencies:
   '@ungap/structured-clone': 1.0.1
   jsqr-es6: 1.4.0-1
   lodash: 4.17.21
+  ua-parser-js: 1.0.32
 
 devDependencies:
   '@types/archiver': 5.3.1
@@ -72,6 +78,7 @@ devDependencies:
   '@types/lodash': 4.14.191
   '@types/node': 18.11.16
   '@types/prettier': 2.7.1
+  '@types/ua-parser-js': 0.7.36
   '@types/ungap__structured-clone': 0.3.0
   '@typescript-eslint/eslint-plugin': 5.46.1_mqzxmroayievgzgel6yrqgih5i
   '@typescript-eslint/parser': 5.46.1_lzzuuodtsqwxnvqeq4g4likcqa
@@ -79,6 +86,7 @@ devDependencies:
   browserslist: 4.21.4
   chokidar: 3.5.3
   cross-env: 7.0.3
+  default-gateway: 6.0.3
   esbuild: 0.16.8
   esbuild-plugin-browserslist: 0.6.0_rv3mwdfpc5exe7fkezv7vjihau
   eslint: 8.30.0
@@ -103,7 +111,9 @@ devDependencies:
   eslint-plugin-unused-imports: 2.0.0_jeqqyiscssgeqdtj3cid5xjh6m
   fs-extra: 11.1.0
   get-port: 6.1.2
+  get-port-please: 3.0.1
   github-action-ts-run-api: 2.3.0
+  internal-ip: 7.0.0
   jest: 29.3.1_@types+node@18.11.16
   prettier: 2.8.1
   rimraf: 3.0.2
@@ -1274,6 +1284,10 @@ packages:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
     dev: true
 
+  /@types/ua-parser-js/0.7.36:
+    resolution: {integrity: sha512-N1rW+njavs70y2cApeIw1vLMYXRwfBy+7trgavGuuTfOd7j1Yh7QTRc/yqsPl6ncokt72ZXuxEU0PiCp9bSwNQ==}
+    dev: true
+
   /@types/ungap__structured-clone/0.3.0:
     resolution: {integrity: sha512-eBWREUhVUGPze+bUW22AgUr05k8u+vETzuYdLYSvWqGTUe0KOf+zVnOB1qER5wMcw8V6D9Ar4DfJmVvD1yu0kQ==}
     dev: true
@@ -2192,6 +2206,13 @@ packages:
   /deepmerge/4.2.2:
     resolution: {integrity: sha512-FJ3UgI4gIl+PHZm53knsuSFpE+nESMr7M4v9QcgB7S63Kj/6WqMiFQJpBBYz1Pt+66bZpP3Q7Lye0Oo9MPKEdg==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /default-gateway/6.0.3:
+    resolution: {integrity: sha512-fwSOJsbbNzZ/CUFpqFBqYfYNLj1NbMPm8MMCIzHjC83iSJRBEGmDUxU+WP661BaBQImeC2yHwXtz+P/O9o+XEg==}
+    engines: {node: '>= 10'}
+    dependencies:
+      execa: 5.1.1
     dev: true
 
   /defaults/1.0.4:
@@ -3186,6 +3207,10 @@ packages:
     engines: {node: '>=8.0.0'}
     dev: true
 
+  /get-port-please/3.0.1:
+    resolution: {integrity: sha512-R5pcVO8Z1+pVDu8Ml3xaJCEkBiiy1VQN9za0YqH8GIi1nIqD4IzQhzY6dDzMRtdS1lyiGlucRzm8IN8wtLIXng==}
+    dev: true
+
   /get-port/6.1.2:
     resolution: {integrity: sha512-BrGGraKm2uPqurfGVj/z97/zv8dPleC6x9JBNRTrDNtCkkRF4rPwrQXFgL7+I+q8QSdU4ntLQX2D7KIxSy8nGw==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -3423,6 +3448,16 @@ packages:
       lodash.toarray: 3.0.2
     dev: true
 
+  /internal-ip/7.0.0:
+    resolution: {integrity: sha512-qE4TeD4brqC45Vq/+VASeMiS1KRyfBkR6HT2sh9pZVVCzSjPkaCEfKFU+dL0PRv7NHJtvoKN2r82G6wTfzorkw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    dependencies:
+      default-gateway: 6.0.3
+      ipaddr.js: 2.0.1
+      is-ip: 3.1.0
+      p-event: 4.2.0
+    dev: true
+
   /internal-slot/1.0.4:
     resolution: {integrity: sha512-tA8URYccNzMo94s5MQZgH8NB/XTa6HsOo0MLfXTKKEnHVVdegzaQoFZ7Jp44bdvLvY2waT5dc+j5ICEswhi7UQ==}
     engines: {node: '>= 0.4'}
@@ -3430,6 +3465,16 @@ packages:
       get-intrinsic: 1.1.3
       has: 1.0.3
       side-channel: 1.0.4
+    dev: true
+
+  /ip-regex/4.3.0:
+    resolution: {integrity: sha512-B9ZWJxHHOHUhUjCPrMpLD4xEq35bUTClHM1S6CBU5ixQnkZmwipwgc96vAd7AAGM9TGHvJR+Uss+/Ak6UphK+Q==}
+    engines: {node: '>=8'}
+    dev: true
+
+  /ipaddr.js/2.0.1:
+    resolution: {integrity: sha512-1qTgH9NG+IIJ4yfKs2e6Pp1bZg8wbDbKHT21HrLIeYBTRLgMYKnMTPAuI3Lcs61nfx5h1xlXnbJtH1kX5/d/ng==}
+    engines: {node: '>= 10'}
     dev: true
 
   /is-arrayish/0.2.1:
@@ -3513,6 +3558,13 @@ packages:
   /is-interactive/1.0.0:
     resolution: {integrity: sha512-2HvIEKRoqS62guEC+qBjpvRubdX910WCMuJTZ+I9yvqKU2/12eSL549HMwtabb4oupdj2sMP50k+XJfB/8JE6w==}
     engines: {node: '>=8'}
+    dev: true
+
+  /is-ip/3.1.0:
+    resolution: {integrity: sha512-35vd5necO7IitFPjd/YBeqwWnyDWbuLH9ZXQdMfDA8TEo7pv5X8yfrvVO3xbJbLUlERCMvf6X0hTUamQxCYJ9Q==}
+    engines: {node: '>=8'}
+    dependencies:
+      ip-regex: 4.3.0
     dev: true
 
   /is-negative-zero/2.0.2:
@@ -4584,6 +4636,18 @@ packages:
       wcwidth: 1.0.1
     dev: true
 
+  /p-event/4.2.0:
+    resolution: {integrity: sha512-KXatOjCRXXkSePPb1Nbi0p0m+gQAwdlbhi4wQKJPI1HsMQS9g+Sqp2o+QHziPr7eYJyOZet836KoHEVM1mwOrQ==}
+    engines: {node: '>=8'}
+    dependencies:
+      p-timeout: 3.2.0
+    dev: true
+
+  /p-finally/1.0.0:
+    resolution: {integrity: sha512-LICb2p9CB7FS+0eR1oqWnHhp0FljGLZCWBE9aix0Uye9W8LTQPwMTYVGWQWIw9RdQiDg4+epXQODwIYJtSJaow==}
+    engines: {node: '>=4'}
+    dev: true
+
   /p-limit/2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
     engines: {node: '>=6'}
@@ -4610,6 +4674,13 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       p-limit: 3.1.0
+    dev: true
+
+  /p-timeout/3.2.0:
+    resolution: {integrity: sha512-rhIwUycgwwKcP9yTOOFK/AKsAopjjCakVqLHePO3CC6Mir1Z99xT+R63jZxAT5lFZLa2inS5h+ZS2GvR99/FBg==}
+    engines: {node: '>=8'}
+    dependencies:
+      p-finally: 1.0.0
     dev: true
 
   /p-try/2.2.0:
@@ -5530,6 +5601,10 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: true
+
+  /ua-parser-js/1.0.32:
+    resolution: {integrity: sha512-dXVsz3M4j+5tTiovFVyVqssXBu5HM47//YSOeZ9fQkdDKkfzv2v3PP1jmH6FUyPW+yCSn7aBVK1fGGKNhowdDA==}
+    dev: false
 
   /uglify-es/3.3.9:
     resolution: {integrity: sha512-r+MU0rfv4L/0eeW3xZrd16t4NZfK8Ld4SWVglYBb7ez5uXFWHuVRs6xCTrf1yirs9a4j4Y27nn7SRfO6v67XsQ==}
