@@ -8,11 +8,12 @@ exports.method = 'GET';
 // route is also in src/sync/getEndPoint.ts
 exports.path = /^\/tw-mobile-sync\/get-full-html$/;
 
+// don't use $:/core/save/lazy-images, otherwise image won't show in HTML
+// don't use $:/plugins/tiddlywiki/tiddlyweb/save/offline , otherwise `TypeError: undefined is not an object (evaluating '$tw.syncer.syncadaptor')`
+const templateName = '$:/core/save/all';
+
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
-  // lazy image ?? $:/plugins/tiddlywiki/tiddlyweb/save/offline
-  const templateName: string =
-    (context.server.get('root-tiddler') as string | undefined) ?? context.wiki.getTiddlerText('$:/config/SaveWikiButton/Template', '$:/core/save/all').trim();
 
   const downloadType = (context.server.get('root-render-type') as OutputMimeTypes | undefined) ?? 'text/plain';
   const exportedHTMLContent = context.wiki.renderTiddler(downloadType, templateName);
