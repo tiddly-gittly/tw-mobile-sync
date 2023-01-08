@@ -187,9 +187,8 @@ class BackgroundSyncManager {
     if (onlineActiveServer !== undefined) {
       // fix multiple online active server
       this.serverList.forEach((serverInfoTiddler) => {
-        if (serverInfoTiddler?.fields?.text === ConnectionState.onlineActive && serverInfoTiddler?.fields?.title === onlineActiveServer.fields.title) {
-          serverInfoTiddler.fields.text = ConnectionState.online;
-          $tw.wiki.addTiddler(serverInfoTiddler.fields);
+        if (serverInfoTiddler?.fields?.text === ConnectionState.onlineActive && serverInfoTiddler?.fields?.title !== onlineActiveServer.fields.title) {
+          $tw.wiki.addTiddler({ ...serverInfoTiddler.fields, text: ConnectionState.online });
         }
       });
       try {
