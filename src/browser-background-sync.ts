@@ -7,7 +7,7 @@ import { getClientInfoPoint, getFullHtmlEndPoint, getStatusEndPoint, getSyncEndP
 import type { ISyncEndPointRequest, IClientInfo } from './types';
 import { ConnectionState } from './types';
 import cloneDeep from 'lodash/cloneDeep';
-import take from 'lodash/take';
+import { getSyncedTiddlersText } from './getSyncedTiddlersText';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.name = 'browser-background-sync';
@@ -215,22 +215,10 @@ class BackgroundSyncManager {
           // TODO: handle conflict
           $tw.wiki.addTiddler(tiddler);
         });
-        const changedTitleDisplayLimit = 5;
-        const clientText = take(changedTiddlersFromClient, changedTitleDisplayLimit)
-          .map((tiddler) => tiddler.caption ?? (tiddler.title as string))
-          .join(' ');
-        const clientCount =
-          changedTiddlersFromClient.length > changedTitleDisplayLimit ? `And ${changedTiddlersFromClient.length - changedTitleDisplayLimit} more` : '';
-        const serverText = take(changedTiddlersFromServer, changedTitleDisplayLimit)
-          .map((tiddler) => tiddler.caption ?? (tiddler.title as string))
-          .join(' ');
-        const serverCount =
-          changedTiddlersFromServer.length > changedTitleDisplayLimit ? `And ${changedTiddlersFromServer.length - changedTitleDisplayLimit} more` : '';
+
         $tw.wiki.addTiddler({
           title: '$:/state/notification/tw-mobile-sync/notification',
-          text: `Sync Complete ↑ ${changedTiddlersFromClient.length} ↓ ${changedTiddlersFromServer.length}${
-            changedTiddlersFromClient.length > 0 ? `\n\n↑: ${clientText} ${clientCount}` : ''
-          }${changedTiddlersFromServer.length > 0 ? `\n\n↓: ${serverText} ${serverCount}` : ''}`,
+          text: `Sync Complete ${getSyncedTiddlersText(changedTiddlersFromClient, changedTiddlersFromServer)}`,
         });
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
       } catch (error) {

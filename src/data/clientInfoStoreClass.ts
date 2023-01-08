@@ -31,18 +31,18 @@ export class ClientInfoStore {
     return structuredClone(this.#clients);
   }
 
-  updateClient(name: string, value: Partial<types.IClientInfo>) {
-    this.#clients[name] = { ...this.#clients[name], ...value };
-    const ua = this.#clients[name]['User-Agent'];
+  updateClient(key: string, value: Partial<types.IClientInfo>) {
+    this.#clients[key] = { ...this.#clients[key], ...value };
+    const ua = this.#clients[key]['User-Agent'];
     if (ua) {
       const userAgentInfo = new UAParser(ua);
       const model = userAgentInfo.getDevice().model;
       const os = userAgentInfo.getOS().name; // 获取系统
-      this.#clients[name].name = model ?? userAgentInfo.getBrowser().name ?? this.#clients[name].Origin;
-      this.#clients[name].model = model;
-      this.#clients[name].os = os;
+      this.#clients[key].name = model ?? userAgentInfo.getBrowser().name ?? this.#clients[key].Origin;
+      this.#clients[key].model = model;
+      this.#clients[key].os = os;
     } else {
-      this.#clients[name].name = this.#clients[name].Origin;
+      this.#clients[key].name = this.#clients[key].Origin;
     }
   }
 }

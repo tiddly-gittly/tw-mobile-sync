@@ -11,6 +11,10 @@ export interface IClientInfo {
   model?: string;
   name: string;
   os?: string;
+  /**
+   * Contains things recently synced
+   */
+  recentlySyncedString?: string;
   state?: ConnectionState;
   timestamp: number;
 }

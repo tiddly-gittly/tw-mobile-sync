@@ -22,6 +22,7 @@ QRCode of Current Server
         <h3><$text text={{!!name}} /></h3>
         <h5>{{!!state}}</h5>
         <span>{{!!os}}</span>
+        <span>{{!!recentlySyncedString}}</span>
       </div>
     </$list>
   </$vars>

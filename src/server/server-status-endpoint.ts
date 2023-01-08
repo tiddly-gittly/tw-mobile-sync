@@ -16,7 +16,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   const clientInfo = getClientInfo(request);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const clientInfoStore: ClientInfoStore = require('$:/plugins/linonetwo/tw-mobile-sync/clientInfoStore.js').store;
-  clientInfoStore.updateClient(clientInfo.Origin, clientInfo);
+  clientInfoStore.updateClient(`${clientInfo.Origin ?? ''}${clientInfo['User-Agent'] ?? ''}`, clientInfo);
   // mostly copied from the official repo's core/modules/server/routes/get-status.js
   const text = JSON.stringify({
     username: context.authenticatedUsername ?? (context.server.get('anon-username') as string | undefined) ?? '',

@@ -5,6 +5,7 @@ import { ConnectionState, ISyncEndPointRequest } from '../types';
 import { getDiffFilter } from '../data/filters';
 import type { ClientInfoStore } from 'src/data/clientInfoStoreClass';
 import { getClientInfo } from '../data/getClientInfo';
+import { getSyncedTiddlersText } from 'src/getSyncedTiddlersText';
 
 exports.method = 'POST';
 
@@ -16,10 +17,10 @@ exports.path = /^\/tw-mobile-sync\/html-node-sync$/;
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest & Http.InformationEvent, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
 
-  const { tiddlers, lastSync } = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
-  if (!Array.isArray(tiddlers)) {
+  const { tiddlers: changedTiddlersFromClient, lastSync } = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
+  if (!Array.isArray(changedTiddlersFromClient)) {
     response.writeHead(400, { 'Content-Type': 'application/json' });
-    response.end(`Bad request body, not a tiddler list. ${String(tiddlers)}`, 'utf8');
+    response.end(`Bad request body, not a tiddler list. ${String(changedTiddlersFromClient)}`, 'utf8');
   }
   // get changed tiddlers
   const diffTiddlersFilter: string = getDiffFilter(lastSync);
@@ -33,13 +34,18 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
 
   try {
     // TODO: trigger client fetch changes using server sent event, see https://github.com/Jermolene/TiddlyWiki5/pull/5279
-    context.wiki.addTiddlers(tiddlers);
+    context.wiki.addTiddlers(changedTiddlersFromClient);
     response.writeHead(201, { 'Content-Type': 'application/json' });
     response.end(JSON.stringify(changedTiddlersFromServer), 'utf8');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const clientInfoStore: ClientInfoStore = require('$:/plugins/linonetwo/tw-mobile-sync/clientInfoStore.js').store;
     const clientInfo = getClientInfo(request, ConnectionState.onlineActive);
-    clientInfoStore.updateClient(clientInfo.Origin, clientInfo);
+    if (clientInfo.Origin !== undefined) {
+      clientInfoStore.updateClient(`${clientInfo.Origin ?? ''}${clientInfo['User-Agent'] ?? ''}`, {
+        ...clientInfo,
+        recentlySyncedString: getSyncedTiddlersText(changedTiddlersFromClient, changedTiddlersFromServer),
+      });
+    }
   } catch (error) {
     response.writeHead(500);
     response.end(`Failed to add tiddlers ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
