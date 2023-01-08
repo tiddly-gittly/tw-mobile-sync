@@ -252,9 +252,11 @@ class BackgroundSyncManager {
         this.#showNotification(`Full html applied, set server list back.`);
 
         // write back after html stabled
-        setTimeout(() => {
-          $tw.wiki.addTiddlers(serverList.map((tiddler) => tiddler.fields));
-        }, 1000);
+        addEventListener('DOMContentLoaded', (event) => {
+          setTimeout(() => {
+            $tw.wiki.addTiddlers(serverList.map((tiddler) => tiddler.fields));
+          }, 1000);
+        });
       } catch (error) {
         console.error(error);
         this.#showNotification(`Full html apply failed ${(error as Error).message}`);
