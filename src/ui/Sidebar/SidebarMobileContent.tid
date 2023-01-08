@@ -11,3 +11,5 @@ type: text/vnd.tiddlywiki
   [[服务器列表|$:/plugins/linonetwo/tw-mobile-sync/ui/ServerList]]
 
 </fieldset>
+
+{{$:/plugins/linonetwo/tw-mobile-sync/ui/AddNewToServerList}}

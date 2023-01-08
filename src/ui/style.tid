@@ -61,6 +61,8 @@ type: text/vnd.tiddlywiki
 .tw-mobile-sync-sidebar-fieldset {
   display: flex; flex-direction: column; justify-content: center; align-items: center;
   width: 100%;
+
+  margin-bottom: 10px;
 }
 
 .tw-mobile-sync-sidebar-desktop-server-item {
