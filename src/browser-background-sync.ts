@@ -185,6 +185,13 @@ class BackgroundSyncManager {
     const onlineActiveServer = this.onlineActiveServer;
 
     if (onlineActiveServer !== undefined) {
+      // fix multiple online active server
+      this.serverList.forEach((serverInfoTiddler) => {
+        if (serverInfoTiddler?.fields?.text === ConnectionState.onlineActive && serverInfoTiddler?.fields?.title === onlineActiveServer.fields.title) {
+          serverInfoTiddler.fields.text = ConnectionState.online;
+          $tw.wiki.addTiddler(serverInfoTiddler.fields);
+        }
+      });
       try {
         const changedTiddlersFromClient = filterOutNotSyncedTiddlers(this.currentModifiedTiddlers);
 
@@ -258,7 +265,6 @@ class BackgroundSyncManager {
 
   get onlineActiveServer() {
     return this.serverList.find((serverInfoTiddler) => {
-      // TODO: compile to lower es for browser support
       return serverInfoTiddler?.fields?.text === ConnectionState.onlineActive;
     });
   }
