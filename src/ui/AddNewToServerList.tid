@@ -5,8 +5,8 @@ type: text/vnd.tiddlywiki
   {{$:/plugins/linonetwo/tw-mobile-sync/ui/DownloadFullHtml}}
 </div>
 
-<div style="display: flex; flex-direction: row;">
-  <div class="tw-mobile-sync-new-server-field-fields-container-outer">
+<div class="tw-mobile-sync-new-server-field-fields-container-outer1">
+  <div class="tw-mobile-sync-new-server-field-fields-container-outer2">
     <fieldset>
       <legend>智能识别黏贴框 Smart Identify Sticky Box</legend>
 

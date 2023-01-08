@@ -240,14 +240,15 @@ class BackgroundSyncManager {
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
         // get all state tiddlers we need, before document is overwritten
         const serverList = cloneDeep(this.serverList);
-
         // overwrite
         document.write(fullHtml);
         document.close();
         this.#showNotification(`Full html applied, set server list back.`);
 
-        // write back
-        $tw.wiki.addTiddlers(serverList.map((tiddler) => tiddler.fields));
+        // write back after html stabled
+        setTimeout(() => {
+          $tw.wiki.addTiddlers(serverList.map((tiddler) => tiddler.fields));
+        }, 1000);
       } catch (error) {
         console.error(error);
         this.#showNotification(`Full html apply failed ${(error as Error).message}`);
