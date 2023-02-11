@@ -16,7 +16,13 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   response.setHeader('Access-Control-Allow-Origin', '*');
 
   const downloadType = (context.server.get('root-render-type') as OutputMimeTypes | undefined) ?? 'text/plain';
-  const exportedHTMLContent = context.wiki.renderTiddler(downloadType, templateName);
+  const exportedHTMLContent = context.wiki.renderTiddler(downloadType, templateName, {
+    variables: {
+      // exclude large file and unused tiddlers, like `core/ui/DownloadFullWiki.tid`
+      publishFilter:
+        '-[type[application/msword]] -[type[application/pdf]] -[[$:/plugins/tiddlywiki/filesystem]] -[[$:/plugins/tiddlywiki/tiddlyweb]] -[[$:/plugins/twcloud/tiddlyweb-sse]]',
+    },
+  });
 
   try {
     response.writeHead(200, { 'Content-Type': (context.server.get('root-serve-type') as OutputMimeTypes | undefined) ?? downloadType });
