@@ -76,6 +76,8 @@ class BackgroundSyncManager {
         await this.getServerStatus();
       }
       await this.syncWithServer();
+      // Maybe should add lock to avoid infinite loop, if also sync after autosave. But we don't have sync after autosave yet, so no lock on this is ok.
+      $tw.rootWidget.dispatchEvent({ type: 'tm-auto-save-wiki' });
     } finally {
       this.lock = false;
     }
