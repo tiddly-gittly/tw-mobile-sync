@@ -63,7 +63,9 @@ type: text/vnd.tiddlywiki
       ipAddress={{$:/state/tw-mobile-sync/server/new!!ipAddress}}
       port={{$:/state/tw-mobile-sync/server/new!!port}}
       lastSync=<<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">>
-    />
-    <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new" text="" name="" ipAddress="" port="" />
+    >
+      <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new" text="" name="" ipAddress="" port="" />
+      <$action-sendmessage $message="tw-mobile-sync-set-active-server-and-sync" title=<<createTiddler-title>> />
+    </$action-createtiddler>
   </$button>
 </div>
