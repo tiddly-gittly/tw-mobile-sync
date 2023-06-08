@@ -42,6 +42,7 @@ class BackgroundSyncManager {
     // TODO: get this from setting
     this.loopInterval = getLoopInterval();
     this.setupListener();
+    this.startCheckServerStatusLoop();
   }
 
   setupListener() {
@@ -53,6 +54,11 @@ class BackgroundSyncManager {
     /** handle events from src/ui/ServerItemViewTemplate.tid 's $:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate */
     $tw.rootWidget.addEventListener('tw-mobile-sync-sync-start', async (event) => await this.start());
     $tw.rootWidget.addEventListener('tw-mobile-sync-download-full-html', async (event) => await this.downloadFullHtmlAndApplyToWiki());
+  }
+
+  startCheckServerStatusLoop() {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/promise-function-async
+    setInterval(() => this.getServerStatus(), this.loopInterval);
   }
 
   async start(skipStatusCheck?: boolean) {
