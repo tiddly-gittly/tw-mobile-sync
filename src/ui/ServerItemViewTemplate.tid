@@ -8,7 +8,7 @@ type: text/vnd.tiddlywiki
 
   只会同步修改日期在这个日期之后的条目。 Only tiddlers' modified is after this time are synced.
 
-  <$edit-date field="lastSync" showTime="yes" showSeconds="yes" use24hour="yes">
+  <$edit-date field="lastSync" showTime="yes" showSeconds="yes" use24hour="yes" />
 </fieldset>
 
 <!-- allow update server info using scan qr code -->
