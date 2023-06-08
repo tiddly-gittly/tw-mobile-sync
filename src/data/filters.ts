@@ -5,4 +5,4 @@ export function getDiffFilter(lastSync: string | undefined) {
 /**
  * also in src/ui/ServerList.tid 's list widget
  */
-export const serverListFilter = `[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]] -[[$:/state/tw-mobile-sync/server/existed/scan-qr-widget-open]] -[[$:/state/tw-mobile-sync/server/existed/update]]`;
+export const getServerListFilter = () => $tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/ServerListFilter');

@@ -172,8 +172,8 @@ devDependencies:
     specifier: 0.0.10
     version: 0.0.10
   tw5-typed:
-    specifier: 0.2.14
-    version: 0.2.14
+    specifier: 0.2.27
+    version: 0.2.27
   typescript:
     specifier: 4.9.4
     version: 4.9.4
@@ -1236,6 +1236,18 @@ packages:
       '@babel/types': 7.20.5
     dev: true
 
+  /@types/codemirror@5.60.8:
+    resolution: {integrity: sha512-VjFgDF/eB+Aklcy15TtOTLQeMjTo07k7KAjql8OK5Dirr7a6sJY4T1uVBDuTVG9VEmn1uUsohOpYnVfgC6/jyw==}
+    dependencies:
+      '@types/tern': 0.23.4
+    dev: true
+
+  /@types/echarts@4.9.18:
+    resolution: {integrity: sha512-Qav4M1i1qmPemMywMnDGIbvIBB/9pdrDKLI1dyMho4Yz/ldCB3ry2zGeH0UhAhgmaoPgwYrCDo8xd1UeByz+rw==}
+    dependencies:
+      '@types/zrender': 4.0.3
+    dev: true
+
   /@types/eslint-plugin-prettier@3.1.0:
     resolution: {integrity: sha512-6/UIuz99F0IvtDez4U3bRwAmN4VKnuw10Ibblf0iZhtNbmbonMSLqs/qqsXrGIAWvjy+vXqYwOljgtLhrETSMg==}
     dependencies:
@@ -1343,6 +1355,12 @@ packages:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
     dev: true
 
+  /@types/tern@0.23.4:
+    resolution: {integrity: sha512-JAUw1iXGO1qaWwEOzxTKJZ/5JxVeON9kvGZ/osgZaJImBnyjyn0cjovPsf6FNLmyGY8Vw9DoXZCMlfMkMwHRWg==}
+    dependencies:
+      '@types/estree': 1.0.0
+    dev: true
+
   /@types/ua-parser-js@0.7.36:
     resolution: {integrity: sha512-N1rW+njavs70y2cApeIw1vLMYXRwfBy+7trgavGuuTfOd7j1Yh7QTRc/yqsPl6ncokt72ZXuxEU0PiCp9bSwNQ==}
     dev: true
@@ -1363,6 +1381,10 @@ packages:
     resolution: {integrity: sha512-72bWxFKTK6uwWJAVT+3rF6Jo6RTojiJ27FQo8Rf60AL+VZbzoVPnMFhKsUnbjR8A3BTCYQ7Mv3hnl8T0A+CX9g==}
     dependencies:
       '@types/yargs-parser': 21.0.0
+    dev: true
+
+  /@types/zrender@4.0.3:
+    resolution: {integrity: sha512-EPI269lkHNsObwILJ1k1z7znLjKyePuWRy/XKK0shSGpBb9cIX307arcwJV4+2NeZj5wEjN06r4D8yFv7sI06g==}
     dev: true
 
   /@typescript-eslint/eslint-plugin@5.46.1(@typescript-eslint/parser@5.46.1)(eslint@8.30.0)(typescript@4.9.4):
@@ -5584,8 +5606,12 @@ packages:
       - encoding
     dev: true
 
-  /tw5-typed@0.2.14:
-    resolution: {integrity: sha512-8kFjnk1oKM533qmD6dwfkAlKWOR27N0gQ+tVKE226lUHigSNCCaBCpahdLWvLjT7sq8/MEkfF7xH+AHhYUvLJQ==}
+  /tw5-typed@0.2.27:
+    resolution: {integrity: sha512-ATJaMZh1udwzcgqNOoPTmH9nzI/yMo5TLgv5u3O8WKDIE8SzuDVteah0G4gSsx/ogDyHAdmn0Wu5m+2hQ2wc7A==}
+    dependencies:
+      '@types/codemirror': 5.60.8
+      '@types/echarts': 4.9.18
+      '@types/node': 18.11.16
     dev: true
 
   /type-check@0.4.0:

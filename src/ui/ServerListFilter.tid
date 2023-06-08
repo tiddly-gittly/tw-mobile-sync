@@ -1,0 +1,3 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ServerListFilter
+
+[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]] -[[$:/state/tw-mobile-sync/server/existed/scan-qr-widget-open]] -[[$:/state/tw-mobile-sync/server/existed/update]]

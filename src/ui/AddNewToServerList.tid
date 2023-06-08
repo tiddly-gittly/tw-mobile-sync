@@ -55,17 +55,22 @@ type: text/vnd.tiddlywiki
   <$button style="width: 160px; margin-top: 10px;">
     <div>新增服务器</div>
     <div>Add New</div>
-    <$action-createtiddler
-      $basetitle={{{ [<now "YYYY-MM-DD-0hh0mm0ss">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
-      text="offline"
-      name={{$:/state/tw-mobile-sync/server/new!!name}}
-      caption={{$:/state/tw-mobile-sync/server/new!!name}}
-      ipAddress={{$:/state/tw-mobile-sync/server/new!!ipAddress}}
-      port={{$:/state/tw-mobile-sync/server/new!!port}}
-      lastSync=<<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">>
-    >
-      <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new" text="" name="" ipAddress="" port="" />
-      <$action-sendmessage $message="tw-mobile-sync-set-active-server-and-sync" title=<<createTiddler-title>> />
-    </$action-createtiddler>
+    <$set name="existedServers" filter={{$:/plugins/linonetwo/tw-mobile-sync/ServerListFilter}} >
+      <$set name="latestLastSync" filter="[<existedServers>sort[lastSync]limit[1]get[lastSync]]" emptyValue=<<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">> >
+        <$log />
+        <$action-createtiddler
+          $basetitle={{{ [<now "YYYY-MM-DD-0hh0mm0ss">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
+          text="offline"
+          name={{$:/state/tw-mobile-sync/server/new!!name}}
+          caption={{$:/state/tw-mobile-sync/server/new!!name}}
+          ipAddress={{$:/state/tw-mobile-sync/server/new!!ipAddress}}
+          port={{$:/state/tw-mobile-sync/server/new!!port}}
+          lastSync=<<latestLastSync>>
+        >
+          <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new" text="" name="" ipAddress="" port="" />
+          <$action-sendmessage $message="tw-mobile-sync-set-active-server-and-sync" title=<<createTiddler-title>> />
+        </$action-createtiddler>
+      </$set>
+    </$set>
   </$button>
 </div>

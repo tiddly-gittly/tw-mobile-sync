@@ -2,7 +2,7 @@
 import type { Tiddler, IServerStatus, ITiddlerFieldsParam } from 'tiddlywiki';
 import mapValues from 'lodash/mapValues';
 import { activeServerStateTiddlerTitle, clientStatusStateTiddlerTitle, getLoopInterval } from './data/constants';
-import { getDiffFilter, serverListFilter } from './data/filters';
+import { getDiffFilter, getServerListFilter } from './data/filters';
 import { getClientInfoPoint, getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './data/getEndPoint';
 import type { ISyncEndPointRequest, IClientInfo } from './types';
 import { ConnectionState } from './types';
@@ -310,7 +310,7 @@ class BackgroundSyncManager {
 
   get serverList() {
     // get server list using filter
-    const serverList: string[] = $tw.wiki.compileFilter(serverListFilter)() ?? [];
+    const serverList: string[] = $tw.wiki.compileFilter(getServerListFilter())() ?? [];
     return serverList.map((serverInfoTiddlerTitle) => {
       return $tw.wiki.getTiddler(serverInfoTiddlerTitle) as IServerInfoTiddler;
     });
