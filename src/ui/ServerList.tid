@@ -2,7 +2,7 @@ title: $:/plugins/linonetwo/tw-mobile-sync/ui/ServerList
 type: text/vnd.tiddlywiki
 
 <div class="tw-mobile-sync-server-list">
-  <$list filter="[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]]">
+  <$list filter="[prefix[$:/state/tw-mobile-sync/server/]] -[[$:/state/tw-mobile-sync/server/new]] -[[$:/state/tw-mobile-sync/server/new/scan-qr-widget-open]] -[[$:/state/tw-mobile-sync/server/existed/scan-qr-widget-open]] -[[$:/state/tw-mobile-sync/server/existed/update]]">
     <div class="tw-mobile-sync-server-list-item">
       {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplateBasic}}
       {{||$:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemCopyTemplate}}
