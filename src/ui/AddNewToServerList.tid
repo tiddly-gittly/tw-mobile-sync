@@ -57,7 +57,6 @@ type: text/vnd.tiddlywiki
     <div>Add New</div>
     <$set name="existedServers" filter={{$:/plugins/linonetwo/tw-mobile-sync/ServerListFilter}} >
       <$set name="latestLastSync" filter="[<existedServers>sort[lastSync]limit[1]get[lastSync]]" emptyValue=<<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">> >
-        <$log />
         <$action-createtiddler
           $basetitle={{{ [<now "YYYY-MM-DD-0hh0mm0ss">] +[addprefix[$:/state/tw-mobile-sync/server/]] }}}
           text="offline"

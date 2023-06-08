@@ -248,7 +248,7 @@ class BackgroundSyncManager {
           mode: 'cors',
           headers: {
             'X-Requested-With': 'TiddlyWiki',
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/html',
           },
         }).then(async (response) => await response.text());
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());

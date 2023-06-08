@@ -7,5 +7,6 @@ import { internalIpV4 } from 'internal-ip';
 import { getPort } from 'get-port-please';
 
 const port = await getPort({ port: 3001 });
+echo('Should run this after npm run dev');
 echo(`Open http://${await internalIpV4()}:${port}/`);
-await $`tiddlywiki ./dist --listen port=${port} host=0.0.0.0 root-tiddler=$:/core/save/lazy-images`;
+await $`tiddlywiki +plugins/tiddlywiki/filesystem +plugins/tiddlywiki/tiddlyweb ./dist --listen port=${port} host=0.0.0.0 root-tiddler=$:/core/save/lazy-images`;
