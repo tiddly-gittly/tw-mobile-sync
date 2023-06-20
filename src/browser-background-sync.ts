@@ -126,15 +126,19 @@ class BackgroundSyncManager {
 
   /** On TidGi desktop, get connected client info */
   async getConnectedClientStatus() {
+    try {
     const response: Record<string, IClientInfo> = await fetch(getClientInfoPoint()).then(
       async (response) => (await response.json()) as Record<string, IClientInfo>,
-    );
-    Object.values(response).forEach((clientInfo) => {
-      $tw.wiki.addTiddler({
-        title: `${clientStatusStateTiddlerTitle}/${clientInfo.Origin}`,
-        ...clientInfo,
+      );
+      Object.values(response).forEach((clientInfo) => {
+        $tw.wiki.addTiddler({
+          title: `${clientStatusStateTiddlerTitle}/${clientInfo.Origin}`,
+          ...clientInfo,
+        });
       });
-    });
+    } catch (error) {
+      console.warn(`tw-mobile-sync can't connect to tw nodejs side. Error: ${(error as Error).message}`);
+    }
   }
 
   /** On Tiddloid mobile, get TidGi server status */
