@@ -7,7 +7,7 @@ type: text/vnd.tiddlywiki
 
 QRCode of Current Server
 <div class="tw-mobile-sync-sidebar-qrcode">
-  <$let content={{{ [{$:/info/url/host}addprefix[//]addprefix{$:/info/url/protocol}addsuffix[/tw-mobile-sync/get-full-html]] }}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}} >
+  <$let content={{{ [{$:/info/url/full}addsuffix[tw-mobile-sync/get-full-html]] }}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}} >
     <<content>>
     <<image>>
   </$let>
