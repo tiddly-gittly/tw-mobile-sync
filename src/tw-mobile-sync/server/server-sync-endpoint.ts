@@ -3,10 +3,7 @@ import type { ServerEndpointHandler, Tiddler } from 'tiddlywiki';
 import type Http from 'http';
 import { ConnectionState, ISyncEndPointRequest } from '../types';
 import { getDiffFilter } from '../data/filters';
-import type { ClientInfoStore } from 'src/data/clientInfoStoreClass';
 import { getClientInfo } from '../data/getClientInfo';
-import { getSyncedTiddlersText } from 'src/getSyncedTiddlersText';
-import { filterOutNotSyncedTiddlers } from 'src/data/filterOutNotSyncedTiddlers';
 
 exports.method = 'POST';
 
@@ -57,3 +54,11 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
 };
 
 exports.handler = handler;
+function filterOutNotSyncedTiddlers(tiddlers: ITiddlerFieldsParam[]) {
+  throw new Error('Function not implemented.');
+}
+
+function getSyncedTiddlersText(changedTiddlersFromClient: any, changedTiddlersFromServer: any, arg2: { reverse: boolean; }) {
+  throw new Error('Function not implemented.');
+}
+
