@@ -1,0 +1,10 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR
+caption: Skinny (TidGi-Mobile)
+type: text/vnd.tiddlywiki
+
+<div class="tw-mobile-sync-sidebar-qrcode">
+  <$let content={{{ [{$:/info/url/full}addsuffix[tw-mobile-sync/get-skinny-html]] }}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}} >
+    <<content>>
+    <<image>>
+  </$let>
+</div>

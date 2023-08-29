@@ -6,12 +6,8 @@ type: text/vnd.tiddlywiki
 \end
 
 QRCode of Current Server
-<div class="tw-mobile-sync-sidebar-qrcode">
-  <$let content={{{ [{$:/info/url/full}addsuffix[tw-mobile-sync/get-full-html]] }}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}} >
-    <<content>>
-    <<image>>
-  </$let>
-</div>
+
+<<tabs "$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopFullHtmlQR $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR" "$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR" "$:/state/tw-mobile-sync/ui/Sidebar/qr">>
 
 
 <fieldset class="tw-mobile-sync-sidebar-fieldset tw-mobile-sync-sidebar-desktop">

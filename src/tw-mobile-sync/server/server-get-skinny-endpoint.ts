@@ -6,11 +6,10 @@ exports.method = 'GET';
 
 // route should start with something https://github.com/Jermolene/TiddlyWiki5/issues/4807
 // route is also in src/sync/getEndPoint.ts
-exports.path = /^\/tw-mobile-sync\/get-full-html$/;
+exports.path = /^\/tw-mobile-sync\/get-skinny-html$/;
 
-// don't use $:/core/save/lazy-images, otherwise image won't show in HTML
-// don't use $:/plugins/tiddlywiki/tiddlyweb/save/offline , otherwise `TypeError: undefined is not an object (evaluating '$tw.syncer.syncadaptor')`
-const templateName = '$:/core/save/all';
+// intended to work with TidGi-Mobile, which can handle the lazy-all. Tiddloid is hard to implement this in Java code...
+const templateName = '$:/core/save/lazy-all';
 
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');

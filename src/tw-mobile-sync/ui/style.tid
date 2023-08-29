@@ -105,8 +105,8 @@ type: text/vnd.tiddlywiki
   height: auto;
 }
 .tw-mobile-sync-sidebar-qrcode img {
-  width: {{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}};
-  height: {{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}};
+  width: calc({{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}} - 2em);
+  height: calc({{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}} - 2em);
 }
 
 </$importvariables>
