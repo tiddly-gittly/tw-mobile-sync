@@ -1,10 +1,10 @@
 {
   "title": "$:/plugins/linonetwo/tw-mobile-sync",
   "author": "LinOnetwo",
-  "description": "Sync data between Mobile HTML (Tiddloid) <-> Desktop NodeJS App (TidGi) ",
+  "description": "Sync data between Mobile HTML (Tiddloid/Quine2/TidGi-Mobile) <-> Desktop NodeJS App (TidGi) ",
   "core-version": ">=5.1.22",
   "plugin-type": "plugin",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "list": "readme ui/ServerList",
   "dependents": [
     "$:/plugins/tiddlywiki/qrcode",

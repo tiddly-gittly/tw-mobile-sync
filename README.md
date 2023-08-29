@@ -1,6 +1,6 @@
 # TiddlyWiki5 Mobile Sync
 
-Sync data between Mobile HTML (Tiddloid/Quine) <-> Desktop App (TidGi/NodeJS).
+Sync data between Mobile HTML (Tiddloid/Quine2/TidGi-Mobile) <-> Desktop App (TidGi/NodeJS).
 
 ## Why this plugin
 
