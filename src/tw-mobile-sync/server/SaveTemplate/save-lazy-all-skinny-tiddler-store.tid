@@ -1,0 +1,9 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/templates/save/save-lazy-all-skinny-tiddler-store
+
+\import $:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all
+
+`[`
+
+<$list filter={{{ [<skinnySaveTiddlerFilter>] }}} counter="counter" template="$:/core/templates/html-json-skinny-tiddler"/>
+
+`]`

@@ -2,4 +2,6 @@ title: $:/plugins/linonetwo/tw-mobile-sync/develop
 creator: LinOnetwo
 type: text/vnd.tiddlywiki
 
+TidGi-Mobile use [[$:/plugins/linonetwo/tw-mobile-sync/templates/skinny-tiddlywiki5.html]] as template. See [[$:/plugins/linonetwo/tw-mobile-sync/templates/about-skinny-tiddlywiki5-html]] for how it differ from original lazy-all template.
+
 Use [[SIOC|https://github.com/taurenshaman/semantic-web/blob/cee9e421eed3f31a602f82375fb92fb109d638b7/data/sioc.rdf]] Ontology for server tiddler.
