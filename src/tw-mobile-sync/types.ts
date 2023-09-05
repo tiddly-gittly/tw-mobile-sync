@@ -5,6 +5,10 @@ export interface ISyncEndPointRequest {
   lastSync: string | undefined;
   tiddlers: Array<Partial<ITiddlerFieldsParam>>;
 }
+export interface ISyncEndPointResponse {
+  deletes: string[];
+  updates: ITiddlerFieldsParam[];
+}
 
 export interface IClientInfo {
   Origin: string;

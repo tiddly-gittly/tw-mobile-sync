@@ -8,13 +8,14 @@ import { getSyncedTiddlersText } from 'src/tw-mobile-sync/getSyncedTiddlersText'
 import type { ITiddlerFields, ServerEndpointHandler, Tiddler } from 'tiddlywiki';
 import { getServerChangeFilter } from '../../data/filters';
 import { getClientInfo } from '../../data/getClientInfo';
-import { ConnectionState, ISyncEndPointRequest } from '../../types';
+import { ConnectionState, ISyncEndPointRequest, ISyncEndPointResponse } from '../../types';
 
 exports.method = 'POST';
 
 // route should start with something https://github.com/Jermolene/TiddlyWiki5/issues/4807
 // route is also in src/sync/getEndPoint.ts
-exports.path = /^\/tw-mobile-sync\/sync-by-log$/;
+// This is the V1 of TidGi-Mobile sync endpoint
+exports.path = /^\/tw-mobile-sync\/sync$/;
 
 // TODO: use this custom endpoint to handle conflict on server side
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest & Http.InformationEvent, response: Http.ServerResponse, context) {
@@ -22,8 +23,8 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
 
   try {
     const data = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
-    const { lastSync: clientLastSync, deleted: clientDeletedTiddlersTitle = [] } = data;
     let { tiddlers: clientTiddlerFields } = data;
+    const { lastSync: clientLastSync, deleted: clientDeletedTiddlersTitle = [] } = data;
     if (clientLastSync === undefined) {
       response.writeHead(400);
       response.end(`Need to provide lastSync field to calculate diff.`, 'utf8');
@@ -35,10 +36,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     }
     clientTiddlerFields = filterOutNotSyncedTiddlers(clientTiddlerFields);
 
-    const serverResponse: {
-      deletes: string[];
-      updates: ITiddlerFields[];
-    } = {
+    const serverResponse: ISyncEndPointResponse = {
       updates: [], // Tiddlers that the client should update or add
       deletes: [], // Tiddler titles that the client should delete
     };
