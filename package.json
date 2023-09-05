@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@modern-js/tsconfig": "^2.31.2",
+    "@types/lodash": "^4.14.197",
     "@types/node": "^20.5.1",
     "dprint": "^0.40.2",
     "eslint-config-tidgi": "1.1.4",
@@ -43,12 +44,13 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@sanity/diff-match-patch": "^3.1.1",
     "@ungap/structured-clone": "^1.0.1",
     "jsqr-es6": "^1.4.0-1",
     "lodash": "^4.17.21",
-    "ua-parser-js": "^1.0.32",
     "npm-check-updates": "^16.12.3",
     "tiddlywiki": "^5.3.1",
-    "tiddlywiki-plugin-dev": "^0.0.39"
+    "tiddlywiki-plugin-dev": "^0.0.39",
+    "ua-parser-js": "^1.0.32"
   }
 }

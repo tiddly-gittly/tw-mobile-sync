@@ -1,4 +1,4 @@
-export function getDiffFilter(lastSync: string | undefined) {
+export function getServerChangeFilter(lastSync: string | undefined) {
   return `[all[]] :filter[get[modified]compare:date:gt[${lastSync ?? ''}]]`;
 }
 

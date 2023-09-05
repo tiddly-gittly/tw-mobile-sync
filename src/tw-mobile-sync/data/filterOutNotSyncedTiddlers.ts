@@ -5,13 +5,9 @@ let prefixToNotSync: string[] | undefined;
 export const filterOutNotSyncedTiddlers = <T extends ITiddlerFieldsParam | ITiddlerFields>(tiddlers: T[]): T[] => {
   if (tiddlersToNotSync === undefined || prefixToNotSync === undefined) {
     tiddlersToNotSync = new Set(
-      ($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersToNotSync') ?? '')
-        .split(' ')
-        .map((tiddlerName) => tiddlerName.replace('[[', '').replace(']]', '')),
+      $tw.utils.parseStringArray($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersToNotSync') ?? ''),
     );
-    prefixToNotSync = ($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersPrefixToNotSync') ?? '')
-      .split(' ')
-      .map((tiddlerName) => tiddlerName.replace('[[', '').replace(']]', ''));
+    prefixToNotSync = $tw.utils.parseStringArray($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersPrefixToNotSync') ?? '');
   }
   return tiddlers
     .filter((tiddler: T) => !prefixToNotSync!.some((prefix) => (tiddler.title as string).startsWith(prefix)))

@@ -1,14 +1,14 @@
 /* eslint-disable unicorn/no-array-callback-reference */
-import type { Tiddler, IServerStatus, ITiddlerFieldsParam } from 'tiddlywiki';
-import mapValues from 'lodash/mapValues';
-import { activeServerStateTiddlerTitle, clientStatusStateTiddlerTitle, getLoopInterval } from './data/constants';
-import { getDiffFilter, getServerListFilter } from './data/filters';
-import { getClientInfoPoint, getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './data/getEndPoint';
-import type { ISyncEndPointRequest, IClientInfo } from './types';
-import { ConnectionState } from './types';
 import cloneDeep from 'lodash/cloneDeep';
-import { getSyncedTiddlersText } from './getSyncedTiddlersText';
+import mapValues from 'lodash/mapValues';
+import type { IServerStatus, ITiddlerFieldsParam, Tiddler } from 'tiddlywiki';
+import { activeServerStateTiddlerTitle, clientStatusStateTiddlerTitle, getLoopInterval } from './data/constants';
 import { filterOutNotSyncedTiddlers } from './data/filterOutNotSyncedTiddlers';
+import { getServerChangeFilter, getServerListFilter } from './data/filters';
+import { getClientInfoPoint, getFullHtmlEndPoint, getStatusEndPoint, getSyncEndPoint } from './data/getEndPoint';
+import { getSyncedTiddlersText } from './getSyncedTiddlersText';
+import type { IClientInfo, ISyncEndPointRequest } from './types';
+import { ConnectionState } from './types';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.name = 'browser-background-sync';
@@ -46,14 +46,20 @@ class BackgroundSyncManager {
   }
 
   setupListener() {
-    $tw.rootWidget.addEventListener('tw-mobile-sync-get-server-status', async (event) => await this.getServerStatus());
+    $tw.rootWidget.addEventListener('tw-mobile-sync-get-server-status', async (event) => {
+      await this.getServerStatus();
+    });
     $tw.rootWidget.addEventListener('tw-mobile-sync-set-active-server-and-sync', async (event) => {
       const titleToActive = event.paramObject?.title as string | undefined;
       await this.setActiveServerAndSync(titleToActive);
     });
     /** handle events from src/ui/ServerItemViewTemplate.tid 's $:/plugins/linonetwo/tw-mobile-sync/ui/ServerItemViewTemplate */
-    $tw.rootWidget.addEventListener('tw-mobile-sync-sync-start', async (event) => await this.start());
-    $tw.rootWidget.addEventListener('tw-mobile-sync-download-full-html', async (event) => await this.downloadFullHtmlAndApplyToWiki());
+    $tw.rootWidget.addEventListener('tw-mobile-sync-sync-start', async (event) => {
+      await this.start();
+    });
+    $tw.rootWidget.addEventListener('tw-mobile-sync-download-full-html', async (event) => {
+      await this.downloadFullHtmlAndApplyToWiki();
+    });
   }
 
   startCheckServerStatusLoop() {
@@ -127,8 +133,8 @@ class BackgroundSyncManager {
   /** On TidGi desktop, get connected client info */
   async getConnectedClientStatus() {
     try {
-    const response: Record<string, IClientInfo> = await fetch(getClientInfoPoint()).then(
-      async (response) => (await response.json()) as Record<string, IClientInfo>,
+      const response: Record<string, IClientInfo> = await fetch(getClientInfoPoint()).then(
+        async (response) => (await response.json()) as Record<string, IClientInfo>,
       );
       Object.values(response).forEach((clientInfo) => {
         $tw.wiki.addTiddler({
@@ -150,7 +156,9 @@ class BackgroundSyncManager {
         const active = serverInfoTiddler.fields.title === activeTiddlerTitle;
         try {
           const controller = new AbortController();
-          const id = setTimeout(() => controller.abort(), timeout);
+          const id = setTimeout(() => {
+            controller.abort();
+          }, timeout);
           const response: IServerStatus = await fetch(getStatusEndPoint(serverInfoTiddler.fields.ipAddress, serverInfoTiddler.fields.port), {
             signal: controller.signal,
           }).then(async (response) => (await response.json()) as IServerStatus);
@@ -229,7 +237,7 @@ class BackgroundSyncManager {
 
         $tw.wiki.addTiddler({
           title: '$:/state/notification/tw-mobile-sync/notification',
-          text: `Sync Complete ${getSyncedTiddlersText(changedTiddlersFromClient, changedTiddlersFromServer)}`,
+          text: `Sync Complete ${getSyncedTiddlersText(changedTiddlersFromClient, changedTiddlersFromServer, { client: [], server: [] })}`,
         });
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
       } catch (error) {
@@ -296,7 +304,7 @@ class BackgroundSyncManager {
       return [];
     }
     const lastSync = onlineActiveServer.fields.lastSync;
-    const diffTiddlersFilter: string = getDiffFilter(lastSync);
+    const diffTiddlersFilter: string = getServerChangeFilter(lastSync);
     const diffTiddlers: string[] = $tw.wiki.compileFilter(diffTiddlersFilter)() ?? [];
     return diffTiddlers
       .map($tw.wiki.getTiddler)
