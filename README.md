@@ -1,6 +1,12 @@
 # TiddlyWiki5 Mobile Sync
 
-Sync data between Mobile HTML (Tiddloid/Quine2/TidGi-Mobile) <-> Desktop App (TidGi/NodeJS).
+Sync data between Mobile HTML ([TidGi-Mobile](https://github.com/tiddly-gittly/TidGi-Mobile)/[Tiddloid](https://github.com/donmor/Tiddloid)/[Quine2](https://tiddlywiki.com/static/Saving%2520on%2520iPad%252FiPhone.html)) <-> Desktop App ([TidGi-Desktop](https://github.com/tiddly-gittly/TidGi-Desktop)/[NodeJS Server](https://tiddlywiki.com/#Node.js:Node.js%20%5B%5BInstalling%20TiddlyWiki%20on%20Node.js%5D%5D%20%5B%5BSaving%20on%20TidGi%20Desktop%5D%5D)).
+
+## Install
+
+From [CPL](https://tw-cpl.netlify.app/#linonetwo%2Ftw-mobile-sync:linonetwo%2Ftw-mobile-sync%20Welcome%20Index).
+
+Or from Github Release.
 
 ## Why this plugin
 
