@@ -2,6 +2,13 @@
 import { applyPatches, makePatches } from '@sanity/diff-match-patch';
 import type { ITiddlerFields } from 'tiddlywiki';
 
+/**
+ *
+ * @url https://neil.fraser.name/software/diff_match_patch/demos/patch.html
+ * @param a
+ * @param b
+ * @returns
+ */
 export function mergeTiddler(a: ITiddlerFields, b: ITiddlerFields): ITiddlerFields {
   if (a.title !== b.title) {
     throw new Error(`Cannot merge tiddlers with different titles: ${a.title} and ${b.title}`);
@@ -16,6 +23,7 @@ export function mergeTiddler(a: ITiddlerFields, b: ITiddlerFields): ITiddlerFiel
     return newerOne;
   }
   // both is string tiddler, we can merge them using diff-match-patch algorithm
+  // FIXME: Currently not working, it needs `c` that is an older version from server to work (3-way-merge), otherwise it will just use `b.text` as the merged text
   const patches = makePatches(a.text, b.text);
   const [mergedText] = applyPatches(patches, a.text);
   const fields: ITiddlerFields = {

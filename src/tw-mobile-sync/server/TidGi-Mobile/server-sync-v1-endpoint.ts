@@ -4,8 +4,9 @@ import type Http from 'http';
 import { ClientInfoStore } from 'src/tw-mobile-sync/data/clientInfoStoreClass';
 import { filterOutNotSyncedTiddlers } from 'src/tw-mobile-sync/data/filterOutNotSyncedTiddlers';
 import { mergeTiddler } from 'src/tw-mobile-sync/data/mergeTiddler';
+import { toTWUTCString } from 'src/tw-mobile-sync/data/toTWUTCString';
 import { getSyncedTiddlersText } from 'src/tw-mobile-sync/getSyncedTiddlersText';
-import type { ITiddlerFields, ServerEndpointHandler, Tiddler } from 'tiddlywiki';
+import type { ServerEndpointHandler, Tiddler } from 'tiddlywiki';
 import { getServerChangeFilter } from '../../data/filters';
 import { getClientInfo } from '../../data/getClientInfo';
 import { ConnectionState, ISyncEndPointRequest, ISyncEndPointResponse } from '../../types';
@@ -24,8 +25,8 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   try {
     const data = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
     let { tiddlers: clientTiddlerFields } = data;
-    const { lastSync: clientLastSync, deleted: clientDeletedTiddlersTitle = [] } = data;
-    if (clientLastSync === undefined) {
+    const { deleted: clientDeletedTiddlersTitle = [], lastSync: clientLastSyncJSDateNowString } = data;
+    if (!clientLastSyncJSDateNowString) {
       response.writeHead(400);
       response.end(`Need to provide lastSync field to calculate diff.`, 'utf8');
       return;
@@ -34,6 +35,8 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
       response.writeHead(400, { 'Content-Type': 'application/json' });
       response.end(`Bad request body, not a tiddler list. ${String(clientTiddlerFields)}`, 'utf8');
     }
+    const clientLastSyncDate = new Date(Number.parseInt(clientLastSyncJSDateNowString));
+    const clientLastSyncTWUTCString = toTWUTCString(clientLastSyncDate);
     clientTiddlerFields = filterOutNotSyncedTiddlers(clientTiddlerFields);
 
     const serverResponse: ISyncEndPointResponse = {
@@ -45,7 +48,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
 
     // Fetch the updated and deleted tiddlers from the server database BEFORE making any changes.
     // get changed tiddlers
-    const serverChangedTiddlersFilter: string = getServerChangeFilter(clientLastSync);
+    const serverChangedTiddlersFilter: string = getServerChangeFilter(clientLastSyncTWUTCString);
     const serverChangedTiddlers: string[] = context.wiki.compileFilter(serverChangedTiddlersFilter)() ?? [];
     const serverUpdatedTiddlerFields = filterOutNotSyncedTiddlers(
       serverChangedTiddlers
@@ -75,16 +78,18 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
         // Some tiddler may not have modified field, for example, add by template or button
         // We can't decide which is new, but we assume mobile-first, so let mobile take preference
         context.wiki.addTiddler(clientTiddlerField);
-      } else if (new Date(clientTiddlerField.modified) > serverTiddler.fields.modified) {
-        // Client tiddler is newer
-        context.wiki.addTiddler(clientTiddlerField);
-      } else if (serverTiddler.fields.modified > new Date(clientLastSync)) {
+      } else if (serverTiddler.fields.modified > clientLastSyncDate) {
         // Server tiddler is newer and has changed after client's last sync, unfortunately, client change it too.
         // clientTiddler.modified > clientLastSync, we can't decide which is newer, this means both have update, we need to merge them
         const clientTiddler = new $tw.Tiddler(clientTiddlerField);
         const mergedTiddlerFields = mergeTiddler(clientTiddler.fields, serverTiddler.fields);
-        serverResponse.updates.push(mergedTiddlerFields);
+        // make sure `list` and `tags` are tiddlywiki array string, instead of JS array, otherwise core can't read tiddler store. And make sure `created` `modified` are tiddlywiki UTC date string, instead of JS Date object.
+        const mergedFieldStrings = new $tw.Tiddler(mergedTiddlerFields).getFieldStrings();
+        serverResponse.updates.push(mergedFieldStrings);
         context.wiki.addTiddler(mergedTiddlerFields);
+      } else if (new Date(clientTiddlerField.modified) > serverTiddler.fields.modified) {
+        // Client tiddler is newer
+        context.wiki.addTiddler(clientTiddlerField);
       }
       // we should have covered all cases
       console.log(`Unhandled case: ${title}`, clientTiddlerField, serverTiddler?.fields);
@@ -93,7 +98,9 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     serverUpdatedTiddlerFields.forEach(serverTiddlerField => {
       // Only add if the client hasn't already processed this tiddler in above forEach loop
       if (!processedTiddlerTitles.has(serverTiddlerField.title)) {
-        serverResponse.updates.push(serverTiddlerField);
+        // make sure `list` and `tags` are tiddlywiki array string, instead of JS array, otherwise core can't read tiddler store. And make sure `created` `modified` are tiddlywiki UTC date string, instead of JS Date object.
+        const serverTiddlerFieldStrings = new $tw.Tiddler(serverTiddlerField).getFieldStrings();
+        serverResponse.updates.push(serverTiddlerFieldStrings);
       }
     });
 
