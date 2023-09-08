@@ -1,3 +1,4 @@
+/* eslint-disable security-node/detect-crlf */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type Http from 'http';
@@ -69,30 +70,41 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
       const title = clientTiddlerField.title as string;
       processedTiddlerTitles.add(title);
 
-      const serverTiddler = context.wiki.getTiddler(title);
+      try {
+        const serverTiddler = context.wiki.getTiddler(title);
 
-      if (!serverTiddler) {
-        // Tiddler doesn't exist on server, so save client tiddler
-        context.wiki.addTiddler(clientTiddlerField);
-      } else if (!serverTiddler.fields.modified || !clientTiddlerField.modified) {
-        // Some tiddler may not have modified field, for example, add by template or button
-        // We can't decide which is new, but we assume mobile-first, so let mobile take preference
-        context.wiki.addTiddler(clientTiddlerField);
-      } else if (serverTiddler.fields.modified > clientLastSyncDate) {
-        // Server tiddler is newer and has changed after client's last sync, unfortunately, client change it too.
-        // clientTiddler.modified > clientLastSync, we can't decide which is newer, this means both have update, we need to merge them
-        const clientTiddler = new $tw.Tiddler(clientTiddlerField);
-        const mergedTiddlerFields = mergeTiddler(clientTiddler.fields, serverTiddler.fields);
-        // make sure `list` and `tags` are tiddlywiki array string, instead of JS array, otherwise core can't read tiddler store. And make sure `created` `modified` are tiddlywiki UTC date string, instead of JS Date object.
-        const mergedFieldStrings = new $tw.Tiddler(mergedTiddlerFields).getFieldStrings();
-        serverResponse.updates.push(mergedFieldStrings);
-        context.wiki.addTiddler(mergedTiddlerFields);
-      } else if (new Date(Number(clientTiddlerField.modified)) > serverTiddler.fields.modified) {
-        // Client tiddler is newer
-        context.wiki.addTiddler(clientTiddlerField);
+        if (!serverTiddler) {
+          // Tiddler doesn't exist on server, so save client tiddler
+          context.wiki.addTiddler(clientTiddlerField);
+        } else if (!serverTiddler.fields.modified || !clientTiddlerField.modified) {
+          // Some tiddler may not have modified field, for example, add by template or button
+          // We can't decide which is new, but we assume mobile-first, so let mobile take preference
+          context.wiki.addTiddler(clientTiddlerField);
+        } else if (serverTiddler.fields.modified > clientLastSyncDate) {
+          // Server tiddler is newer and has changed after client's last sync, unfortunately, client change it too.
+          // clientTiddler.modified > clientLastSync, we can't decide which is newer, this means both have update, we need to merge them
+          const clientTiddler = new $tw.Tiddler(clientTiddlerField);
+          const mergedTiddlerFields = mergeTiddler(clientTiddler.fields, serverTiddler.fields);
+          // make sure `list` and `tags` are tiddlywiki array string, instead of JS array, otherwise core can't read tiddler store. And make sure `created` `modified` are tiddlywiki UTC date string, instead of JS Date object.
+          const mergedFieldStrings = new $tw.Tiddler(mergedTiddlerFields).getFieldStrings();
+          serverResponse.updates.push(mergedFieldStrings);
+          context.wiki.addTiddler(mergedTiddlerFields);
+        } else if (new $tw.Tiddler(clientTiddlerField).fields.modified > serverTiddler.fields.modified) {
+          // Client tiddler is newer
+          context.wiki.addTiddler(clientTiddlerField);
+        }
+        // we should have covered all cases
+        console.log(
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          `Unhandled case: ${title} \nwhere ${String(new Date(Number(clientTiddlerField.modified)))} > ${serverTiddler?.fields?.modified} is ${
+            String(new Date(Number(clientTiddlerField.modified)) > (serverTiddler?.fields?.modified ?? 0))
+          }`,
+          clientTiddlerField,
+          serverTiddler?.fields,
+        );
+      } catch (error) {
+        console.error('Error when processing tiddler', clientTiddlerField, error);
       }
-      // we should have covered all cases
-      console.log(`Unhandled case: ${title}`, clientTiddlerField, serverTiddler?.fields);
     });
 
     serverUpdatedTiddlerFields.forEach(serverTiddlerField => {
