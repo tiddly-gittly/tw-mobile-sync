@@ -87,7 +87,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
         const mergedFieldStrings = new $tw.Tiddler(mergedTiddlerFields).getFieldStrings();
         serverResponse.updates.push(mergedFieldStrings);
         context.wiki.addTiddler(mergedTiddlerFields);
-      } else if (new Date(clientTiddlerField.modified) > serverTiddler.fields.modified) {
+      } else if (new Date(Number(clientTiddlerField.modified)) > serverTiddler.fields.modified) {
         // Client tiddler is newer
         context.wiki.addTiddler(clientTiddlerField);
       }
