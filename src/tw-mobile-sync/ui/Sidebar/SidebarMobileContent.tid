@@ -5,9 +5,11 @@ type: text/vnd.tiddlywiki
   <legend>与桌面端同步 Sync With Desktop</legend>
 
   <$reveal type="match" state="$:/info/tidgi-mobile" text="yes">
+    
     Use TidGi-Mobile's wiki list to sync (long press wiki item in the list to open menu)
 
     使用 TidGi-Mobile 的 wiki 列表进行同步（长按列表里的 wiki 条目打开菜单）
+
   </$reveal>
 
   <$reveal type="nomatch" state="$:/info/tidgi-mobile" text="yes">
@@ -22,4 +24,6 @@ type: text/vnd.tiddlywiki
 
 </fieldset>
 
+<$reveal type="nomatch" state="$:/info/tidgi-mobile" text="yes">
 {{$:/plugins/linonetwo/tw-mobile-sync/ui/AddNewToServerList}}
+</$reveal>
