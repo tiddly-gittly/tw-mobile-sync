@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type Http from 'http';
-import type { ClientInfoStore } from '../data/clientInfoStoreClass';
+import type { ClientInfoStore } from '../../data/clientInfoStoreClass';
 
 exports.method = 'GET';
 
