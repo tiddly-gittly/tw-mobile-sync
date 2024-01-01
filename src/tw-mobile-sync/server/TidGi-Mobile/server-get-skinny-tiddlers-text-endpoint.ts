@@ -1,5 +1,7 @@
+/* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type Http from 'http';
+import { pipeline, Readable, Transform } from 'stream';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 
 exports.method = 'GET';
@@ -12,8 +14,6 @@ exports.method = 'GET';
  */
 exports.path = /^\/tw-mobile-sync\/get-skinny-tiddler-text$/;
 
-const templateName = '$:/plugins/linonetwo/tw-mobile-sync/templates/save/save-lazy-all-skinny-tiddler-store';
-
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -21,15 +21,30 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   const titlesFilter = '[!is[system]] -[type[application/javascript]] -[is[binary]]';
   const titles = context.wiki.filterTiddlers(titlesFilter);
   // get tiddlers
-  const texts = titles.map(title => context.wiki.getTiddlerText(title));
-  const result = JSON.stringify(titles.map((title, index) => ({ title, text: texts[index] })));
+  const titleStream = Readable.from(titles);
+  const transformStream = new Transform({
+    objectMode: true,
+    transform(title: string, encoding, callback) {
+      callback(null, JSON.stringify({ title, text: context.wiki.getTiddlerText(title) }) + '\n');
+    },
+  });
 
   try {
-    response.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(result) });
-    response.end(result, 'utf8');
+    response.writeHead(200, { 'Content-Type': 'application/jsonl' }); // , 'Content-Length': Buffer.byteLength(result) });
+    pipeline(
+      titleStream,
+      transformStream,
+      response,
+      (error) => {
+        if (error !== null) {
+          response.writeHead(500);
+          response.end(`Failed to render tiddlers with stream , ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
+        }
+      },
+    );
   } catch (error) {
     response.writeHead(500);
-    response.end(`Failed to render tiddlers using ${templateName} , ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
+    response.end(`Failed to render tiddlers in get-skinny-tiddler-text , ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
   }
 };
 

@@ -2,8 +2,4 @@ title: $:/plugins/linonetwo/tw-mobile-sync/templates/save/save-lazy-all-non-skin
 
 \import $:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all
 
-`[`
-
 <$list filter=<<saveTiddlerFilter>> counter="counter" template="$:/core/templates/html-json-tiddler"/>
-
-`]`

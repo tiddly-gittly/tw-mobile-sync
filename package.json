@@ -32,7 +32,7 @@
   "devDependencies": {
     "@modern-js/tsconfig": "^2.31.2",
     "@types/lodash": "^4.14.197",
-    "@types/node": "^20.5.1",
+    "@types/node": "^20.10.6",
     "dprint": "^0.40.2",
     "eslint-config-tidgi": "1.1.4",
     "husky": "^8.0.3",
