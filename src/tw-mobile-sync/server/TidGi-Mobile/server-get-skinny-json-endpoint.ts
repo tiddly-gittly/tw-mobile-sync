@@ -5,7 +5,8 @@ import type { OutputMimeTypes, ServerEndpointHandler } from 'tiddlywiki';
 exports.method = 'GET';
 
 /**
- * Route to get things inside `<script class="tiddlywiki-tiddler-store" type="application/json">`
+ * Route to get things originally inside `<script class="tiddlywiki-tiddler-store" type="application/json">`
+ * This will return a JSON Line file, each line is a tiddler json, no tailing comma, and is parsed in TidGi-Mobile's importer and store in SQLite (instead of in HTML).
  * Only including skinny tiddlers.
  *
  * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
