@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type Http from 'http';
-import type { OutputMimeTypes, ServerEndpointHandler } from 'tiddlywiki';
+import type { ServerEndpointHandler } from 'tiddlywiki';
 
 exports.method = 'GET';
 
 /**
  * Route to get things inside `<script class="tiddlywiki-tiddler-store" type="application/json">`
- * Only including non-skinny tiddlers.
- * 
+ * Only including non-skinny tiddlers. This JSON is used as-is, so should be a valid JSON, instead of JSON-Line.
+ *
  * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
  */
 exports.path = /^\/tw-mobile-sync\/get-non-skinny-tiddlywiki-tiddler-store-script$/;
