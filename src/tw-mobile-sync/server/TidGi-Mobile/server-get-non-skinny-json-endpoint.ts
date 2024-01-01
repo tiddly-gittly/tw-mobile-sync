@@ -7,6 +7,8 @@ exports.method = 'GET';
 /**
  * Route to get things inside `<script class="tiddlywiki-tiddler-store" type="application/json">`
  * Only including non-skinny tiddlers.
+ * 
+ * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
  */
 exports.path = /^\/tw-mobile-sync\/get-non-skinny-tiddlywiki-tiddler-store-script$/;
 

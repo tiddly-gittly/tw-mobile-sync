@@ -4,7 +4,12 @@ title: $:/plugins/linonetwo/tw-mobile-sync/templates/about-skinny-tiddlywiki5-ht
 
 !!! $:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all
 
-`<noscript>` part is removed, because it is not used by users on mobile phone.
+* Add some plugin to saveTiddlerFilter ignore list at the end, and remove useless `+[sort[title]]`
+* Replace `{{$:/core/templates/tiddlywiki5.html}}` with our `{{$:/plugins/linonetwo/tw-mobile-sync/templates/skinny-tiddlywiki5.html}}`
+
+!!! $:/plugins/linonetwo/tw-mobile-sync/templates/skinny-tiddlywiki5.html
+
+`<noscript>` part is removed, because it is not used by users on mobile phone:
 
 ```
 <!--~~ Static content for Google and browsers without JavaScript ~~-->
@@ -15,7 +20,7 @@ title: $:/plugins/linonetwo/tw-mobile-sync/templates/about-skinny-tiddlywiki5-ht
 </noscript>
 ```
 
-The `class="tiddlywiki-tiddler-store"` part is removed, because we will use multiple files to store tiddlers. And recreate this part manually, and add to the html string.
+The `class="tiddlywiki-tiddler-store"` part (which is included by `$:/core/templates/store.area.template.html`) is removed, because we will use multiple files to store tiddlers. And recreate this part manually, and add to the html string:
 
 ```
 <!--~~ Ordinary tiddlers ~~-->

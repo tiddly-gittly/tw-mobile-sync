@@ -4,8 +4,12 @@ import type { OutputMimeTypes, ServerEndpointHandler } from 'tiddlywiki';
 
 exports.method = 'GET';
 
-// route should start with something https://github.com/Jermolene/TiddlyWiki5/issues/4807
-// route is also in src/sync/getEndPoint.ts
+/**
+ * route should start with something https://github.com/Jermolene/TiddlyWiki5/issues/4807
+ * route is also in src/sync/getEndPoint.ts
+ *
+ * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
+ */
 exports.path = /^\/tw-mobile-sync\/get-skinny-html$/;
 
 // intended to work with TidGi-Mobile, which can handle the lazy-all. Tiddloid is hard to implement this in Java code...

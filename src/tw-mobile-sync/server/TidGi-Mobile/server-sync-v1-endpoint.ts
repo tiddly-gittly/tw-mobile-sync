@@ -14,9 +14,13 @@ import { ConnectionState, ISyncEndPointRequest, ISyncEndPointResponse } from '..
 
 exports.method = 'POST';
 
-// route should start with something https://github.com/Jermolene/TiddlyWiki5/issues/4807
-// route is also in src/sync/getEndPoint.ts
-// This is the V1 of TidGi-Mobile sync endpoint
+/**
+ * route should start with something https://github.com/Jermolene/TiddlyWiki5/issues/4807
+ * route is also in src/sync/getEndPoint.ts
+ * This is the V1 of TidGi-Mobile sync endpoint
+ *
+ * Used in TidGi-Mobile's src/services/BackgroundSyncService/index.ts
+ */
 exports.path = /^\/tw-mobile-sync\/sync$/;
 
 // TODO: use this custom endpoint to handle conflict on server side

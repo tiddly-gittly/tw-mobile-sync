@@ -7,6 +7,8 @@ exports.method = 'GET';
 /**
  * Sync text field for most of small skinny tiddlers.
  * Return multiple tiddler at once, for TidGi-Mobile to batch update. But only limit to small files smaller than 0.5MB.
+ *
+ * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
  */
 exports.path = /^\/tw-mobile-sync\/get-skinny-tiddler-text$/;
 
