@@ -15,7 +15,7 @@ type: text/vnd.tiddlywiki
 
 QRCode of Current Server
 
-<<tabs "$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopFullHtmlQR $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR" "$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR" "$:/state/tw-mobile-sync/ui/Sidebar/qr">>
+{{$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR}}
 
 <fieldset class="tw-mobile-sync-sidebar-fieldset tw-mobile-sync-sidebar-desktop">
   <legend>已连接客户端</legend>
