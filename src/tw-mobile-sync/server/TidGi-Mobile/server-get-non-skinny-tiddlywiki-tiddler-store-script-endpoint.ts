@@ -9,11 +9,11 @@ exports.method = 'GET';
  * Only including non-skinny tiddlers. This JSON is used as-is, so should be a valid JSON, instead of JSON-Line.
  *
  * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
+ * intended to work with TidGi-Mobile, which can handle the lazy-all. Tiddloid is hard to implement this in Java code...
  */
 exports.path = /^\/tw-mobile-sync\/get-non-skinny-tiddlywiki-tiddler-store-script$/;
 
-// intended to work with TidGi-Mobile, which can handle the lazy-all. Tiddloid is hard to implement this in Java code...
-const templateName = '$:/plugins/linonetwo/tw-mobile-sync/templates/save/save-lazy-all-non-skinny-tiddler-store';
+const templateName = '$:/plugins/linonetwo/tw-mobile-sync/templates/save/save-lazy-all-non-skinny-tiddlywiki-tiddler-store';
 
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
