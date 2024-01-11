@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type Http from 'http';
-import type { OutputMimeTypes, ServerEndpointHandler } from 'tiddlywiki';
+import type { ServerEndpointHandler } from 'tiddlywiki';
 
 exports.method = 'GET';
 

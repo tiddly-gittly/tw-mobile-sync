@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type Http from 'http';
@@ -12,13 +13,19 @@ exports.method = 'GET';
  *
  * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
  */
-exports.path = /^\/tw-mobile-sync\/get-skinny-tiddler-text$/;
+exports.path = /^\/tw-mobile-sync\/get-skinny-tiddler-text\/(.+)$/;
 
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
 
   // get filter for titles
-  const titlesFilter = '[!is[system]] -[type[application/javascript]] -[is[binary]]';
+  const encodedTitlesFilter = context.params?.[0];
+  let titlesFilter =
+    '[!is[system]] -[type[application/javascript]] -[is[binary]] -[is[binary]] -[type[application/msword]] -[type[application/excel]] -[type[application/mspowerpoint]] -[type[application/vnd.ms-excel]]';
+  if (encodedTitlesFilter?.trim?.()) {
+    titlesFilter = $tw.utils.decodeURIComponentSafe(encodedTitlesFilter).trim();
+  }
+
   const titles = context.wiki.filterTiddlers(titlesFilter);
   // get tiddlers
   const titleStream = Readable.from(titles);
