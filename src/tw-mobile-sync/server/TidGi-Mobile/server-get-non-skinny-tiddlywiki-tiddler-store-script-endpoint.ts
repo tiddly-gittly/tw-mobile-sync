@@ -5,8 +5,7 @@ import type { ServerEndpointHandler } from 'tiddlywiki';
 exports.method = 'GET';
 
 /**
- * Route to get things inside `<script class="tiddlywiki-tiddler-store" type="application/json">`
- * Only including non-skinny tiddlers. This JSON is used as-is, so should be a valid JSON, instead of JSON-Line.
+ * Route to get non-skinny tiddlers, like system tiddlers and state tiddlers.
  *
  * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
  * intended to work with TidGi-Mobile, which can handle the lazy-all. Tiddloid is hard to implement this in Java code...
@@ -22,7 +21,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   const exportedHTMLContent = context.wiki.renderTiddler('text/plain', templateName);
 
   try {
-    response.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(exportedHTMLContent) });
+    response.writeHead(200, { 'Content-Type': 'application/jsonl', 'Content-Length': Buffer.byteLength(exportedHTMLContent) });
     response.end(exportedHTMLContent, 'utf8');
   } catch (error) {
     response.writeHead(500);

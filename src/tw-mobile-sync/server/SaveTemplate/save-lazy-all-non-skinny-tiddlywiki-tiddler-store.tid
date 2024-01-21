@@ -2,12 +2,4 @@ title: $:/plugins/linonetwo/tw-mobile-sync/templates/save/save-lazy-all-non-skin
 
 \import $:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all
 
-`[`
-
-<$let newline={{{ [charcode[10]] }}} join=`,$(newline)$`>
-  <$text text=<<newline>>/>
-  <$list filter=<<saveTiddlerFilter>> join=<<join>> template="$:/core/templates/html-json-tiddler"/>
-  <$text text=<<newline>>/>
-</$let>
-
-`]`
+<$list filter=<<saveTiddlerFilter>> template="$:/core/templates/html-json-tiddler"/>
