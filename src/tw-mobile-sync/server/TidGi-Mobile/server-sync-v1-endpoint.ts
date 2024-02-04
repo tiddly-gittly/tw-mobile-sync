@@ -96,17 +96,18 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
         } else if (new $tw.Tiddler(clientTiddlerField).fields.modified > serverTiddler.fields.modified) {
           // Client tiddler is newer
           context.wiki.addTiddler(clientTiddlerField);
+        } else {
+          // we should have covered all cases
+          console.log(
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            `Unhandled case: ${title} \nwhere ${String(new $tw.Tiddler(clientTiddlerField).fields.modified)} > ${serverTiddler?.fields?.modified} is ${
+              String(new $tw.Tiddler(clientTiddlerField).fields.modified > (serverTiddler?.fields?.modified ?? 0))
+            }`,
+            clientTiddlerField,
+            serverTiddler?.fields,
+          );
+          context.wiki.addTiddler(clientTiddlerField);
         }
-        // we should have covered all cases
-        console.log(
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          `Unhandled case: ${title} \nwhere ${String(new $tw.Tiddler(clientTiddlerField).fields.modified)} > ${serverTiddler?.fields?.modified} is ${
-            new $tw.Tiddler(clientTiddlerField).fields.modified > serverTiddler.fields.modified
-          }`,
-          clientTiddlerField,
-          serverTiddler?.fields,
-        );
-        context.wiki.addTiddler(clientTiddlerField);
       } catch (error) {
         console.error('Error when processing tiddler', clientTiddlerField, error);
       }
