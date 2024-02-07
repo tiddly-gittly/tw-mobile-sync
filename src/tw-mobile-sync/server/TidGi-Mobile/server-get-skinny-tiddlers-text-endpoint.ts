@@ -37,7 +37,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   });
 
   try {
-    response.writeHead(200, { 'Content-Type': 'application/jsonl' }); // , 'Content-Length': Buffer.byteLength(result) });
+    response.writeHead(200, { 'Content-Type': 'application/json' }); // , 'Content-Length': Buffer.byteLength(result) });
     pipeline(
       titleStream,
       transformStream,

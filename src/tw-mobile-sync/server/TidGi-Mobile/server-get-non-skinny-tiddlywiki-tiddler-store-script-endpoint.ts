@@ -21,7 +21,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   const exportedHTMLContent = context.wiki.renderTiddler('text/plain', templateName);
 
   try {
-    response.writeHead(200, { 'Content-Type': 'application/jsonl', 'Content-Length': Buffer.byteLength(exportedHTMLContent) });
+    response.writeHead(200, { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(exportedHTMLContent) });
     response.end(exportedHTMLContent, 'utf8');
   } catch (error) {
     response.writeHead(500);
