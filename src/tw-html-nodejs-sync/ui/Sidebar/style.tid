@@ -1,0 +1,27 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/Sidebar/style.css
+tags: $:/tags/Stylesheet
+type: text/vnd.tiddlywiki
+
+<$importvariables filter="[[$:/themes/tiddlywiki/vanilla/base]]">
+
+.tw-html-nodejs-sync-sidebar-mobile-content, .tw-html-nodejs-sync-sidebar-desktop-content {
+  width: 100%;
+display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+@media (min-width: <<sidebarbreakpoint>>) {
+  .tw-html-nodejs-sync-sidebar-mobile-content {
+    display: none;
+  }
+}
+
+@media (max-width: <<sidebarbreakpoint>>) {
+  .tw-html-nodejs-sync-sidebar-desktop-content {
+    display: none;
+  }
+}
+
+</$importvariables>

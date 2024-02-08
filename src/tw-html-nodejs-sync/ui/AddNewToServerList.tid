@@ -1,0 +1,75 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/AddNewToServerList
+type: text/vnd.tiddlywiki
+
+<div>
+  {{$:/plugins/linonetwo/tw-html-nodejs-sync/ui/DownloadFullHtml}}
+</div>
+
+<div class="tw-html-nodejs-sync-new-server-field-fields-container-outer1">
+  <div class="tw-html-nodejs-sync-new-server-field-fields-container-outer2">
+    <fieldset>
+      <legend>智能识别黏贴框 Smart Identify Sticky Box</legend>
+
+      <div class="tw-html-nodejs-sync-new-server-field-fields-container">
+        <$edit-text tiddler="$:/state/tw-html-nodejs-sync/server/new" field="text" default=""/>
+
+        <div class="tw-html-nodejs-sync-new-server-field-fields-buttons">
+          <$button>
+            智能识别 Smart Identify
+            <$action-sendmessage $message="tw-html-nodejs-sync-smart-recognize-ip-address" from="$:/state/tw-html-nodejs-sync/server/new"/>
+          </$button>
+
+          <$reveal type="nomatch" state="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" text="yes">
+            <$button>
+              扫二维码 Scan QR
+              <$action-setfield $tiddler="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" text="yes" />
+            </$button>
+          </$reveal>
+          <$reveal type="match" state="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" text="yes">
+            <$button>
+              停止扫码 Stop Scan
+              <$action-setfield $tiddler="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" text="no" />
+            </$button>
+          </$reveal>
+        </div>
+      </div>
+
+      <$reveal type="match" state="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" text="yes">
+        <$ScanQRWidget outputTiddler="$:/state/tw-html-nodejs-sync/server/new" stopOnDetect="yes" stateTiddler="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" />
+      </$reveal>
+
+    </fieldset>
+    <fieldset>
+      <legend>服务器名 Server Name</legend>
+      <$edit-text tiddler="$:/state/tw-html-nodejs-sync/server/new" field="name" default="" />
+    </fieldset>
+    <fieldset>
+      <legend>服务器IP Server IP</legend>
+      <$edit-text tiddler="$:/state/tw-html-nodejs-sync/server/new" field="ipAddress" default="" />
+    </fieldset>
+    <fieldset>
+      <legend>服务器端口 Server Port</legend>
+      <$edit-text tiddler="$:/state/tw-html-nodejs-sync/server/new" field="port" default="" />
+    </fieldset>
+  </div>
+  <$button style="width: 160px; margin-top: 10px;">
+    <div>新增服务器</div>
+    <div>Add New</div>
+    <$set name="existedServers" filter={{$:/plugins/linonetwo/tw-html-nodejs-sync/ServerListFilter}} >
+      <$set name="latestLastSync" filter="[<existedServers>sort[lastSync]limit[1]get[lastSync]]" emptyValue=<<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">> >
+        <$action-createtiddler
+          $basetitle={{{ [<now "YYYY-MM-DD-0hh0mm0ss">] +[addprefix[$:/state/tw-html-nodejs-sync/server/]] }}}
+          text="offline"
+          name={{$:/state/tw-html-nodejs-sync/server/new!!name}}
+          caption={{$:/state/tw-html-nodejs-sync/server/new!!name}}
+          ipAddress={{$:/state/tw-html-nodejs-sync/server/new!!ipAddress}}
+          port={{$:/state/tw-html-nodejs-sync/server/new!!port}}
+          lastSync=<<latestLastSync>>
+        >
+          <$action-setfield $tiddler="$:/state/tw-html-nodejs-sync/server/new" text="" name="" ipAddress="" port="" />
+          <$action-sendmessage $message="tw-html-nodejs-sync-set-active-server-and-sync" title=<<createTiddler-title>> />
+        </$action-createtiddler>
+      </$set>
+    </$set>
+  </$button>
+</div>

@@ -1,0 +1,112 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/style.css
+tags: $:/tags/Stylesheet
+type: text/vnd.tiddlywiki
+
+<$importvariables filter="[[$:/themes/tiddlywiki/vanilla/base]]">
+
+.tw-html-nodejs-sync-server-list {
+  padding-left: 0;
+  overflow: auto;
+  overflow: overlay;
+}
+
+.tw-html-nodejs-sync-sync-button {
+  width: 100%; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  max-width: 300px;
+  min-width: 175px;
+}
+.tw-html-nodejs-sync-copy-button {
+  height: 100%;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  margin-left: 10px !important;
+}
+
+.tw-html-nodejs-sync-sync-reveal {
+  margin-left: 20px;
+}
+
+.tw-html-nodejs-sync-new-server-field-fields-container-outer2 textarea,
+.tw-html-nodejs-sync-new-server-field-fields-container-outer2 input {
+  width: 100%;
+}
+.tw-html-nodejs-sync-new-server-field-fields-container-outer2 {
+  display: flex; flex-direction: column;
+}
+.tw-html-nodejs-sync-new-server-field-fields-container {
+  display: flex; flex-direction: row; justify-content: center; align-items: center;
+}
+.tw-html-nodejs-sync-new-server-field-fields-container-outer1 {
+  display: flex; flex-direction: row;
+}
+@media (max-width: 535px) {
+  .tw-html-nodejs-sync-new-server-field-fields-container-outer1 {
+    flex-direction: column;
+  }
+}
+.tw-html-nodejs-sync-new-server-field-fields-buttons {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+}
+@media (max-width: 535px) {
+  .tw-html-nodejs-sync-new-server-field-fields-container {
+    flex-direction: column;
+  }
+  .tw-html-nodejs-sync-new-server-field-fields-buttons {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+}
+
+.tw-html-nodejs-sync-existed-server-field-fields-container {
+  display: flex; flex-direction: row;
+}
+.tw-html-nodejs-sync-existed-server-field-fields-buttons {
+  display: flex; flex-direction: row; justify-content: space-between;
+}
+
+
+.tw-html-nodejs-sync-sidebar-fieldset {
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  width: 100%;
+
+  margin-bottom: 10px;
+}
+
+.tw-html-nodejs-sync-sidebar-desktop-server-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 20px;
+}
+.tw-html-nodejs-sync-sidebar-desktop-server-item h3, .tw-html-nodejs-sync-sidebar-desktop-server-item h5 {
+  margin: 0;
+}
+.tw-html-nodejs-sync-sidebar-desktop-server-item h5 {
+  font-weight: 700;
+}
+.tw-html-nodejs-sync-sidebar-desktop-server-item p:last-child {
+  margin-bottom: 15px;
+}
+
+.tw-html-nodejs-sync-server-list-item {
+  display: flex; flex-direction: row; align-items: center;
+  justify-content: space-between;
+}
+@media (max-width: 535px) {
+  .tw-html-nodejs-sync-server-list-item {
+    flex-direction: column;
+  }
+}
+
+.tw-html-nodejs-sync-sidebar-qrcode {
+  width: auto;
+  height: auto;
+}
+.tw-html-nodejs-sync-sidebar-qrcode img {
+  width: calc({{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}} - 2em);
+  height: calc({{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}} - 2em);
+}
+
+</$importvariables>

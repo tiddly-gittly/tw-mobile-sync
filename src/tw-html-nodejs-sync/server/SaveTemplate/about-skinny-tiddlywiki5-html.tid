@@ -1,0 +1,38 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/templates/about-skinny-tiddlywiki5-html
+
+!! Difference
+
+!!! $:/plugins/linonetwo/tw-html-nodejs-sync/templates/save/lazy-all
+
+* Add some plugin to saveTiddlerFilter ignore list at the end, and remove useless `+[sort[title]]`
+* Replace `{{$:/core/templates/tiddlywiki5.html}}` with our `{{$:/plugins/linonetwo/tw-html-nodejs-sync/templates/skinny-tiddlywiki5.html}}`
+
+!!! $:/plugins/linonetwo/tw-html-nodejs-sync/templates/skinny-tiddlywiki5.html
+
+`<noscript>` part is removed, because it is not used by users on mobile phone:
+
+```
+<!--~~ Static content for Google and browsers without JavaScript ~~-->
+<noscript>
+<div id="splashArea">
+`{{$:/core/templates/static.area}}`
+</div>
+</noscript>
+```
+
+The `class="tiddlywiki-tiddler-store"` part (which is included by `$:/core/templates/store.area.template.html`) is removed, because we will use multiple files to store tiddlers. And recreate this part manually, and add to the html string:
+
+```
+<!--~~ Ordinary tiddlers ~~-->
+`{{$:/core/templates/store.area.template.html}}`
+```
+
+!!! $:/plugins/linonetwo/tw-html-nodejs-sync/templates/save/save-lazy-all-tiddler-store
+
+Only keep the
+
+> New-style JSON store area, with an old-style store area for compatibility with v5.1.x tooling
+
+Assume there is no tiddler within `Encrypted` area.
+
+So we can store the tiddler store as a JSON.

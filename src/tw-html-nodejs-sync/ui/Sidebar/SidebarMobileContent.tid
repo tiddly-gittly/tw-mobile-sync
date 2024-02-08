@@ -1,0 +1,29 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/Sidebar/SidebarMobileContent
+type: text/vnd.tiddlywiki
+
+<fieldset class="tw-html-nodejs-sync-sidebar-fieldset">
+  <legend>与桌面端同步 Sync With Desktop</legend>
+
+  <$reveal type="match" state="$:/info/tidgi-mobile" text="yes">
+    
+    Use TidGi-Mobile's wiki list to sync (long press wiki item in the list to open menu)
+
+    使用 TidGi-Mobile 的 wiki 列表进行同步（长按列表里的 wiki 条目打开菜单）
+
+  </$reveal>
+
+  <$reveal type="nomatch" state="$:/info/tidgi-mobile" text="yes">
+
+    <div class="tw-html-nodejs-sync-server-list-item">
+      {{{[prefix[$:/state/tw-html-nodejs-sync/server/]field:text[onlineActive]] ~[prefix[$:/state/tw-html-nodejs-sync/server/]field:text[online]first[]]||$:/plugins/linonetwo/tw-html-nodejs-sync/ui/ServerItemViewTemplateBasic}}}
+    </div>
+
+    [[服务器列表|$:/plugins/linonetwo/tw-html-nodejs-sync/ui/ServerList]]
+    
+  </$reveal>
+
+</fieldset>
+
+<$reveal type="nomatch" state="$:/info/tidgi-mobile" text="yes">
+{{$:/plugins/linonetwo/tw-html-nodejs-sync/ui/AddNewToServerList}}
+</$reveal>

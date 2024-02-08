@@ -1,0 +1,27 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/ControlPanel/Settings
+caption: MobileSync
+tags: $:/tags/ControlPanel/SettingsTab
+
+These settings let you customise the behaviour of TW-MobileSync plugin.
+
+---
+
+!! Sync
+
+
+!!! Sync Interval
+
+Normally, sync happened in local wiki, so it is free, so you can sync it frequently. This setting takes effect after refresh.
+
+Minutes between sync:
+
+<$edit-text
+	tiddler="$:/plugins/linonetwo/tw-html-nodejs-sync/Config/SyncInterval"
+	field="text"
+	default="3"
+	tabindex=-1
+	focus=false
+	cancelPopups="yes"
+	fileDrop=no
+	tag="input"
+/>

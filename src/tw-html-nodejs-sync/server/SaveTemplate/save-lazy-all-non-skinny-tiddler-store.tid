@@ -1,0 +1,9 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/templates/save/save-lazy-all-non-skinny-tiddler-store
+
+\import $:/plugins/linonetwo/tw-html-nodejs-sync/templates/save/lazy-all
+
+`[`
+
+<$list filter=<<saveTiddlerFilter>> counter="counter" template="$:/core/templates/html-json-tiddler"/>
+
+`]`

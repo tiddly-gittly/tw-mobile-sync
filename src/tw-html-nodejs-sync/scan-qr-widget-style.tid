@@ -1,0 +1,29 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/scan-qr-widget-style.css
+tags: $:/tags/Stylesheet
+type: text/css
+
+#scan-qr-widget-loadingMessage {
+  text-align: center;
+  padding: 40px;
+  background-color: #eee;
+}
+
+#scan-qr-widget-canvas {
+  width: 100%;
+}
+
+#scan-qr-widget-output {
+  margin-top: 20px;
+  background: #eee;
+  padding: 10px;
+  padding-bottom: 0;
+}
+
+#scan-qr-widget-output div {
+  padding-bottom: 10px;
+  word-wrap: break-word;
+}
+
+#scan-qr-widget-noQRFound {
+  text-align: center;
+}

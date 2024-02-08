@@ -1,0 +1,13 @@
+{
+  "title": "$:/plugins/linonetwo/tw-html-nodejs-sync",
+  "author": "LinOnetwo",
+  "description": "Sync data between Mobile HTML (Tiddloid/Quine2) <-> Desktop NodeJS App (TidGi) ",
+  "core-version": ">=5.1.22",
+  "plugin-type": "plugin",
+  "version": "0.6.5",
+  "list": "readme ui/ServerList",
+  "dependents": [
+    "$:/plugins/tiddlywiki/qrcode",
+    "$:/plugins/kixam/datepicker"
+  ]
+}

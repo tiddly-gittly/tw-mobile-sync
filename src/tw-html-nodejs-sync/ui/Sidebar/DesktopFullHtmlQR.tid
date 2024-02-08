@@ -1,0 +1,10 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/Sidebar/DesktopFullHtmlQR
+caption: Full (Tiddloid)
+type: text/vnd.tiddlywiki
+
+<div class="tw-html-nodejs-sync-sidebar-qrcode">
+  <$let content={{{ [{$:/info/url/full}addsuffix[tw-html-nodejs-sync/get-full-html]] }}} size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}} >
+    <<content>>
+    <<image>>
+  </$let>
+</div>

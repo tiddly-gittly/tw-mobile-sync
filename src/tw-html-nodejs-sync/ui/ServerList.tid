@@ -1,0 +1,13 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/ServerList
+type: text/vnd.tiddlywiki
+
+<div class="tw-html-nodejs-sync-server-list">
+  <$list filter={{$:/plugins/linonetwo/tw-html-nodejs-sync/ServerListFilter}}>
+    <div class="tw-html-nodejs-sync-server-list-item">
+      {{||$:/plugins/linonetwo/tw-html-nodejs-sync/ui/ServerItemViewTemplateBasic}}
+      {{||$:/plugins/linonetwo/tw-html-nodejs-sync/ui/ServerItemCopyTemplate}}
+    </div>
+  </$list>
+</div>
+
+{{$:/plugins/linonetwo/tw-html-nodejs-sync/ui/AddNewToServerList}}

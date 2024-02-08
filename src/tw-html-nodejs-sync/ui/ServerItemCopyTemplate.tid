@@ -1,0 +1,10 @@
+title: $:/plugins/linonetwo/tw-html-nodejs-sync/ui/ServerItemCopyTemplate
+type: text/vnd.tiddlywiki
+
+<$button class="tw-html-nodejs-sync-copy-button">
+  <div>复制</div>
+  <div>Copy</div>
+  <$action-createtiddler name={{{ [{!!name}addsuffix[copy]] }}} $template={{!!title}}>
+    <$action-navigate $to=<<createTiddler-title>>/>
+  </$action-createtiddler>
+</$button>
