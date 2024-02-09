@@ -34,7 +34,7 @@ QRCode of Current Server
       <div class="tw-mobile-sync-sidebar-desktop-server-item">
         <h2><$text text={{!!name}} /></h2>
         <h3>{{!!state}}</h3>
-        <span>{{!!os}}</span>
+        <span>{{!!User-Agent}}</span>
         <pre>{{!!recentlySyncedString}}</pre>
       </div>
     </$list>

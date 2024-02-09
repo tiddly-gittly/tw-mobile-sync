@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import structuredClone from '@ungap/structured-clone';
+import UAParser from 'ua-parser-js';
 import * as types from '../types';
 import { getLoopInterval } from './constants';
-import UAParser from 'ua-parser-js';
 
 export class ClientInfoStore {
   #clients: Record<string, types.IClientInfo> = {};
@@ -11,8 +11,8 @@ export class ClientInfoStore {
 
   constructor() {
     const loopInterval = getLoopInterval();
-    const keyOfflineTimeout = loopInterval * 2;
-    const keyDeleteTimeout = loopInterval * 10;
+    const keyOfflineTimeout = loopInterval * 2 * 60;
+    const keyDeleteTimeout = loopInterval * 10 * 60;
     this.loopHandel = setInterval(() => {
       Object.keys(this.#clients).forEach((key) => {
         const timestamp = this.#clients[key].timestamp;

@@ -2,7 +2,7 @@ import { ITiddlerFieldsParam } from 'tiddlywiki';
 
 export interface ISyncEndPointRequest {
   deleted?: string[];
-  lastSync: string | undefined;
+  lastSync: number | undefined;
   tiddlers: Array<Partial<ITiddlerFieldsParam>>;
 }
 export interface ISyncEndPointResponse {

@@ -30,8 +30,8 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   try {
     const data = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
     let { tiddlers: clientTiddlerFields } = data;
-    const { deleted: clientDeletedTiddlersTitle = [], lastSync: clientLastSyncJSDateNowString } = data;
-    if (!clientLastSyncJSDateNowString) {
+    const { deleted: clientDeletedTiddlersTitle = [], lastSync: clientLastSyncJSDateNow } = data;
+    if (!clientLastSyncJSDateNow) {
       response.writeHead(400);
       response.end(`Need to provide lastSync field to calculate diff.`, 'utf8');
       return;
@@ -40,7 +40,8 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
       response.writeHead(400, { 'Content-Type': 'application/json' });
       response.end(`Bad request body, not a tiddler list. ${String(clientTiddlerFields)}`, 'utf8');
     }
-    const clientLastSyncDate = new Date(Number.parseInt(clientLastSyncJSDateNowString));
+    const clientLastSyncDate = new Date(clientLastSyncJSDateNow);
+    console.log(`clientLastSyncJSDateNow ${clientLastSyncJSDateNow} clientLastSyncDate ${String(clientLastSyncDate)} `);
     const clientLastSyncTWUTCString = toTWUTCString(clientLastSyncDate);
     clientTiddlerFields = filterOutNotSyncedTiddlers(clientTiddlerFields);
 
@@ -54,9 +55,10 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     // Fetch the updated and deleted tiddlers from the server database BEFORE making any changes.
     // get changed tiddlers
     const serverChangedTiddlersFilter: string = getServerChangeFilter(clientLastSyncTWUTCString);
-    const serverChangedTiddlers: string[] = context.wiki.compileFilter(serverChangedTiddlersFilter)() ?? [];
+    const serverChangedTiddlerTitles: string[] = context.wiki.compileFilter(serverChangedTiddlersFilter)() ?? [];
+    console.log(`serverChangedTiddlersFilter: ${serverChangedTiddlersFilter} serverChangedTiddlers: [${serverChangedTiddlerTitles.join(', ')}]`);
     const serverUpdatedTiddlerFields = filterOutNotSyncedTiddlers(
-      serverChangedTiddlers
+      serverChangedTiddlerTitles
         .map((title) => {
           return context.wiki.getTiddler(title);
         })
@@ -113,6 +115,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
       }
     });
 
+    console.log(`Before process serverUpdatedTiddlerFields, processedTiddlerTitles ${[...processedTiddlerTitles].join(', ')}`);
     serverUpdatedTiddlerFields.forEach(serverTiddlerField => {
       // Only add if the client hasn't already processed this tiddler in above forEach loop
       if (!processedTiddlerTitles.has(serverTiddlerField.title)) {
@@ -133,8 +136,8 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const clientInfoStore: ClientInfoStore = require('$:/plugins/linonetwo/tw-mobile-sync/clientInfoStore.js').store;
     const clientInfo = getClientInfo(request, ConnectionState.onlineActive);
-    if (clientInfo.Origin !== undefined) {
-      clientInfoStore.updateClient(`${clientInfo.Origin ?? ''}${clientInfo['User-Agent'] ?? ''}`, {
+    if (clientInfo['User-Agent'] !== undefined) {
+      clientInfoStore.updateClient(clientInfo['User-Agent'], {
         ...clientInfo,
         recentlySyncedString: getSyncedTiddlersText(clientTiddlerFields, serverUpdatedTiddlerFields, { client: clientDeletedTiddlersTitle, server: serverDeletedTiddlerTitles }, {
           reverse: true,
