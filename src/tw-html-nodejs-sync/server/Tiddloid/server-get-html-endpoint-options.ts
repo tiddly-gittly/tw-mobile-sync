@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import type { ServerEndpointHandler } from 'tiddlywiki';
 import type Http from 'http';
+import type { ServerEndpointHandler } from 'tiddlywiki';
 
 /** this route is adding CORS to the POST in same route */
 exports.method = 'OPTIONS';

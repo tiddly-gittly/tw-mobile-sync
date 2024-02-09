@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type Http from 'http';
 import type { ServerEndpointHandler, Tiddler } from 'tiddlywiki';
-import { ClientInfoStore } from '../data/clientInfoStoreClass';
-import { filterOutNotSyncedTiddlers } from '../data/filterOutNotSyncedTiddlers';
-import { getServerChangeFilter } from '../data/filters';
-import { getClientInfo } from '../data/getClientInfo';
-import { getSyncedTiddlersText } from '../getSyncedTiddlersText';
-import { ConnectionState, ISyncEndPointRequest } from '../types';
+import { ClientInfoStore } from '../../data/clientInfoStoreClass';
+import { filterOutNotSyncedTiddlers } from '../../data/filterOutNotSyncedTiddlers';
+import { getServerChangeFilter } from '../../data/filters';
+import { getClientInfo } from '../../data/getClientInfo';
+import { getSyncedTiddlersText } from '../../getSyncedTiddlersText';
+import { ConnectionState, ISyncEndPointRequest } from '../../types';
 
 exports.method = 'POST';
 
