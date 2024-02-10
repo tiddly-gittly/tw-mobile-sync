@@ -26,6 +26,15 @@ exports.path = /^\/tw-mobile-sync\/sync$/;
 // TODO: use this custom endpoint to handle conflict on server side
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest & Http.InformationEvent, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
+  /**
+   * TidGi allow user to set read-only mode for server, and set this info tiddler for here to use to prevent user sync back to server.
+   */
+  const readOnlyMode = context.wiki.getTiddlerText('$:/info/tidgi/readOnlyMode') === 'yes';
+  if (readOnlyMode) {
+    response.writeHead(403);
+    response.end(`Don't sync back to readonly server.`, 'utf8');
+    return;
+  }
 
   try {
     const data = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
