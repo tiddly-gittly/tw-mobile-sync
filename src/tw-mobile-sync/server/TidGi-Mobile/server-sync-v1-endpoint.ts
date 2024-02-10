@@ -31,7 +31,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
    */
   const readOnlyMode = context.wiki.getTiddlerText('$:/info/tidgi/readOnlyMode') === 'yes';
   if (readOnlyMode) {
-    response.writeHead(403);
+    response.writeHead(401);
     response.end(`Don't sync back to readonly server.`, 'utf8');
     return;
   }
