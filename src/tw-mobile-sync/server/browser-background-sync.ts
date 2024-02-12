@@ -34,6 +34,10 @@ class BackgroundSyncManager {
   async getConnectedClientStatus() {
     try {
       const baseUrl = $tw.wiki.getTiddlerText('$:/info/url/full');
+      if (baseUrl?.startsWith?.('http') !== true) {
+        clearInterval(this.loop);
+        return;
+      }
       const response: Record<string, IClientInfo> = await fetch(getClientInfoPoint(baseUrl)).then(
         async (response) => (await response.json()) as Record<string, IClientInfo>,
       );
