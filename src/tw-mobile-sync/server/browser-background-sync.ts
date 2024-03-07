@@ -21,6 +21,8 @@ class BackgroundSyncManager {
   }
 
   async start() {
+    const isInTidGiMobile = $tw.wiki.getTiddlerText('$:/info/tidgi-mobile') === 'yes';
+    if (isInTidGiMobile) return;
     if (this.loop !== undefined) {
       clearInterval(this.loop);
       this.lock = false;
