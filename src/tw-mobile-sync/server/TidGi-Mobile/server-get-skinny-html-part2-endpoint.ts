@@ -10,10 +10,10 @@ exports.method = 'GET';
  *
  * Used in TidGi-Mobile's src/pages/Importer/useImportHTML.ts
  */
-exports.path = /^\/tw-mobile-sync\/get-skinny-html$/;
+exports.path = /^\/tw-mobile-sync\/get-skinny-html-part2$/;
 
 // intended to work with TidGi-Mobile, which can handle the lazy-all. Tiddloid is hard to implement this in Java code...
-const templateName = '$:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all';
+const templateName = '$:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all-part2';
 
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');

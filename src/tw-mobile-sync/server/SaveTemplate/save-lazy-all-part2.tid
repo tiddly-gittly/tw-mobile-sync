@@ -1,0 +1,9 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all-part2
+
+\define saveTiddlerFilter()
+[is[system]] -[prefix[$:/state/popup/]] -[[$:/HistoryList]] -[[$:/boot/boot.css]] -[type[application/javascript]library[yes]] -[[$:/boot/boot.js]] -[[$:/boot/bootprefix.js]] [is[tiddler]type[application/javascript]] -[[$:/plugins/tiddlywiki/filesystem]] -[[$:/plugins/twcloud/tiddlyweb-sse]] -[[$:/plugins/linonetwo/tidgi-ipc-syncadaptor]] -[[$:/plugins/linonetwo/tidgi-ipc-syncadaptor-ui]]
+\end
+\define skinnySaveTiddlerFilter()
+[!is[system]] -[type[application/javascript]] :sort:date[get[modified]else[19700101]]
+\end
+{{$:/plugins/linonetwo/tw-mobile-sync/templates/skinny-tiddlywiki5-part2.html}}

@@ -1,4 +1,4 @@
-title: $:/plugins/linonetwo/tw-mobile-sync/templates/skinny-tiddlywiki5.html
+title: $:/plugins/linonetwo/tw-mobile-sync/templates/skinny-tiddlywiki5-part1.html
 
 <$set name="saveTiddlerAndShadowsFilter" filter="[subfilter<saveTiddlerFilter>] [subfilter<saveTiddlerFilter>plugintiddlers[]]">
 `<!doctype html>
@@ -33,19 +33,4 @@ title: $:/plugins/linonetwo/tw-mobile-sync/templates/skinny-tiddlywiki5.html
 <div id="styleArea">
 `{{$:/boot/boot.css||$:/core/templates/css-tiddler}}`
 </div>
-<!--~~ Library modules ~~-->
-<div id="libraryModules" style="display:none;">
-`{{{ [is[system]type[application/javascript]library[yes]] ||$:/core/templates/javascript-tiddler}}}`
-</div>
-<!--~~ Boot kernel prologue ~~-->
-<div id="bootKernelPrefix" style="display:none;">
-`{{ $:/boot/bootprefix.js ||$:/core/templates/javascript-tiddler}}`
-</div>
-<!--~~ Boot kernel ~~-->
-<div id="bootKernel" style="display:none;">
-`{{ $:/boot/boot.js ||$:/core/templates/javascript-tiddler}}`
-</div>
-<!--~~ Raw markup for the bottom of the body section ~~-->
-`{{{ [enlist<saveTiddlerAndShadowsFilter>tag[$:/tags/RawMarkupWikified/BottomBody]] ||$:/core/templates/raw-static-tiddler}}}`
-</body>
-</html>`
+`</$set>
