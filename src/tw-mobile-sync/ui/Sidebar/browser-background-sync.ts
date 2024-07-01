@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-array-callback-reference */
-import { clientStatusStateTiddlerTitle, getLoopInterval } from '../data/constants';
-import { getClientInfoPoint } from '../data/getEndPoint';
-import type { IClientInfo } from '../types';
+import { clientStatusStateTiddlerTitle, getLoopInterval } from '../../data/constants';
+import { getClientInfoPoint } from '../../data/getEndPoint';
+import type { IClientInfo } from '../../types';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.name = 'tw-mobile-sync-browser-background-sync';
