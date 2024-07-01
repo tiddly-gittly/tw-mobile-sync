@@ -64,6 +64,10 @@ class BackgroundSyncManager {
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.startup = () => {
-  const syncManager = new BackgroundSyncManager();
-  void syncManager.start();
+  // only start when feature is used
+  $tw.rootWidget.addEventListener('tm-tw-mobile-sync-listen-client-info', () => {
+    const syncManager = new BackgroundSyncManager();
+    $tw.wiki.addTiddler({ title: '$:/temp/tw-mobile-sync/listen-client-info', text: 'yes' });
+    void syncManager.start();
+  });
 };
