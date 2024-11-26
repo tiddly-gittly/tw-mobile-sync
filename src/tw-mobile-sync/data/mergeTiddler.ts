@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import { applyPatches, makePatches } from '@sanity/diff-match-patch';
 import type { ITiddlerFields } from 'tiddlywiki';
+
+var dmp = require("$:/core/modules/utils/diff-match-patch/diff_match_patch.js");
 
 /**
  *
