@@ -15,7 +15,8 @@ type: text/vnd.tiddlywiki
 
 QRCode of Current Server
 
-<% if [{$:/info/tidgi/enableHTTPAPI}match[yes]] %>
+<!-- Works on TidGi with enableHTTPAPI, or nodejs that is not TidGi Desktop -->
+<% if [{$:/info/tidgi/enableHTTPAPI}match[yes]]:else[{$:/info/tidgi}!match[yes]] %>
 
   {{$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR}}
 
