@@ -20,13 +20,13 @@ exports.path = /^\/tw-mobile-sync\/get-tiddler-text\/(.+)$/;
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
 
-  const encodedTitle = context.params?.[0];
-  if (!encodedTitle) {
+  const encodedTitlesFilter = (context.params as Record<string, string | undefined>)?.[0];
+  if (!encodedTitlesFilter) {
     response.writeHead(400);
     response.end(`No title in tw-mobile-sync/get-tiddler-text/{title}`, 'utf8');
     return;
   }
-  const title = $tw.utils.decodeURIComponentSafe(encodedTitle);
+  const title = $tw.utils.decodeURIComponentSafe(encodedTitlesFilter);
   const text = context.wiki.getTiddlerText(title);
 
   if (!text) {
@@ -40,7 +40,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     response.end(text, 'utf8');
   } catch (error) {
     response.writeHead(500);
-    response.end(`Failed to get tiddler text for ${title} , ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
+    response.end(`Failed to get tiddler text for ${title} , ${(error as Error)?.message} ${(error as Error)?.stack ?? ''}`, 'utf8');
   }
 };
 

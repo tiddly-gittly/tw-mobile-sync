@@ -27,7 +27,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     response.end(exportedHTMLContent, 'utf8');
   } catch (error) {
     response.writeHead(500);
-    response.end(`Failed to render tiddlers using ${templateName} , ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
+    response.end(`Failed to render tiddlers using ${templateName} , ${(error as Error)?.message} ${(error as Error)?.stack ?? ''}`, 'utf8');
   }
 };
 

@@ -19,9 +19,8 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   response.setHeader('Access-Control-Allow-Origin', '*');
 
   // get filter for titles
-  const encodedTitlesFilter = context.params?.[0];
-  let titlesFilter =
-    '[!is[system]] -[type[application/javascript]] -[is[binary]] -[is[binary]] -[type[application/msword]] -[type[application/excel]] -[type[application/mspowerpoint]] -[type[application/vnd.ms-excel]]';
+  const encodedTitlesFilter = (context.params as Record<string, string | undefined>)?.[0];
+  let titlesFilter = '[!is[system]] -[type[application/javascript]] -[is[binary]]';
   if (encodedTitlesFilter?.trim?.()) {
     titlesFilter = $tw.utils.decodeURIComponentSafe(encodedTitlesFilter).trim();
   }
@@ -37,21 +36,29 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
   });
 
   try {
-    response.writeHead(200, { 'Content-Type': 'application/json' }); // , 'Content-Length': Buffer.byteLength(result) });
+    response.writeHead(200, { 'Content-Type': 'application/json' });
     pipeline(
       titleStream,
       transformStream,
       response,
       (error) => {
-        if (error !== null) {
-          response.writeHead(500);
-          response.end(`Failed to render tiddlers with stream , ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
+        if (error !== null && error !== undefined) {
+          console.error('Pipeline error:', error);
+          // Don't send head after already send 200, otherwise cause "[ERR_HTTP_HEADERS_SENT]: Cannot write headers after they are sent to the client"
+          if (!response.headersSent) {
+            response.writeHead(500, { 'Content-Type': 'text/plain' });
+          }
+          // Error may be undefined.
+          response.end(`Failed to render tiddlers with stream , ${(error as Error)?.message} ${(error as Error)?.stack ?? ''}`);
         }
       },
     );
   } catch (error) {
-    response.writeHead(500);
-    response.end(`Failed to render tiddlers in get-skinny-tiddler-text , ${(error as Error).message} ${(error as Error).stack ?? ''}`, 'utf8');
+    if (!response.headersSent) {
+      response.writeHead(500, { 'Content-Type': 'text/plain' });
+    }
+    console.error('Catch error:', error);
+    response.end(`Failed to render tiddlers in get-skinny-tiddler-text , ${(error as Error)?.message} ${(error as Error)?.stack ?? ''}`);
   }
 };
 
