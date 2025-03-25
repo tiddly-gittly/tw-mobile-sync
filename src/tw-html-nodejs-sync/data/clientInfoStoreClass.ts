@@ -3,7 +3,7 @@
 import structuredClone from '@ungap/structured-clone';
 import * as types from '../types';
 import { getLoopInterval } from './constants';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
 export class ClientInfoStore {
   #clients: Record<string, types.IClientInfo> = {};
@@ -35,10 +35,10 @@ export class ClientInfoStore {
     this.#clients[key] = { ...this.#clients[key], ...value };
     const ua = this.#clients[key]['User-Agent'];
     if (ua) {
-      const userAgentInfo = new UAParser(ua);
-      const model = userAgentInfo.getDevice().model;
-      const os = userAgentInfo.getOS().name; // 获取系统
-      this.#clients[key].name = model ?? userAgentInfo.getBrowser().name ?? this.#clients[key].Origin;
+      const userAgentInfo = UAParser(ua);
+      const model = userAgentInfo.device.model;
+      const os = userAgentInfo.os.name;
+      this.#clients[key].name = model ?? userAgentInfo.browser.name ?? this.#clients[key].Origin;
       this.#clients[key].model = model;
       this.#clients[key].os = os;
     } else {
