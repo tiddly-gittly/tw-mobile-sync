@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import type { ITiddlerFields } from 'tiddlywiki';
 
-var dmp = require("$:/core/modules/utils/diff-match-patch/diff_match_patch.js");
+// var dmp = require("$:/core/modules/utils/diff-match-patch/diff_match_patch.js");
 
 /**
  *
@@ -14,7 +14,7 @@ export function mergeTiddler(a: ITiddlerFields, b: ITiddlerFields): ITiddlerFiel
   if (a.title !== b.title) {
     throw new Error(`Cannot merge tiddlers with different titles: ${a.title} and ${b.title}`);
   }
-  const newerOne = a.modified > b.modified ? a : b;
+  const newerOne = (a.modified && b.modified) ? a.modified > b.modified ? a : b : a;
   const aIsBinary = isBinaryTiddler(a);
   const bIsBinary = isBinaryTiddler(b);
   if ((!aIsBinary && !bIsBinary) || (bIsBinary && bIsBinary)) {
