@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type Http from 'http';
 import type { ITiddlerFields } from 'tiddlywiki';
+import type { TidGiBoot } from '../../types/tidgi-global';
 import { ClientInfoStore } from 'src/tw-mobile-sync/data/clientInfoStoreClass';
 import { filterOutNotSyncedTiddlers } from 'src/tw-mobile-sync/data/filterOutNotSyncedTiddlers';
 import { mergeTiddler } from 'src/tw-mobile-sync/data/mergeTiddler';
@@ -80,16 +81,17 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
 
       // Get deleted tiddlers from git history using the git service
       let serverDeletedTiddlerTitles: string[] = [];
-      if (context.boot?.wikiPath && typeof global !== 'undefined' && (global as any).service?.git?.getDeletedTiddlersSinceDate) {
+      const boot = context.boot as TidGiBoot | undefined;
+      if (boot?.wikiPath && typeof global !== 'undefined' && global.service?.git?.getDeletedTiddlersSinceDate) {
         try {
           // Use the git service exposed via global.service
-          serverDeletedTiddlerTitles = await (global as any).service.git.getDeletedTiddlersSinceDate(context.boot.wikiPath, clientLastSyncDate);
+          serverDeletedTiddlerTitles = await global.service.git.getDeletedTiddlersSinceDate(boot.wikiPath, clientLastSyncDate);
           console.log(`Found ${serverDeletedTiddlerTitles.length} deleted tiddlers from git: [${serverDeletedTiddlerTitles.join(', ')}]`);
         } catch (error) {
           console.error(`Failed to get deleted tiddlers from git: ${(error as Error).message}`);
         }
       } else {
-        if (!context.boot?.wikiPath) {
+        if (!boot?.wikiPath) {
           console.warn('context.boot.wikiPath is undefined, cannot get deleted tiddlers from git');
         } else {
           console.warn('global.service.git.getDeletedTiddlersSinceDate is not available, cannot get deleted tiddlers from git');
@@ -101,6 +103,77 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
         context.wiki.deleteTiddler(deletedTitle);
         serverResponse.deletes.push(deletedTitle);
       });
+
+      // Pre-fetch base versions for all tiddlers that need 3-way merge
+      // This is more efficient than fetching them one by one in the loop
+      const baseTiddlerCache = new Map<string, ITiddlerFields | null>();
+      const tiddlersNeedingMerge: string[] = [];
+
+      // Identify which tiddlers need merge
+      for (const clientTiddlerField of clientTiddlerFields) {
+        const title = clientTiddlerField.title as string;
+        const serverTiddler = context.wiki.getTiddler(title);
+
+        // Check if this tiddler needs 3-way merge
+        if (serverTiddler &&
+            serverTiddler.fields.modified &&
+            clientTiddlerField.modified &&
+            serverTiddler.fields.modified > clientLastSyncDate) {
+          tiddlersNeedingMerge.push(title);
+        }
+      }
+
+      // Batch fetch base versions in parallel with timeout protection
+      if (tiddlersNeedingMerge.length > 0 &&
+          boot?.wikiPath &&
+          typeof global !== 'undefined' &&
+          global.service?.git?.getTiddlerAtTime) {
+        console.log(`Pre-fetching base versions for ${tiddlersNeedingMerge.length} tiddlers that need 3-way merge`);
+
+        const fetchPromises = tiddlersNeedingMerge.map(async (title) => {
+          try {
+            // Add timeout protection (5 seconds per tiddler)
+            const timeoutPromise = new Promise<null>((resolve) => {
+              setTimeout(() => resolve(null), 5000);
+            });
+
+            // Non-null assertions are safe here because we checked in the if condition
+            const fetchPromise = global.service!.git.getTiddlerAtTime(
+              boot.wikiPath!,
+              title,
+              clientLastSyncDate,
+            );
+
+            const baseVersion = await Promise.race([fetchPromise, timeoutPromise]);
+
+            if (baseVersion) {
+              return {
+                title,
+                base: {
+                  ...baseVersion.fields,
+                  text: baseVersion.text,
+                } as ITiddlerFields,
+              };
+            }
+            return { title, base: null };
+          } catch (error) {
+            console.warn(`Failed to get base version for "${title}":`, (error as Error).message);
+            return { title, base: null };
+          }
+        });
+
+        try {
+          const results = await Promise.all(fetchPromises);
+          results.forEach(({ title, base }) => {
+            baseTiddlerCache.set(title, base);
+          });
+
+          const successCount = results.filter(r => r.base !== null).length;
+          console.log(`Successfully fetched ${successCount}/${tiddlersNeedingMerge.length} base versions for 3-way merge`);
+        } catch (error) {
+          console.error(`Error during batch fetch of base versions: ${(error as Error).message}`);
+        }
+      }
 
       // Process client tiddlers - use for...of to support async operations
       for (const clientTiddlerField of clientTiddlerFields) {
@@ -121,35 +194,19 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
             // Server tiddler is newer and has changed after client's last sync, unfortunately, client change it too.
             // clientTiddler.modified > clientLastSync, we can't decide which is newer, this means both have update, we need to merge them
             const clientTiddler = new $tw.Tiddler(clientTiddlerField);
-            
-            // Try to get base version from git for 3-way merge
-            let baseTiddler: ITiddlerFields | null = null;
-            if ((context.boot as any)?.wikiPath && typeof global !== 'undefined' && (global as any).service?.git?.getTiddlerAtTime) {
-              try {
-                const baseVersion = await (global as any).service.git.getTiddlerAtTime(
-                  (context.boot as any).wikiPath,
-                  title,
-                  clientLastSyncDate,
-                );
-                if (baseVersion) {
-                  // Convert git fields to ITiddlerFields
-                  baseTiddler = {
-                    ...baseVersion.fields,
-                    text: baseVersion.text,
-                  } as ITiddlerFields;
-                  console.log(`Found base version for 3-way merge of "${title}"`);
-                }
-              } catch (error) {
-                console.warn(`Failed to get base version for "${title}":`, (error as Error).message);
-              }
+
+            // Get base version from pre-fetched cache
+            const baseTiddler = baseTiddlerCache.get(title) ?? null;
+            if (baseTiddler) {
+              console.log(`Using cached base version for 3-way merge of "${title}"`);
             }
-            
+
             const mergedTiddlerFields = mergeTiddler(clientTiddler.fields, serverTiddler.fields, baseTiddler);
             // make sure `list` and `tags` are tiddlywiki array string, instead of JS array, otherwise core can't read tiddler store. And make sure `created` `modified` are tiddlywiki UTC date string, instead of JS Date object.
             const mergedFieldStrings = new $tw.Tiddler(mergedTiddlerFields).getFieldStrings();
             serverResponse.updates.push(mergedFieldStrings);
             context.wiki.addTiddler(mergedTiddlerFields);
-          } else if (new $tw.Tiddler(clientTiddlerField).fields.modified > serverTiddler.fields.modified) {
+          } else if (new $tw.Tiddler(clientTiddlerField).fields.modified > serverTiddler!.fields.modified) {
             // Client tiddler is newer
             context.wiki.addTiddler(clientTiddlerField);
           } else {
@@ -157,7 +214,7 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
             console.log(
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
               `Unhandled case: ${title} \nwhere ${String(new $tw.Tiddler(clientTiddlerField).fields.modified)} > ${serverTiddler?.fields?.modified} is ${
-                String(new $tw.Tiddler(clientTiddlerField).fields.modified > (serverTiddler?.fields?.modified ?? 0))
+                String(new $tw.Tiddler(clientTiddlerField).fields.modified > (serverTiddler!.fields.modified ?? 0))
               }`,
               clientTiddlerField,
               serverTiddler?.fields,
@@ -205,7 +262,15 @@ const handler: ServerEndpointHandler = function handler(request: Http.ClientRequ
     }
   };
 
-  void handleSync();
+  // Handle async errors with proper promise rejection handling
+  handleSync().catch((error) => {
+    console.error('Unhandled error in sync handler:', error);
+    // Only send response if not already sent
+    if (!response.headersSent) {
+      response.writeHead(500);
+      response.end(`Internal server error: ${(error as Error).message}`, 'utf8');
+    }
+  });
 };
 
 exports.handler = handler;

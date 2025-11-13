@@ -4,7 +4,7 @@ import type { ITiddlerFields } from 'tiddlywiki';
 /**
  * Merge two tiddlers using 3-way merge if base version is provided
  * @param client - Client (mobile) version
- * @param server - Server (desktop) version  
+ * @param server - Server (desktop) version
  * @param base - Optional base version (from git history at lastSync time)
  * @returns Merged tiddler fields
  * @url https://neil.fraser.name/software/diff_match_patch/demos/patch.html
@@ -86,19 +86,19 @@ function performThreeWayMerge(base: string, ours: string, theirs: string): strin
 
     // Create patches from base to ours
     const patchesOurs = dmpInstance.patch_make(base, ours);
-    // Create patches from base to theirs  
+    // Create patches from base to theirs
     const patchesTheirs = dmpInstance.patch_make(base, theirs);
 
     // Apply both sets of patches to base
     // First apply ours patches
     const [text1, results1] = dmpInstance.patch_apply(patchesOurs, base);
-    
+
     // Then apply theirs patches to the result
     const [mergedText, results2] = dmpInstance.patch_apply(patchesTheirs, text1);
 
     // Check if all patches applied successfully
     const allSuccess = results1.every((r: boolean) => r) && results2.every((r: boolean) => r);
-    
+
     if (!allSuccess) {
       console.warn('Some patches failed to apply cleanly during 3-way merge');
       // Still return the result, but mark conflict in the text
