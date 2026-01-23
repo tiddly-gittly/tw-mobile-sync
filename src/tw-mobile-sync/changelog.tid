@@ -3,23 +3,28 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v1.1.0
+
+* Fix System Tiddler Sync: Now correctly syncs modified system and shadow tiddlers (e.g. plugin configs)
+** Updated incremental sync filter to `[all[shadows+tiddlers]]` to catch updates in overridden shadow tiddlers
+
 !! v1.0.0 - Enhanced Sync with Deletion Tracking and 3-Way Merge
 
 !!! Features
 
-* ''Bidirectional Deletion Sync'': Implemented proper deletion synchronization between TidGi-Desktop and TidGi-Mobile
+* Bidirectional Deletion Sync: Implemented proper deletion synchronization between TidGi-Desktop and TidGi-Mobile
 ** Desktop → Mobile: Detects deleted tiddlers from git history and syncs them to mobile
 ** Mobile → Desktop: Syncs mobile deletions to desktop and properly removes files via FileSystemAdaptor
 ** Handles rename operations correctly (rename = delete old + create new)
 
-* ''3-Way Merge for Conflict Resolution'': Intelligent merge algorithm using git history
+* 3-Way Merge for Conflict Resolution: Intelligent merge algorithm using git history
 ** Retrieves base version (common ancestor) from git at `lastSync` timestamp
 ** Uses TiddlyWiki's built-in `diff-match-patch` library (Google's diff-match-patch)
 ** Automatically merges non-conflicting changes from both sides
 ** Marks conflicts with clear indicators when both sides modify the same content
 ** Falls back to simple "newer version wins" strategy if base version unavailable
 
-* ''Git Service Integration'': New methods added to TidGi-Desktop's git service
+* Git Service Integration: New methods added to TidGi-Desktop's git service
 ** `getDeletedTiddlersSinceDate(wikiFolderPath, sinceDate)`: Extracts deleted tiddler titles from git history
 ** `getTiddlerAtTime(wikiFolderPath, tiddlerTitle, beforeDate)`: Retrieves tiddler content at specific point in time
 ** Both methods accessible via `global.service.git` in TiddlyWiki plugins
@@ -44,9 +49,9 @@ type: text/vnd.tiddlywiki
 
 !!! Merge Scenarios
 
-* ''No conflict'': If only one side modified, uses that side's changes
-* ''Different sections'': If both sides modified different parts, merges both changes
-* ''Real conflict'': If both sides modified same content, marks with `<!-- MERGE CONFLICT: ... -->` comment
+* No conflict: If only one side modified, uses that side's changes
+* Different sections: If both sides modified different parts, merges both changes
+* Real conflict: If both sides modified same content, marks with `<!-- MERGE CONFLICT: ... -->` comment
 
 !!! Fallback Behavior
 
