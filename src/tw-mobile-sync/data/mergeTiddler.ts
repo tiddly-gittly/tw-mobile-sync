@@ -1,50 +1,115 @@
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import type { ITiddlerFields } from 'tiddlywiki';
 
-// var dmp = require("$:/core/modules/utils/diff-match-patch/diff_match_patch.js");
-
 /**
- *
+ * Merge two tiddlers using 3-way merge if base version is provided
+ * @param client - Client (mobile) version
+ * @param server - Server (desktop) version
+ * @param base - Optional base version (from git history at lastSync time)
+ * @returns Merged tiddler fields
  * @url https://neil.fraser.name/software/diff_match_patch/demos/patch.html
- * @param a
- * @param b
- * @returns
  */
-export function mergeTiddler(a: ITiddlerFields, b: ITiddlerFields): ITiddlerFields {
-  if (a.title !== b.title) {
-    throw new Error(`Cannot merge tiddlers with different titles: ${a.title} and ${b.title}`);
+export function mergeTiddler(
+  client: ITiddlerFields,
+  server: ITiddlerFields,
+  base?: ITiddlerFields | null,
+): ITiddlerFields {
+  if (client.title !== server.title) {
+    throw new Error(`Cannot merge tiddlers with different titles: ${client.title} and ${server.title}`);
   }
-  const newerOne = (a.modified && b.modified) ? a.modified > b.modified ? a : b : a;
-  const aIsBinary = isBinaryTiddler(a);
-  const bIsBinary = isBinaryTiddler(b);
-  if ((!aIsBinary && !bIsBinary) || (bIsBinary && bIsBinary)) {
-    return newerOne;
-  } else if (leftIsBinaryRightIsString(aIsBinary, bIsBinary)) {
-    // we choose binary, because we assume binary data is more important than pure text
-    return a;
-  } else if (leftIsBinaryRightIsString(bIsBinary, aIsBinary)) {
-    return b;
+
+  const newerOne = (client.modified && server.modified) ? client.modified > server.modified ? client : server : client;
+  const clientIsBinary = isBinaryTiddler(client);
+  const serverIsBinary = isBinaryTiddler(server);
+
+  // Handle binary tiddlers - can't merge, just pick one
+  if (clientIsBinary || serverIsBinary) {
+    if (clientIsBinary && serverIsBinary) {
+      return newerOne;
+    } else if (clientIsBinary) {
+      // we choose binary, because we assume binary data is more important than pure text
+      return client;
+    } else {
+      return server;
+    }
   }
-  // TODO: currently only return a;
-  return a;
-  // both is string tiddler, we can merge them using diff-match-patch algorithm
-  // FIXME: Currently not working, it needs `c` that is an older version from server to work (3-way-merge), otherwise it will just use `b.text` as the merged text
-  // const dmpObject = new dmp.diff_match_patch()
-  // const patches = dmpObject.diff_main(a.text, b.text);
-  // const [mergedText] = applyPatches(patches, a.text);
-  // const fields: ITiddlerFields = {
-  //   ...newerOne,
-  //   text: mergedText,
-  // };
-  // return fields;
+
+  // Both are text tiddlers - try 3-way merge if base is available
+  if (base && !isBinaryTiddler(base)) {
+    try {
+      const mergedText = performThreeWayMerge(
+        base.text ?? '',
+        client.text ?? '',
+        server.text ?? '',
+      );
+
+      if (mergedText !== null) {
+        // Successful merge - use merged text with fields from newer version
+        return {
+          ...newerOne,
+          text: mergedText,
+        };
+      }
+    } catch (error) {
+      console.error('3-way merge failed, falling back to simple merge:', error);
+    }
+  }
+
+  // Fallback: no base version or merge failed - just use newer version
+  return newerOne;
 }
 
-function leftIsBinaryRightIsString(aIsBinary: boolean, bIsBinary: boolean) {
-  // a is binary, b is string
-  if (aIsBinary && !bIsBinary) {
-    return true;
+/**
+ * Perform 3-way merge using diff-match-patch
+ * @param base - Common ancestor version
+ * @param ours - Client version
+ * @param theirs - Server version
+ * @returns Merged text, or null if merge failed
+ */
+function performThreeWayMerge(base: string, ours: string, theirs: string): string | null {
+  // If either version is unchanged from base, use the other version
+  if (ours === base) {
+    return theirs;
   }
-  return false;
+  if (theirs === base) {
+    return ours;
+  }
+  if (ours === theirs) {
+    return ours;
+  }
+
+  try {
+    // Load diff-match-patch from TiddlyWiki core
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const dmp = require('$:/core/modules/utils/diff-match-patch/diff_match_patch.js');
+    const dmpInstance = new dmp.diff_match_patch();
+
+    // Create patches from base to ours
+    const patchesOurs = dmpInstance.patch_make(base, ours);
+    // Create patches from base to theirs
+    const patchesTheirs = dmpInstance.patch_make(base, theirs);
+
+    // Apply both sets of patches to base
+    // First apply ours patches
+    const [text1, results1] = dmpInstance.patch_apply(patchesOurs, base);
+
+    // Then apply theirs patches to the result
+    const [mergedText, results2] = dmpInstance.patch_apply(patchesTheirs, text1);
+
+    // Check if all patches applied successfully
+    const allSuccess = results1.every((r: boolean) => r) && results2.every((r: boolean) => r);
+
+    if (!allSuccess) {
+      console.warn('Some patches failed to apply cleanly during 3-way merge');
+      // Still return the result, but mark conflict in the text
+      return `<!-- MERGE CONFLICT: Some changes could not be automatically merged -->\n\n${mergedText}`;
+    }
+
+    return mergedText;
+  } catch (error) {
+    console.error('Error during 3-way merge:', error);
+    return null;
+  }
 }
 
 export function isBinaryTiddler(tiddlerFields: ITiddlerFields): boolean {

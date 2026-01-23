@@ -25,7 +25,7 @@ class ScanQRWidget extends Widget {
     const outputTiddler = this.getAttribute('outputTiddler');
     /**
      * tiddler contains the open state of this widget. For example:
-     * 
+     *
      * ```tw5
      *  <$reveal type="match" state="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" text="yes">
           <$ScanQRWidget outputTiddler="$:/state/tw-html-nodejs-sync/server/new" stopOnDetect="yes" stateTiddler="$:/state/tw-html-nodejs-sync/server/new/scan-qr-widget-open" />

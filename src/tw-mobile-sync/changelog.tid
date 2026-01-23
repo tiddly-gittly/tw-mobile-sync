@@ -1,0 +1,71 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/changelog
+type: text/vnd.tiddlywiki
+
+! Changelog
+
+!! v1.0.0 - Enhanced Sync with Deletion Tracking and 3-Way Merge
+
+!!! Features
+
+* ''Bidirectional Deletion Sync'': Implemented proper deletion synchronization between TidGi-Desktop and TidGi-Mobile
+** Desktop → Mobile: Detects deleted tiddlers from git history and syncs them to mobile
+** Mobile → Desktop: Syncs mobile deletions to desktop and properly removes files via FileSystemAdaptor
+** Handles rename operations correctly (rename = delete old + create new)
+
+* ''3-Way Merge for Conflict Resolution'': Intelligent merge algorithm using git history
+** Retrieves base version (common ancestor) from git at `lastSync` timestamp
+** Uses TiddlyWiki's built-in `diff-match-patch` library (Google's diff-match-patch)
+** Automatically merges non-conflicting changes from both sides
+** Marks conflicts with clear indicators when both sides modify the same content
+** Falls back to simple "newer version wins" strategy if base version unavailable
+
+* ''Git Service Integration'': New methods added to TidGi-Desktop's git service
+** `getDeletedTiddlersSinceDate(wikiFolderPath, sinceDate)`: Extracts deleted tiddler titles from git history
+** `getTiddlerAtTime(wikiFolderPath, tiddlerTitle, beforeDate)`: Retrieves tiddler content at specific point in time
+** Both methods accessible via `global.service.git` in TiddlyWiki plugins
+
+!!! Technical Details
+
+* Deletion tracking works by:
+** Parsing git log with `--diff-filter=D` to find deleted `.tid` and `.meta` files
+** Extracting `title:` field from deleted files in git history
+** Sending deletion list to mobile via `ISyncEndPointResponse.deletes`
+
+* 3-way merge algorithm:
+** Base version: Retrieved from git at `clientLastSync` timestamp
+** Ours version: Client (mobile) current version
+** Theirs version: Server (desktop) current version
+** Creates patches from base→ours and base→theirs
+** Applies both patch sets sequentially to merge changes
+
+* File cleanup improvements:
+** Mobile now properly deletes filesystem files when receiving server deletions
+** Desktop's FileSystemAdaptor automatically handles file deletion on `deleteTiddler()`
+
+!!! Merge Scenarios
+
+* ''No conflict'': If only one side modified, uses that side's changes
+* ''Different sections'': If both sides modified different parts, merges both changes
+* ''Real conflict'': If both sides modified same content, marks with `<!-- MERGE CONFLICT: ... -->` comment
+
+!!! Fallback Behavior
+
+* If git history unavailable: Falls back to "newer modified time wins" strategy
+* If 3-way merge fails: Uses simple merge with newer version
+* Ensures sync continues even if advanced features fail
+
+!!! Dependencies
+
+* Requires TidGi-Desktop with git service support
+* Uses `$:/core/modules/utils/diff-match-patch/diff_match_patch.js` from TiddlyWiki core
+* Mobile deletion tracking via SQLite `TiddlerChangeSQLModel` table
+
+!!! Breaking Changes
+
+None. All changes are backward compatible with graceful fallbacks.
+
+!!! Bug Fixes
+
+* Fixed deletion sync not working from desktop to mobile
+* Fixed rename operations not syncing properly
+* Fixed filesystem files not being cleaned up on mobile after server-side deletion
