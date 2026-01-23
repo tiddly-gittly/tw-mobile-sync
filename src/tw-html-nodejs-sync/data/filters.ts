@@ -1,5 +1,5 @@
 export function getServerChangeFilter(lastSync: string | undefined) {
-  return `[all[]] :filter[get[modified]compare:date:gt[${lastSync ?? ''}]]`;
+  return `[all[shadows+tiddlers]] :filter[get[modified]compare:date:gt[${lastSync ?? ''}]]`;
 }
 
 /**
