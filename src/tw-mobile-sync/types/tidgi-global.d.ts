@@ -17,6 +17,12 @@ declare namespace TidGiGlobal {
     getDeletedTiddlersSinceDate(wikiFolderPath: string, sinceDate: Date): Promise<string[]>;
 
     /**
+     * Get the path to git executable
+     * @returns Path to git binary (e.g. from dugite)
+     */
+    getGitExecutablePath(): Promise<string>;
+
+    /**
      * Get tiddler content at a specific point in time from git history
      * This is used for 3-way merge to get the base version
      * @param wikiFolderPath - Path to the wiki folder
@@ -29,6 +35,33 @@ declare namespace TidGiGlobal {
       tiddlerTitle: string,
       beforeDate: Date,
     ): Promise<{ fields: Record<string, unknown>; text: string } | null>;
+
+    /**
+     * Get repository path for a workspace
+     * @param workspaceId - The workspace ID
+     * @returns Repository folder path, or null if workspace not found
+     */
+    getWorkspaceRepoPath(workspaceId: string): Promise<string | null>;
+  }
+
+  /**
+   * Workspace service interface for workspace management
+   */
+  interface IWorkspaceService {
+    /**
+     * Get workspace token for a given workspace
+     * @param workspaceId - The workspace ID
+     * @returns The workspace token, or null if not found
+     */
+    getWorkspaceToken(workspaceId: string): Promise<string | null>;
+
+    /**
+     * Validate workspace token for authentication
+     * @param workspaceId - The workspace ID
+     * @param token - The token to validate
+     * @returns true if token is valid for this workspace
+     */
+    validateWorkspaceToken(workspaceId: string, token: string): Promise<boolean>;
   }
 
   /**
@@ -36,7 +69,7 @@ declare namespace TidGiGlobal {
    */
   interface Services {
     git: IGitService;
-    // Add other services as needed
+    workspace: IWorkspaceService;
   }
 }
 
