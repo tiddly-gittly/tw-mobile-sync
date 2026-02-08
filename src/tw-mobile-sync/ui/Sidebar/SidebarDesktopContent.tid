@@ -13,12 +13,12 @@ type: text/vnd.tiddlywiki
 
 <$reveal type="nomatch" state="$:/info/tidgi/enableHTTPAPI" text="no">
 
-QRCode of Current Server
+QRCode for Git Synchronization / Git 同步二维码
 
 <!-- Works on TidGi with enableHTTPAPI, or nodejs that is not TidGi Desktop -->
 <% if [{$:/info/tidgi/enableHTTPAPI}match[yes]]:else[{$:/info/tidgi}!match[yes]] %>
 
-  {{$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR}}
+  {{$:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopGitSyncQR}}
 
 <% else %>
 

@@ -1,0 +1,51 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopGitSyncQR
+caption: Git Sync (TidGi-Mobile)
+type: text/vnd.tiddlywiki
+
+\define makeGitQRData()
+{
+  "baseUrl": "$(baseUrl)$",
+  "workspaceId": "$(workspaceId)$",
+  "workspaceName": "$(workspaceName)$",
+  "token": "$(token)$"
+}
+\end
+
+<div class="tw-mobile-sync-sidebar-qrcode">
+  <$let 
+    baseUrl={{$:/info/url/full}}
+    workspaceId={{$:/info/tidgi/workspaceID}}
+    workspaceName={{$:/info/tidgi/workspaceName}}
+    token={{$:/info/tidgi/workspaceToken}}
+    content=<<makeGitQRData>>
+    size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}}
+  >
+    <% if [<workspaceId>match[]] %>
+      <div class="tc-error">
+        WorkspaceID not available. This feature requires TidGi Desktop with workspace service enabled.
+
+        工作区 ID 不可用。此功能需要 TidGi Desktop 并启用工作区服务。
+      </div>
+    <% else %>
+      <div>Scan this QR code with TidGi Mobile to enable Git synchronization</div>
+      <div>使用太记移动版扫描此二维码以启用 Git 同步</div>
+
+      <!-- QR Code Image First -->
+      <<image>>
+
+      <details style="margin-top: 10px;">
+        <summary>Show QR code data / 显示二维码数据</summary>
+        <pre><<content>></pre>
+      </details>
+
+      <!-- Security Warning -->
+      <% if [<token>match[]] %>
+        <div style="margin: 10px 0; padding: 10px; background-color:<<colour alert-background>>; border: 1px solid <<colour alert-border>>; color:<<colour alert-muted-foreground>>; border-radius: 4px;">
+          ⚠️ Warning: No workspace token configured. Git synchronization will work but is NOT SECURE. Anyone on your network can access this workspace.
+          <br/><br/>
+          ⚠️ 警告：未配置工作区令牌。Git 同步可以工作但不安全。局域网内任何人都可以访问此工作区。
+        </div>
+      <% endif %>
+    <% endif %>
+  </$let>
+</div>

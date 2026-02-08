@@ -1,8 +1,10 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from '../../types/tidgi-global';
+import { collectRequestBody } from './utilities';
 
-declare const global: typeof globalThis & { service?: ITidGiGlobalService };
+// Access global service (works in both Node.js and TiddlyWiki plugin environment)
+const globalService = globalThis as typeof globalThis & { service?: ITidGiGlobalService };
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'POST';
@@ -57,7 +59,7 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!global.service?.gitServer) {
+      if (!globalService.service?.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Git server service not available');
         return;
@@ -65,7 +67,7 @@ const handler: ServerEndpointHandler = function handler(
 
       // Collect POST body, then pass through IPC as Uint8Array
       const requestBody = await collectRequestBody(request);
-      const response$ = global.service.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
+      const response$ = globalService.service.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
 
       const subscription = response$.subscribe({
         next(chunk) {

@@ -95,7 +95,7 @@ export interface IWorkspaceService {
  */
 export interface ITidGiGlobalService {
   git: IGitService;
-  gitServer: IGitServerService;
+  gitServer?: IGitServerService;
   workspace: IWorkspaceService;
 }
 

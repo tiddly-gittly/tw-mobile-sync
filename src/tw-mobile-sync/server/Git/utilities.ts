@@ -35,3 +35,22 @@ export function sendAuthChallenge(response: import('http').ServerResponse): void
   });
   response.end('Authentication required');
 }
+
+/**
+ * Collect request body from a readable stream
+ * Used for POST requests (git-upload-pack, git-receive-pack)
+ */
+export async function collectRequestBody(request: import('http').IncomingMessage): Promise<Buffer> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    request.on('data', (chunk) => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      chunks.push(buffer);
+    });
+    request.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    request.on('error', reject);
+  });
+}

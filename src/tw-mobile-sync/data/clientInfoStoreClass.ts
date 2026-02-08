@@ -1,11 +1,10 @@
-import structuredClone from '@ungap/structured-clone';
 import { UAParser } from 'ua-parser-js';
 import * as types from '../types';
 import { getLoopInterval } from './constants';
 
 export class ClientInfoStore {
   #clients: Record<string, types.IClientInfo> = {};
-  loopHandel: NodeJS.Timer;
+  loopHandel: NodeJS.Timeout;
 
   constructor() {
     const loopInterval = getLoopInterval();
@@ -25,15 +24,17 @@ export class ClientInfoStore {
     }, loopInterval);
   }
 
-  get allClient() {
-    return structuredClone(this.#clients);
+  get allClient(): Record<string, types.IClientInfo> {
+    // Deep clone the clients object to prevent external modification
+    return JSON.parse(JSON.stringify(this.#clients)) as Record<string, types.IClientInfo>;
   }
 
   updateClient(key: string, value: Partial<types.IClientInfo>) {
     this.#clients[key] = { ...this.#clients[key], ...value };
     const ua = this.#clients[key]['User-Agent'];
     if (ua) {
-      const userAgentInfo = UAParser(ua);
+      const parser = new UAParser(ua);
+      const userAgentInfo = parser.getResult();
       const model = userAgentInfo.device.model;
       const os = userAgentInfo.os.name;
       this.#clients[key].name = model ?? userAgentInfo.browser.name ?? this.#clients[key].Origin;

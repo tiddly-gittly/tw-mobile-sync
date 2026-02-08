@@ -1,4 +1,11 @@
-import type { ITiddlerFields } from 'tiddlywiki';
+import type { IContentTypeInfo, ITiddlerFields } from 'tiddlywiki';
+
+interface IDiffMatchPatch {
+  diff_match_patch: new() => {
+    patch_make: (base: string, text: string) => unknown[];
+    patch_apply: (patches: unknown[], text: string) => [string, boolean[]];
+  };
+}
 
 /**
  * Merge two tiddlers using 3-way merge if base version is provided
@@ -37,9 +44,9 @@ export function mergeTiddler(
   if (base && !isBinaryTiddler(base)) {
     try {
       const mergedText = performThreeWayMerge(
-        base.text ?? '',
-        client.text ?? '',
-        server.text ?? '',
+        base.text || '',
+        client.text || '',
+        server.text || '',
       );
 
       if (mergedText !== null) {
@@ -78,9 +85,10 @@ function performThreeWayMerge(base: string, ours: string, theirs: string): strin
   }
 
   try {
-    // Load diff-match-patch from TiddlyWiki core
-
-    const dmp = require('$:/core/modules/utils/diff-match-patch/diff_match_patch.js');
+    // Load diff-match-patch from TiddlyWiki core using dynamic require
+    // This is a TiddlyWiki module path, not a node_modules path
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const dmp = require('$:/core/modules/utils/diff-match-patch/diff_match_patch.js') as IDiffMatchPatch;
     const dmpInstance = new dmp.diff_match_patch();
 
     // Create patches from base to ours
@@ -112,6 +120,11 @@ function performThreeWayMerge(base: string, ours: string, theirs: string): strin
 }
 
 export function isBinaryTiddler(tiddlerFields: ITiddlerFields): boolean {
-  const contentTypeInfo = $tw.config.contentTypeInfo[tiddlerFields.type || 'text/vnd.tiddlywiki'];
-  return !!contentTypeInfo && contentTypeInfo.encoding === 'base64';
+  const contentType = tiddlerFields.type || 'text/vnd.tiddlywiki';
+  // contentTypeInfo is typed as Record<string, IContentTypeInfo> but may be undefined at runtime
+  const contentTypeInfo = $tw.config.contentTypeInfo[contentType] as IContentTypeInfo | undefined;
+  if (!contentTypeInfo) {
+    return false;
+  }
+  return contentTypeInfo.encoding === 'base64';
 }

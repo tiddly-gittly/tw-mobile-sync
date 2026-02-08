@@ -1,9 +1,10 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from '../../types/tidgi-global';
-import { parseBasicAuth, sendAuthChallenge } from './utilities';
+import { collectRequestBody, parseBasicAuth, sendAuthChallenge } from './utilities';
 
-declare const global: typeof globalThis & { service?: ITidGiGlobalService };
+// Access global service (works in both Node.js and TiddlyWiki plugin environment)
+const globalService = globalThis as typeof globalThis & { service?: ITidGiGlobalService };
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'POST';
@@ -58,24 +59,31 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       // Authenticate
-      const credentials = parseBasicAuth(request.headers.authorization);
-      if (credentials === undefined) {
-        sendAuthChallenge(response);
-        return;
-      }
-      const token = credentials.password === '' ? credentials.username : credentials.password;
-
-      if (!global.service?.workspace) {
+      if (!globalService.service?.workspace) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Workspace service not available');
         return;
       }
-      if (!(await global.service.workspace.validateWorkspaceToken(workspaceId, token))) {
-        sendAuthChallenge(response);
-        return;
-      }
 
-      if (!global.service.gitServer) {
+      // Get workspace token (may be empty/undefined for anonymous access)
+      const workspaceToken = await globalService.service.workspace.getWorkspaceToken(workspaceId);
+      // If workspace has a token configured, require authentication
+      if (workspaceToken !== undefined && workspaceToken !== '') {
+        const credentials = parseBasicAuth(request.headers.authorization);
+        if (credentials === undefined) {
+          sendAuthChallenge(response);
+          return;
+        }
+        const token = credentials.password === '' ? credentials.username : credentials.password;
+
+        if (!(await globalService.service.workspace.validateWorkspaceToken(workspaceId, token))) {
+          sendAuthChallenge(response);
+          return;
+        }
+      }
+      // If workspaceToken is empty/undefined, allow anonymous access (insecure mode)
+
+      if (!globalService.service.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Git server service not available');
         return;
@@ -83,7 +91,7 @@ const handler: ServerEndpointHandler = function handler(
 
       // Collect POST body, then pass through IPC as Uint8Array
       const requestBody = await collectRequestBody(request);
-      const response$ = global.service.gitServer.gitSmartHTTPReceivePack$(workspaceId, new Uint8Array(requestBody));
+      const response$ = globalService.service.gitServer.gitSmartHTTPReceivePack$(workspaceId, new Uint8Array(requestBody));
 
       const subscription = response$.subscribe({
         next(chunk) {
