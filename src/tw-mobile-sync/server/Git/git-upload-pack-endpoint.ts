@@ -11,11 +11,25 @@ exports.method = 'POST';
  * Git Smart HTTP upload-pack endpoint (git fetch/pull)
  * Format: /tw-mobile-sync/git/{workspaceId}/git-upload-pack
  *
- * This endpoint handles git fetch/pull operations (read-only)
- * No authentication required for read operations
+ * Read-only — no authentication required
  */
 exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/git-upload-pack$/;
 /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+
+/**
+ * Collect entire request body into a Buffer.
+ * The buffer is then sent as Uint8Array through IPC (structured-clone safe).
+ */
+function collectRequestBody(request: Http.ClientRequest & Http.InformationEvent): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    (request as unknown as NodeJS.ReadableStream).on('data', (chunk: Buffer) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+    (request as unknown as NodeJS.ReadableStream).on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    (request as unknown as NodeJS.ReadableStream).on('error', reject);
+  });
+}
 
 const handler: ServerEndpointHandler = function handler(
   request: Http.ClientRequest & Http.InformationEvent,
@@ -26,7 +40,6 @@ const handler: ServerEndpointHandler = function handler(
 
   void (async () => {
     try {
-      // Extract workspace ID from path
       const workspaceId = context.params[0];
       if (!workspaceId) {
         response.writeHead(400, { 'Content-Type': 'text/plain' });
@@ -34,21 +47,35 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Delegate to Desktop git service
-      if (!global.service) {
+      if (!global.service?.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('TidGi service not available');
-        return;
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!global.service.git.handleUploadPack) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Git service not available');
+        response.end('Git server service not available');
         return;
       }
 
-      // Convert TiddlyWiki's ClientRequest to Node's IncomingMessage for Desktop service
-      await global.service.git.handleUploadPack(workspaceId, request as unknown as Http.IncomingMessage, response);
+      // Collect POST body, then pass through IPC as Uint8Array
+      const requestBody = await collectRequestBody(request);
+      const response$ = global.service.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
+
+      response$.subscribe({
+        next(chunk) {
+          if (chunk.type === 'headers') {
+            response.writeHead(chunk.statusCode, chunk.headers);
+          } else {
+            response.write(Buffer.from(chunk.data));
+          }
+        },
+        error(error) {
+          console.error('git-upload-pack Observable error:', error);
+          if (!response.headersSent) {
+            response.writeHead(500, { 'Content-Type': 'text/plain' });
+          }
+          response.end((error).message);
+        },
+        complete() {
+          if (!response.writableEnded) response.end();
+        },
+      });
     } catch (error) {
       console.error('Error in git-upload-pack handler:', error);
       if (!response.headersSent) {

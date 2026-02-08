@@ -15,7 +15,7 @@ exports.path = /^\/tw-mobile-sync\/get-skinny-html$/;
 // intended to work with TidGi-Mobile, which can handle the lazy-all. Tiddloid is hard to implement this in Java code...
 const templateName = '$:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all';
 
-const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest, response: Http.ServerResponse, context) {
+const handler: ServerEndpointHandler = function handler(_request: Http.ClientRequest, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
 
   const downloadType = (context.server.get('root-render-type') as OutputMimeTypes | undefined) ?? 'text/plain';

@@ -17,7 +17,7 @@ export function getSyncedTiddlersText(
     .filter((title): title is string => typeof title === 'string' && title.length > 0);
   const clientText = formatList(clientTitles);
   const clientCount = moreCountText(clientTitles);
-  
+
   const serverTitles = changedTiddlersFromServer
     .map(tiddler => (tiddler.caption as string | undefined) || tiddler.title || '')
     .filter((title): title is string => typeof title === 'string' && title.length > 0);

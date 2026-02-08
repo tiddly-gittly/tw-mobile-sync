@@ -3,7 +3,53 @@
  * These types match the services available in TidGi-Desktop's wiki worker
  */
 
-import type { IncomingMessage as NodeIncomingMessage, ServerResponse as NodeServerResponse } from 'http';
+/**
+ * A chunk of Git Smart HTTP response transported via IPC Observable.
+ * First emission carries headers, subsequent ones carry data.
+ */
+export type GitHTTPResponseChunk =
+  | { type: 'headers'; statusCode: number; headers: Record<string, string> }
+  | { type: 'data'; data: Uint8Array };
+
+/**
+ * Minimal Observable interface (subset of rxjs Observable used through IPC proxy).
+ * The real implementation comes from electron-ipc-cat's Function$ proxy.
+ */
+export interface IObservable<T> {
+  subscribe(observer: {
+    next?: (value: T) => void;
+    error?: (error: Error) => void;
+    complete?: () => void;
+  }): { unsubscribe: () => void };
+}
+
+/**
+ * Git Smart HTTP Server Service
+ * Provides Git Smart HTTP endpoints for mobile clients
+ */
+export interface IGitServerService {
+  /**
+   * Get repository path for a workspace
+   */
+  getWorkspaceRepoPath(workspaceId: string): Promise<string | undefined>;
+
+  /**
+   * Git Smart HTTP info/refs — returns IPC Observable streaming response chunks.
+   */
+  gitSmartHTTPInfoRefs$(workspaceId: string, service: string): IObservable<GitHTTPResponseChunk>;
+
+  /**
+   * Git Smart HTTP upload-pack (fetch/pull).
+   * @param requestBody collected POST body (Uint8Array is structured-clone safe)
+   */
+  gitSmartHTTPUploadPack$(workspaceId: string, requestBody: Uint8Array): IObservable<GitHTTPResponseChunk>;
+
+  /**
+   * Git Smart HTTP receive-pack (push).
+   * @param requestBody collected POST body
+   */
+  gitSmartHTTPReceivePack$(workspaceId: string, requestBody: Uint8Array): IObservable<GitHTTPResponseChunk>;
+}
 
 /**
  * Git service interface for version control operations
@@ -11,63 +57,17 @@ import type { IncomingMessage as NodeIncomingMessage, ServerResponse as NodeServ
 export interface IGitService {
   /**
    * Get deleted tiddler titles from git history since a specific date
-   * @param wikiFolderPath - Path to the wiki folder
-   * @param sinceDate - Date to check for deletions after this time
-   * @returns Array of deleted tiddler titles
    */
   getDeletedTiddlersSinceDate(wikiFolderPath: string, sinceDate: Date): Promise<string[]>;
 
   /**
-   * Get the path to git executable
-   * @returns Path to git binary (e.g. from dugite)
-   */
-  getGitExecutablePath(): Promise<string>;
-
-  /**
    * Get tiddler content at a specific point in time from git history
-   * This is used for 3-way merge to get the base version
-   * @param wikiFolderPath - Path to the wiki folder
-   * @param tiddlerTitle - Title of the tiddler
-   * @param beforeDate - Get the version that existed before this date
-   * @returns Tiddler fields including text, or null if not found
    */
   getTiddlerAtTime(
     wikiFolderPath: string,
     tiddlerTitle: string,
     beforeDate: Date,
   ): Promise<{ fields: Record<string, unknown>; text: string } | null>;
-
-  /**
-   * Get repository path for a workspace
-   * @param workspaceId - The workspace ID
-   * @returns Repository folder path, or undefined if workspace not found
-   */
-  getWorkspaceRepoPath(workspaceId: string): Promise<string | undefined>;
-
-  /**
-   * Handle Git Smart HTTP info/refs endpoint
-   * @param workspaceId workspace ID
-   * @param service 'git-upload-pack' | 'git-receive-pack'
-   * @param request Node.js HTTP request
-   * @param response Node.js HTTP response
-   */
-  handleInfoRefs(workspaceId: string, service: string, request: NodeIncomingMessage, response: NodeServerResponse): Promise<void>;
-
-  /**
-   * Handle Git Smart HTTP upload-pack endpoint (git fetch/pull)
-   * @param workspaceId workspace ID
-   * @param request Node.js HTTP request (stream)
-   * @param response Node.js HTTP response (stream)
-   */
-  handleUploadPack(workspaceId: string, request: NodeIncomingMessage, response: NodeServerResponse): Promise<void>;
-
-  /**
-   * Handle Git Smart HTTP receive-pack endpoint (git push)
-   * @param workspaceId workspace ID
-   * @param request Node.js HTTP request (stream)
-   * @param response Node.js HTTP response (stream)
-   */
-  handleReceivePack(workspaceId: string, request: NodeIncomingMessage, response: NodeServerResponse): Promise<void>;
 }
 
 /**
@@ -95,6 +95,7 @@ export interface IWorkspaceService {
  */
 export interface ITidGiGlobalService {
   git: IGitService;
+  gitServer: IGitServerService;
   workspace: IWorkspaceService;
 }
 

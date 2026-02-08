@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from '../../types/tidgi-global';
@@ -27,7 +26,6 @@ const handler: ServerEndpointHandler = function handler(
 
   void (async () => {
     try {
-      // Extract workspace ID from path
       const workspaceId = context.params[0];
       if (!workspaceId) {
         response.writeHead(400, { 'Content-Type': 'text/plain' });
@@ -35,12 +33,9 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Parse query string for service parameter
-      // TiddlyWiki's ClientRequest has url property but not in type definition
+      // Parse ?service= query param
       const requestWithUrl = request as Http.ClientRequest & Http.InformationEvent & { url?: string };
-      const requestUrl = requestWithUrl.url || '';
-      const requestHost = request.headers.host || 'localhost';
-      const url = new URL(requestUrl, `http://${requestHost}`);
+      const url = new URL(requestWithUrl.url || '', `http://${request.headers.host || 'localhost'}`);
       const service = url.searchParams.get('service');
 
       if (!service || !['git-upload-pack', 'git-receive-pack'].includes(service)) {
@@ -51,52 +46,51 @@ const handler: ServerEndpointHandler = function handler(
 
       // git-receive-pack (push) requires authentication
       if (service === 'git-receive-pack') {
-        const authHeader = request.headers.authorization;
-        const credentials = parseBasicAuth(authHeader);
-
+        const credentials = parseBasicAuth(request.headers.authorization);
         if (credentials === undefined) {
           sendAuthChallenge(response);
           return;
         }
-
-        // Token can be in either username or password field
         const token = credentials.password === '' ? credentials.username : credentials.password;
 
-        // Validate token using Desktop workspace service
-        if (!global.service) {
-          response.writeHead(500, { 'Content-Type': 'text/plain' });
-          response.end('TidGi service not available');
-          return;
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!global.service.workspace.validateWorkspaceToken) {
+        if (!global.service?.workspace) {
           response.writeHead(500, { 'Content-Type': 'text/plain' });
           response.end('Workspace service not available');
           return;
         }
-
-        const isValid = await global.service.workspace.validateWorkspaceToken(workspaceId, token);
-        if (!isValid) {
+        if (!(await global.service.workspace.validateWorkspaceToken(workspaceId, token))) {
           sendAuthChallenge(response);
           return;
         }
       }
 
-      // Delegate to Desktop git service
-      if (!global.service) {
+      if (!global.service?.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('TidGi service not available');
-        return;
-      }
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!global.service.git.handleInfoRefs) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Git service not available');
+        response.end('Git server service not available');
         return;
       }
 
-      // Convert TiddlyWiki's ClientRequest to Node's IncomingMessage for Desktop service
-      await global.service.git.handleInfoRefs(workspaceId, service, request as unknown as Http.IncomingMessage, response);
+      // Subscribe to Observable — IPC streams response chunks back to this worker
+      const response$ = global.service.gitServer.gitSmartHTTPInfoRefs$(workspaceId, service);
+      response$.subscribe({
+        next(chunk) {
+          if (chunk.type === 'headers') {
+            response.writeHead(chunk.statusCode, chunk.headers);
+          } else {
+            response.write(Buffer.from(chunk.data));
+          }
+        },
+        error(error) {
+          console.error('git-info-refs Observable error:', error);
+          if (!response.headersSent) {
+            response.writeHead(500, { 'Content-Type': 'text/plain' });
+          }
+          response.end((error).message);
+        },
+        complete() {
+          if (!response.writableEnded) response.end();
+        },
+      });
     } catch (error) {
       console.error('Error in git-info-refs handler:', error);
       if (!response.headersSent) {

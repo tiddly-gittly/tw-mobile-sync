@@ -35,7 +35,7 @@ class BackgroundSyncManager {
   async getConnectedClientStatus() {
     try {
       const baseUrl = $tw.wiki.getTiddlerText('$:/info/url/full');
-      if (baseUrl?.startsWith?.('http') !== true) {
+      if (baseUrl === undefined || !baseUrl.startsWith('http')) {
         clearInterval(this.loop);
         return;
       }
