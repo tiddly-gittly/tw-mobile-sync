@@ -18,12 +18,22 @@ exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/git-receive-pack$/;
 /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
 /**
- * Collect entire request body into a Buffer.
+ * Collect entire request body into a Buffer with size limit.
  */
+const MAX_BODY_SIZE = 100 * 1024 * 1024; // 100MB limit
 function collectRequestBody(request: Http.ClientRequest & Http.InformationEvent): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    (request as unknown as NodeJS.ReadableStream).on('data', (chunk: Buffer) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+    let totalSize = 0;
+    (request as unknown as NodeJS.ReadableStream).on('data', (chunk: Buffer) => {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      totalSize += buf.length;
+      if (totalSize > MAX_BODY_SIZE) {
+        reject(new Error(`Request body exceeds ${MAX_BODY_SIZE} bytes limit`));
+        return;
+      }
+      chunks.push(buf);
+    });
     (request as unknown as NodeJS.ReadableStream).on('end', () => {
       resolve(Buffer.concat(chunks));
     });
@@ -65,7 +75,7 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!global.service?.gitServer) {
+      if (!global.service.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Git server service not available');
         return;
@@ -75,7 +85,7 @@ const handler: ServerEndpointHandler = function handler(
       const requestBody = await collectRequestBody(request);
       const response$ = global.service.gitServer.gitSmartHTTPReceivePack$(workspaceId, new Uint8Array(requestBody));
 
-      response$.subscribe({
+      const subscription = response$.subscribe({
         next(chunk) {
           if (chunk.type === 'headers') {
             response.writeHead(chunk.statusCode, chunk.headers);
@@ -91,8 +101,15 @@ const handler: ServerEndpointHandler = function handler(
           response.end((error).message);
         },
         complete() {
-          if (!response.writableEnded) response.end();
+          if (!response.writableEnded) {
+            response.end();
+          }
         },
+      });
+
+      // Clean up if client disconnects before Observable completes
+      response.on('close', () => {
+        subscription.unsubscribe();
       });
     } catch (error) {
       console.error('Error in git-receive-pack handler:', error);

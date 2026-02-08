@@ -72,7 +72,7 @@ const handler: ServerEndpointHandler = function handler(
 
       // Subscribe to Observable — IPC streams response chunks back to this worker
       const response$ = global.service.gitServer.gitSmartHTTPInfoRefs$(workspaceId, service);
-      response$.subscribe({
+      const subscription = response$.subscribe({
         next(chunk) {
           if (chunk.type === 'headers') {
             response.writeHead(chunk.statusCode, chunk.headers);
@@ -90,6 +90,11 @@ const handler: ServerEndpointHandler = function handler(
         complete() {
           if (!response.writableEnded) response.end();
         },
+      });
+
+      // Clean up if client disconnects before Observable completes
+      response.on('close', () => {
+        subscription.unsubscribe();
       });
     } catch (error) {
       console.error('Error in git-info-refs handler:', error);
