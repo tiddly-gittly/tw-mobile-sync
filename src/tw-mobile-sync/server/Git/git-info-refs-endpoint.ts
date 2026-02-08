@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { spawn } from 'child_process';
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import { getGitPath, getRepoPath, parseBasicAuth, sendAuthChallenge, validateToken } from './utils';
+import { parseBasicAuth, sendAuthChallenge } from './utils';
 
 exports.method = 'GET';
 
@@ -52,71 +51,30 @@ const handler: ServerEndpointHandler = async function handler(
 
       // Token can be in either username or password field
       const token = credentials.password === '' ? credentials.username : credentials.password;
-      const isValid = await validateToken(workspaceId, token);
+      
+      // Validate token using Desktop workspace service
+      if (!(global as any).service?.workspace?.validateWorkspaceToken) {
+        response.writeHead(500, { 'Content-Type': 'text/plain' });
+        response.end('Workspace service not available');
+        return;
+      }
 
+      const isValid = await (global as any).service.workspace.validateWorkspaceToken(workspaceId, token);
       if (!isValid) {
         sendAuthChallenge(response);
         return;
       }
     }
 
-    // Get repository path
-    const repoPath = await getRepoPath(workspaceId);
-    if (repoPath === undefined) {
-      response.writeHead(404, { 'Content-Type': 'text/plain' });
-      response.end('Workspace not found');
+    // Delegate to Desktop git service
+    if (!(global as any).service?.git?.handleInfoRefs) {
+      response.writeHead(500, { 'Content-Type': 'text/plain' });
+      response.end('Git service not available');
       return;
     }
 
-    // Get git executable path
-    const gitPath = await getGitPath();
+    await (global as any).service.git.handleInfoRefs(workspaceId, service, request, response);
 
-    // Spawn git process
-    const gitProcess = spawn(gitPath, [service.replace('git-', ''), '--stateless-rpc', '--advertise-refs', repoPath], {
-      env: {
-        ...process.env,
-        GIT_PROJECT_ROOT: repoPath,
-        GIT_HTTP_EXPORT_ALL: '1',
-      },
-    });
-
-    // Set response headers for git smart HTTP
-    const contentType = service === null ? 'text/plain' : `application/x-${service}-advertisement`;
-    response.writeHead(200, {
-      'Content-Type': contentType,
-      'Cache-Control': 'no-cache',
-    });
-
-    // Write packet line header
-    const serviceAnnouncement = service === null ? '' : `# service=${service}\\n`;
-    const length = serviceAnnouncement.length + 4;
-    const prefix = length.toString(16).padStart(4, '0');
-    response.write(`${prefix}${serviceAnnouncement}0000`);
-
-    // Pipe git output to response
-    gitProcess.stdout.pipe(response);
-
-    gitProcess.stderr.on('data', (data) => {
-      console.error(`Git stderr: ${String(data)}`);
-    });
-
-    gitProcess.on('error', (error) => {
-      console.error('Git process error:', error);
-      if (!response.headersSent) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-      }
-      response.end('Git process error');
-    });
-
-    gitProcess.on('close', (code) => {
-      if (code !== 0 && code !== undefined && code !== null) {
-        console.error(`Git process exited with code ${String(code)}`);
-      }
-      if (!response.writableEnded) {
-        response.end();
-      }
-    });
-  } catch (error) {
     console.error('Error in git-info-refs handler:', error);
     if (!response.headersSent) {
       response.writeHead(500, { 'Content-Type': 'text/plain' });
