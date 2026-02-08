@@ -17,8 +17,8 @@ export function parseBasicAuth(authHeader: string | undefined): { password: stri
     const [username, password] = credentials.split(':', 2);
 
     return {
-      username: username ?? '',
-      password: password ?? '',
+      username: username || '',
+      password: password || '',
     };
   } catch {
     return undefined;
