@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import type { Widget as IWidget, IChangedTiddlers } from 'tiddlywiki';
-import jsQR from 'jsqr-es6';
 import type { Point } from 'jsqr-es6/dist/locator';
+import type { IChangedTiddlers, Widget as IWidget } from 'tiddlywiki';
+// @ts-expect-error - jsqr-es6 has no types
+import jsQR from 'jsqr-es6';
 
 const Widget = (require('$:/core/modules/widgets/widget.js') as { widget: typeof IWidget }).widget;
 
@@ -169,7 +169,7 @@ class ScanQRWidget extends Widget {
       if (!canContinueCurrentLoop || stopDueToHasResult) {
         video.pause();
         video.parentElement?.removeChild(video);
-        stream.getTracks().forEach(function (track) {
+        stream.getTracks().forEach(function(track) {
           track.stop();
         });
       }

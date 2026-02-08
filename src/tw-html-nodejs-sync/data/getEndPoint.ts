@@ -22,6 +22,6 @@ export function getClientInfoPoint(): string {
   return `http://${location.host}${clientInfoRoute}`;
 }
 
-export function getFullHtmlEndPoint(ipAddress: string, port: number): string {
+export function getFullHtmlEndPoint(_ipAddress: string, _port: number): string {
   return `http://${location.host}${fullHtmlRoute}`;
 }

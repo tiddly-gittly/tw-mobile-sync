@@ -6,7 +6,7 @@ import { filterOutNotSyncedTiddlers } from '../../data/filterOutNotSyncedTiddler
 import { getServerChangeFilter } from '../../data/filters';
 import { getClientInfo } from '../../data/getClientInfo';
 import { getSyncedTiddlersText } from '../../getSyncedTiddlersText';
-import { ConnectionState, ISyncEndPointRequest } from '../../types';
+import { ConnectionState } from '../../types';
 
 exports.method = 'POST';
 
@@ -18,7 +18,7 @@ exports.path = /^\/tw-html-nodejs-sync\/html-node-sync$/;
 const handler: ServerEndpointHandler = function handler(request: Http.ClientRequest & Http.InformationEvent, response: Http.ServerResponse, context) {
   response.setHeader('Access-Control-Allow-Origin', '*');
 
-  const { tiddlers, lastSync } = $tw.utils.parseJSONSafe(context.data) as ISyncEndPointRequest;
+  const { tiddlers, lastSync } = $tw.utils.parseJSONSafe(context.data);
   const changedTiddlersFromClient = filterOutNotSyncedTiddlers(tiddlers);
   if (!Array.isArray(changedTiddlersFromClient)) {
     response.writeHead(400, { 'Content-Type': 'application/json' });

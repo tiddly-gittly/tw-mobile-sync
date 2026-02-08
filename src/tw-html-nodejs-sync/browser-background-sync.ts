@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-array-callback-reference */
 import cloneDeep from 'lodash/cloneDeep';
 import mapValues from 'lodash/mapValues';
 import type { IServerStatus, ITiddlerFieldsParam, Tiddler } from 'tiddlywiki';
@@ -46,7 +45,7 @@ class BackgroundSyncManager {
   }
 
   setupListener() {
-    $tw.rootWidget.addEventListener('tw-html-nodejs-sync-get-server-status', async (event) => {
+    $tw.rootWidget.addEventListener('tw-html-nodejs-sync-get-server-status', async () => {
       await this.getServerStatus();
     });
     $tw.rootWidget.addEventListener('tw-html-nodejs-sync-set-active-server-and-sync', async (event) => {
@@ -54,16 +53,15 @@ class BackgroundSyncManager {
       await this.setActiveServerAndSync(titleToActive);
     });
     /** handle events from src/ui/ServerItemViewTemplate.tid 's $:/plugins/linonetwo/tw-html-nodejs-sync/ui/ServerItemViewTemplate */
-    $tw.rootWidget.addEventListener('tw-html-nodejs-sync-sync-start', async (event) => {
+    $tw.rootWidget.addEventListener('tw-html-nodejs-sync-sync-start', async () => {
       await this.start();
     });
-    $tw.rootWidget.addEventListener('tw-html-nodejs-sync-download-full-html', async (event) => {
+    $tw.rootWidget.addEventListener('tw-html-nodejs-sync-download-full-html', async () => {
       await this.downloadFullHtmlAndApplyToWiki();
     });
   }
 
   startCheckServerStatusLoop() {
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/promise-function-async
     setInterval(() => this.getServerStatus(), this.loopInterval);
   }
 
@@ -73,7 +71,7 @@ class BackgroundSyncManager {
       this.lock = false;
     }
     await this.onSyncStart(skipStatusCheck);
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/promise-function-async
+
     this.loop = setInterval(() => this.onSyncStart(skipStatusCheck), this.loopInterval);
   }
 
@@ -207,7 +205,7 @@ class BackgroundSyncManager {
     if (onlineActiveServer !== undefined) {
       // fix multiple online active server
       this.serverList.forEach((serverInfoTiddler) => {
-        if (serverInfoTiddler?.fields?.text === ConnectionState.onlineActive && serverInfoTiddler?.fields?.title !== onlineActiveServer.fields.title) {
+        if (serverInfoTiddler.fields.text === ConnectionState.onlineActive && serverInfoTiddler.fields.title !== onlineActiveServer.fields.title) {
           $tw.wiki.addTiddler({ ...serverInfoTiddler.fields, text: ConnectionState.online });
         }
       });
@@ -217,7 +215,7 @@ class BackgroundSyncManager {
         const requestBody: ISyncEndPointRequest = { tiddlers: changedTiddlersFromClient, lastSync: onlineActiveServer.fields.lastSync };
         // TODO: handle conflict, find intersection of changedTiddlersFromServer and changedTiddlersFromClient, and write changes to each other
         // send modified tiddlers to server
-        const changedTiddlersFromServer: ITiddlerFieldsParam[] = await fetch(
+        const response = await fetch(
           getSyncEndPoint(onlineActiveServer.fields.ipAddress, onlineActiveServer.fields.port),
           {
             method: 'POST',
@@ -229,7 +227,9 @@ class BackgroundSyncManager {
             },
             // TODO: add auth token in header, after we can scan QR code to get token easily
           },
-        ).then(async (response) => filterOutNotSyncedTiddlers((await response.json()) as ITiddlerFieldsParam[]));
+        );
+        const responseJson = (await response.json()) as ITiddlerFieldsParam[];
+        const changedTiddlersFromServer: ITiddlerFieldsParam[] = filterOutNotSyncedTiddlers(responseJson);
         changedTiddlersFromServer.forEach((tiddler) => {
           // TODO: handle conflict
           $tw.wiki.addTiddler(tiddler);
@@ -265,14 +265,14 @@ class BackgroundSyncManager {
         }).then(async (response) => await response.text());
         this.setActiveServerTiddlerTitle(onlineActiveServer.fields.title, this.getLastSyncString());
         // get all state tiddlers we need, before document is overwritten
-        const serverList = cloneDeep(this.serverList);
+        const serverList: IServerInfoTiddler[] = cloneDeep(this.serverList) as IServerInfoTiddler[];
         // overwrite
         document.write(fullHtml);
         document.close();
         this.#showNotification(`Full html applied, set server list back.`);
 
         // write back after html stabled
-        addEventListener('DOMContentLoaded', (event) => {
+        addEventListener('DOMContentLoaded', () => {
           setTimeout(() => {
             $tw.wiki.addTiddlers(serverList.map((tiddler) => tiddler.fields));
           }, 1000);
@@ -286,7 +286,7 @@ class BackgroundSyncManager {
 
   get onlineActiveServer() {
     return this.serverList.find((serverInfoTiddler) => {
-      return serverInfoTiddler?.fields?.text === ConnectionState.onlineActive;
+      return serverInfoTiddler.fields.text === ConnectionState.onlineActive;
     });
   }
 
@@ -305,13 +305,13 @@ class BackgroundSyncManager {
     }
     const lastSync = onlineActiveServer.fields.lastSync;
     const diffTiddlersFilter: string = getServerChangeFilter(lastSync);
-    const diffTiddlers: string[] = $tw.wiki.compileFilter(diffTiddlersFilter)() ?? [];
+    const diffTiddlers: string[] = $tw.wiki.compileFilter(diffTiddlersFilter)() || [];
     return diffTiddlers
       .map($tw.wiki.getTiddler)
       .filter((tiddler): tiddler is Tiddler => tiddler !== undefined)
       .map(
         (tiddler): ITiddlerFieldsParam =>
-          mapValues(tiddler.fields, (value) => {
+          mapValues(tiddler.fields, (value: unknown) => {
             if (value instanceof Date) {
               return $tw.utils.stringifyDate(value);
             }
@@ -320,12 +320,12 @@ class BackgroundSyncManager {
       );
   }
 
-  get serverList() {
+  get serverList(): IServerInfoTiddler[] {
     // get server list using filter
-    const serverList: string[] = $tw.wiki.compileFilter(getServerListFilter())() ?? [];
-    return serverList.map((serverInfoTiddlerTitle) => {
-      return $tw.wiki.getTiddler(serverInfoTiddlerTitle) as IServerInfoTiddler;
-    });
+    const serverListTitles: string[] = $tw.wiki.compileFilter(getServerListFilter())() || [];
+    return serverListTitles
+      .map((serverInfoTiddlerTitle: string) => $tw.wiki.getTiddler(serverInfoTiddlerTitle))
+      .filter((tiddler): tiddler is IServerInfoTiddler => tiddler !== undefined);
   }
 
   #showNotification(text: string) {

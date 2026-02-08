@@ -49,7 +49,10 @@ function recognize(sourceTiddlerName: string | undefined, tiddlerToFill: string 
 }
 
 exports.startup = () => {
-  $tw.rootWidget.addEventListener('tw-html-nodejs-sync-smart-recognize-ip-address', (event) =>
-    recognize(event.paramObject?.from as string, (event.paramObject?.to as string) ?? event.paramObject?.from, event.paramObject?.field as string),
+  $tw.rootWidget.addEventListener(
+    'tw-html-nodejs-sync-smart-recognize-ip-address',
+    (event) => {
+      recognize(event.paramObject?.from as string, (event.paramObject?.to as string) ?? event.paramObject?.from, event.paramObject?.field as string);
+    },
   );
 };

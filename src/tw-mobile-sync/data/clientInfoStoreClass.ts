@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import structuredClone from '@ungap/structured-clone';
 import { UAParser } from 'ua-parser-js';
 import * as types from '../types';
@@ -16,7 +14,7 @@ export class ClientInfoStore {
     this.loopHandel = setInterval(() => {
       Object.keys(this.#clients).forEach((key) => {
         const timestamp = this.#clients[key].timestamp;
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+
         if (!timestamp || Date.now() - timestamp > keyDeleteTimeout) {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete this.#clients[key];

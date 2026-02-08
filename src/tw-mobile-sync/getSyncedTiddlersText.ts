@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import take from 'lodash/take';
 import { ITiddlerFields, ITiddlerFieldsParam } from 'tiddlywiki';
 

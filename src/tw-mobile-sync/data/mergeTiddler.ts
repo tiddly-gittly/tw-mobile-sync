@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import type { ITiddlerFields } from 'tiddlywiki';
 
 /**
@@ -80,7 +79,7 @@ function performThreeWayMerge(base: string, ours: string, theirs: string): strin
 
   try {
     // Load diff-match-patch from TiddlyWiki core
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const dmp = require('$:/core/modules/utils/diff-match-patch/diff_match_patch.js');
     const dmpInstance = new dmp.diff_match_patch();
 

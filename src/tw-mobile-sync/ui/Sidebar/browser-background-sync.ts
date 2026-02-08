@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-array-callback-reference */
 import { clientStatusStateTiddlerTitle, getLoopInterval } from '../../data/constants';
 import { getClientInfoPoint } from '../../data/getEndPoint';
 import type { IClientInfo } from '../../types';
@@ -28,7 +27,7 @@ class BackgroundSyncManager {
       this.lock = false;
     }
     await this.getConnectedClientStatus();
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/promise-function-async
+
     this.loop = setInterval(() => this.getConnectedClientStatus(), this.loopInterval);
   }
 
@@ -69,5 +68,6 @@ exports.startup = () => {
     const syncManager = new BackgroundSyncManager();
     $tw.wiki.addTiddler({ title: '$:/temp/tw-mobile-sync/listen-client-info', text: 'yes' });
     void syncManager.start();
+    return true;
   });
 };
