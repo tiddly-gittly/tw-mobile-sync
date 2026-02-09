@@ -1,10 +1,20 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { ITidGiGlobalService } from '../../types/tidgi-global';
-import { collectRequestBody } from './utilities';
+import type { IGitServerService, IGitService, IWorkspaceService } from 'tidgi-shared';
 
-// Access global service (works in both Node.js and TiddlyWiki plugin environment)
-const globalService = globalThis as typeof globalThis & { service?: ITidGiGlobalService };
+/**
+ * Subset of TidGi global services needed by Git endpoints
+ */
+export interface ITidGiGlobalService {
+  gitServer?: IGitServerService;
+  workspace: IWorkspaceService;
+  git: IGitService;
+}
+
+/**
+ * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
+ */
+const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'POST';
@@ -59,7 +69,7 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!globalService.service?.gitServer) {
+      if (!tidgiService?.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Git server service not available');
         return;
@@ -67,7 +77,7 @@ const handler: ServerEndpointHandler = function handler(
 
       // Collect POST body, then pass through IPC as Uint8Array
       const requestBody = await collectRequestBody(request);
-      const response$ = globalService.service.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
+      const response$ = tidgiService.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
 
       const subscription = response$.subscribe({
         next(chunk) {
@@ -82,7 +92,7 @@ const handler: ServerEndpointHandler = function handler(
           if (!response.headersSent) {
             response.writeHead(500, { 'Content-Type': 'text/plain' });
           }
-          response.end((error).message);
+          response.end((error as Error).message);
         },
         complete() {
           if (!response.writableEnded) response.end();

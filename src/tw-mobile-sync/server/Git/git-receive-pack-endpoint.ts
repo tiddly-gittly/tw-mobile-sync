@@ -1,10 +1,21 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { ITidGiGlobalService } from '../../types/tidgi-global';
-import { collectRequestBody, parseBasicAuth, sendAuthChallenge } from './utilities';
+import type { IGitServerService, IGitService, IWorkspaceService } from 'tidgi-shared';
+import { parseBasicAuth, sendAuthChallenge } from './utilities';
 
-// Access global service (works in both Node.js and TiddlyWiki plugin environment)
-const globalService = globalThis as typeof globalThis & { service?: ITidGiGlobalService };
+/**
+ * Subset of TidGi global services needed by Git endpoints
+ */
+export interface ITidGiGlobalService {
+  gitServer?: IGitServerService;
+  workspace: IWorkspaceService;
+  git: IGitService;
+}
+
+/**
+ * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
+ */
+const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'POST';
@@ -59,14 +70,14 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       // Authenticate
-      if (!globalService.service?.workspace) {
+      if (!tidgiService?.workspace) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Workspace service not available');
         return;
       }
 
       // Get workspace token (may be empty/undefined for anonymous access)
-      const workspaceToken = await globalService.service.workspace.getWorkspaceToken(workspaceId);
+      const workspaceToken = await tidgiService.workspace.getWorkspaceToken(workspaceId);
       // If workspace has a token configured, require authentication
       if (workspaceToken !== undefined && workspaceToken !== '') {
         const credentials = parseBasicAuth(request.headers.authorization);
@@ -76,14 +87,14 @@ const handler: ServerEndpointHandler = function handler(
         }
         const token = credentials.password === '' ? credentials.username : credentials.password;
 
-        if (!(await globalService.service.workspace.validateWorkspaceToken(workspaceId, token))) {
+        if (!(await tidgiService.workspace.validateWorkspaceToken(workspaceId, token))) {
           sendAuthChallenge(response);
           return;
         }
       }
       // If workspaceToken is empty/undefined, allow anonymous access (insecure mode)
 
-      if (!globalService.service.gitServer) {
+      if (!tidgiService.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Git server service not available');
         return;
@@ -91,7 +102,7 @@ const handler: ServerEndpointHandler = function handler(
 
       // Collect POST body, then pass through IPC as Uint8Array
       const requestBody = await collectRequestBody(request);
-      const response$ = globalService.service.gitServer.gitSmartHTTPReceivePack$(workspaceId, new Uint8Array(requestBody));
+      const response$ = tidgiService.gitServer.gitSmartHTTPReceivePack$(workspaceId, new Uint8Array(requestBody));
 
       const subscription = response$.subscribe({
         next(chunk) {
@@ -106,7 +117,7 @@ const handler: ServerEndpointHandler = function handler(
           if (!response.headersSent) {
             response.writeHead(500, { 'Content-Type': 'text/plain' });
           }
-          response.end((error).message);
+          response.end((error as Error).message);
         },
         complete() {
           if (!response.writableEnded) {

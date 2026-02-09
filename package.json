@@ -54,6 +54,7 @@
     "@ungap/structured-clone": "^1.3.0",
     "lodash": "^4.17.23",
     "npm-check-updates": "^19.1.2",
+    "tidgi-shared": "^0.1.1",
     "tiddlywiki": "^5.3.8",
     "tiddlywiki-plugin-dev": "^0.3.2",
     "ua-parser-js": "^2.0.9"
