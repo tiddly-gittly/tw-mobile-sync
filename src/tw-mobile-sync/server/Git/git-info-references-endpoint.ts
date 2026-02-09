@@ -1,17 +1,8 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { IGitServerService, IGitService, IWorkspaceService } from 'tidgi-shared';
+import type { GitHTTPResponseChunk, ITidGiGlobalService } from 'tidgi-shared';
 import { URL } from 'url';
 import { parseBasicAuth, sendAuthChallenge } from './utilities';
-
-/**
- * Subset of TidGi global services needed by Git endpoints
- */
-export interface ITidGiGlobalService {
-  gitServer?: IGitServerService;
-  workspace: IWorkspaceService;
-  git: IGitService;
-}
 
 /**
  * Access TidGi service proxies via $tw.tidgi.service.
@@ -96,14 +87,14 @@ const handler: ServerEndpointHandler = function handler(
       // Subscribe to Observable — IPC streams response chunks back to this worker
       const response$ = tidgiService.gitServer.gitSmartHTTPInfoRefs$(workspaceId, service);
       const subscription = response$.subscribe({
-        next(chunk) {
+        next(chunk: GitHTTPResponseChunk) {
           if (chunk.type === 'headers') {
             response.writeHead(chunk.statusCode, chunk.headers);
           } else {
             response.write(Buffer.from(chunk.data));
           }
         },
-        error(error) {
+        error(error: Error) {
           console.error('git-info-refs Observable error:', error);
           if (!response.headersSent) {
             response.writeHead(500, { 'Content-Type': 'text/plain' });

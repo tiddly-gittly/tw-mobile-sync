@@ -1,15 +1,6 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { IGitServerService, IGitService, IWorkspaceService } from 'tidgi-shared';
-
-/**
- * Subset of TidGi global services needed by Git endpoints
- */
-export interface ITidGiGlobalService {
-  gitServer?: IGitServerService;
-  workspace: IWorkspaceService;
-  git: IGitService;
-}
+import type { GitHTTPResponseChunk, ITidGiGlobalService } from 'tidgi-shared';
 
 /**
  * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
@@ -80,14 +71,14 @@ const handler: ServerEndpointHandler = function handler(
       const response$ = tidgiService.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
 
       const subscription = response$.subscribe({
-        next(chunk) {
+        next(chunk: GitHTTPResponseChunk) {
           if (chunk.type === 'headers') {
             response.writeHead(chunk.statusCode, chunk.headers);
           } else {
             response.write(Buffer.from(chunk.data));
           }
         },
-        error(error) {
+        error(error: Error) {
           console.error('git-upload-pack Observable error:', error);
           if (!response.headersSent) {
             response.writeHead(500, { 'Content-Type': 'text/plain' });

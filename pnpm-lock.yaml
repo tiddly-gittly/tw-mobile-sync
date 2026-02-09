@@ -24,8 +24,8 @@ importers:
         specifier: ^0.3.2
         version: 0.3.2(postcss-load-config@4.0.1(postcss@8.5.6)(ts-node@10.9.2(@types/node@24.10.12)(typescript@5.9.3)))(postcss@8.5.6)(svelte@5.20.1)(ts-node@10.9.2(@types/node@24.10.12)(typescript@5.9.3))(typescript@5.9.3)
       tidgi-shared:
-        specifier: ^0.1.1
-        version: 0.1.1(electron@40.2.1)(rxjs@7.8.1)
+        specifier: ^0.1.2
+        version: 0.1.2(electron@40.2.1)(rxjs@7.8.1)
       ua-parser-js:
         specifier: ^2.0.9
         version: 2.0.9
@@ -3289,8 +3289,8 @@ packages:
     hasBin: true
     bundledDependencies: []
 
-  tidgi-shared@0.1.1:
-    resolution: {integrity: sha512-j7viQ4fHTgdbgXPh4FGhkAVQJdv4yhGwBp3A1ZfElXcsEAMHeBSfe9YD1TgA+HqFRzZqJ49JkK+7YKvbwZQ2TA==}
+  tidgi-shared@0.1.2:
+    resolution: {integrity: sha512-1/3y3jcI2NB/3+b6HW2drBgdEkyWvPAvIogmVUs1F95WmRFD0vXk8Z/mhqrrqvtrMdGUTJ8FvDgzKFllZWra+w==}
     peerDependencies:
       rxjs: '>=7'
     peerDependenciesMeta:
@@ -7127,7 +7127,7 @@ snapshots:
 
   tiddlywiki@5.3.8: {}
 
-  tidgi-shared@0.1.1(electron@40.2.1)(rxjs@7.8.1):
+  tidgi-shared@0.1.2(electron@40.2.1)(rxjs@7.8.1):
     dependencies:
       electron-ipc-cat: 2.2.3(electron@40.2.1)(rxjs@7.8.1)
     optionalDependencies:
