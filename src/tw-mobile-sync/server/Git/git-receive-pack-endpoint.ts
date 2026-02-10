@@ -18,31 +18,13 @@ exports.method = 'POST';
  * Write operation — requires authentication
  */
 exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/git-receive-pack$/;
-/* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
 /**
- * Collect entire request body into a Buffer with size limit.
+ * TiddlyWiki reads the POST body before calling the handler.
+ * "buffer" makes it available as a Buffer in context.data.
  */
-const MAX_BODY_SIZE = 100 * 1024 * 1024; // 100MB limit
-function collectRequestBody(request: Http.ClientRequest & Http.InformationEvent): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    let totalSize = 0;
-    (request as unknown as NodeJS.ReadableStream).on('data', (chunk: Buffer) => {
-      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-      totalSize += buf.length;
-      if (totalSize > MAX_BODY_SIZE) {
-        reject(new Error(`Request body exceeds ${MAX_BODY_SIZE} bytes limit`));
-        return;
-      }
-      chunks.push(buf);
-    });
-    (request as unknown as NodeJS.ReadableStream).on('end', () => {
-      resolve(Buffer.concat(chunks));
-    });
-    (request as unknown as NodeJS.ReadableStream).on('error', reject);
-  });
-}
+exports.bodyFormat = 'buffer';
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
 const handler: ServerEndpointHandler = function handler(
   request: Http.ClientRequest & Http.InformationEvent,
@@ -91,8 +73,12 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Collect POST body, then pass through IPC as Uint8Array
-      const requestBody = await collectRequestBody(request);
+      // context.data is a Buffer populated by TiddlyWiki's bodyFormat="buffer" handling
+      const requestBody = context.data as unknown as Buffer;
+      console.log('git-receive-pack handler', {
+        workspaceId,
+        bodySize: requestBody?.length ?? 0,
+      });
       const response$ = tidgiService.gitServer.gitSmartHTTPReceivePack$(workspaceId, new Uint8Array(requestBody));
 
       const subscription = response$.subscribe({

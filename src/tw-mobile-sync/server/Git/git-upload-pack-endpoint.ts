@@ -17,35 +17,18 @@ exports.method = 'POST';
  * Read-only — no authentication required
  */
 exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/git-upload-pack$/;
-/* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
 /**
- * Collect entire request body into a Buffer with size limit.
- * The buffer is then sent as Uint8Array through IPC (structured-clone safe).
+ * TiddlyWiki reads the POST body before calling the handler.
+ * "buffer" makes it available as a Buffer in context.data.
+ * Without this, the default "string" mode consumes the stream as UTF-8
+ * and the binary git protocol data would be corrupted / unavailable.
  */
-const MAX_BODY_SIZE = 100 * 1024 * 1024; // 100MB limit
-function collectRequestBody(request: Http.ClientRequest & Http.InformationEvent): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    let totalSize = 0;
-    (request as unknown as NodeJS.ReadableStream).on('data', (chunk: Buffer) => {
-      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-      totalSize += buf.length;
-      if (totalSize > MAX_BODY_SIZE) {
-        reject(new Error(`Request body exceeds ${MAX_BODY_SIZE} bytes limit`));
-        return;
-      }
-      chunks.push(buf);
-    });
-    (request as unknown as NodeJS.ReadableStream).on('end', () => {
-      resolve(Buffer.concat(chunks));
-    });
-    (request as unknown as NodeJS.ReadableStream).on('error', reject);
-  });
-}
+exports.bodyFormat = 'buffer';
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
 const handler: ServerEndpointHandler = function handler(
-  request: Http.ClientRequest & Http.InformationEvent,
+  _request: Http.ClientRequest & Http.InformationEvent,
   response: Http.ServerResponse,
   context,
 ) {
@@ -66,8 +49,13 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Collect POST body, then pass through IPC as Uint8Array
-      const requestBody = await collectRequestBody(request);
+      // context.data is a Buffer populated by TiddlyWiki's bodyFormat="buffer" handling
+      const requestBody = context.data as unknown as Buffer;
+      console.log('git-upload-pack handler', {
+        workspaceId,
+        bodySize: requestBody?.length ?? 0,
+      });
+
       const response$ = tidgiService.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
 
       const subscription = response$.subscribe({
@@ -79,13 +67,14 @@ const handler: ServerEndpointHandler = function handler(
           }
         },
         error(error: Error) {
-          console.error('git-upload-pack Observable error:', error);
+          console.error('git-upload-pack Observable error:', { workspaceId, message: error.message });
           if (!response.headersSent) {
             response.writeHead(500, { 'Content-Type': 'text/plain' });
           }
           response.end((error as Error).message);
         },
         complete() {
+          console.log('git-upload-pack response complete', { workspaceId });
           if (!response.writableEnded) response.end();
         },
       });
