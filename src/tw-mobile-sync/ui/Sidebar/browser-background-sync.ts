@@ -39,9 +39,24 @@ class BackgroundSyncManager {
         clearInterval(this.loop);
         return;
       }
-      const response: Record<string, IClientInfo> = await fetch(getClientInfoPoint(baseUrl)).then(
-        async (response) => (await response.json()) as Record<string, IClientInfo>,
-      );
+      const endpoint = getClientInfoPoint(baseUrl);
+      const httpResponse = await fetch(endpoint);
+      if (!httpResponse.ok) {
+        throw new Error(`HTTP ${String(httpResponse.status)} ${httpResponse.statusText} from ${endpoint}`);
+      }
+      const responseText = await httpResponse.text();
+      if (responseText.trim().length === 0) {
+        throw new Error(`Empty response from ${endpoint}`);
+      }
+
+      let response: Record<string, IClientInfo>;
+      try {
+        response = JSON.parse(responseText) as Record<string, IClientInfo>;
+      } catch (error) {
+        const preview = responseText.slice(0, 200);
+        throw new Error(`Invalid JSON from ${endpoint}: ${(error as Error).message}; preview=${preview}`);
+      }
+
       Object.values(response).forEach((clientInfo) => {
         $tw.wiki.addTiddler({
           title: `${clientStatusStateTiddlerTitle}/${clientInfo['User-Agent']}`,
