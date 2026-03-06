@@ -25,6 +25,15 @@ function getProtocol(request: Http.ClientRequest & Http.InformationEvent): strin
   return requestWithSocket.socket.encrypted ? 'https' : 'http';
 }
 
+function getHost(request: Http.ClientRequest & Http.InformationEvent): string {
+  const requestHeaders = request.headers as Record<string, string | string[] | undefined>;
+  const forwardedHost = requestHeaders['x-forwarded-host'];
+  if (typeof forwardedHost === 'string' && forwardedHost.length > 0) {
+    return forwardedHost.split(',')[0].trim();
+  }
+  return request.headers.host || 'localhost';
+}
+
 const handler: ServerEndpointHandler = function handler(
   request: Http.ClientRequest & Http.InformationEvent,
   response: Http.ServerResponse,
@@ -59,7 +68,7 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      const host = request.headers.host || 'localhost';
+      const host = getHost(request);
       const protocol = getProtocol(request);
       const baseUrl = `${protocol}://${host}`;
 

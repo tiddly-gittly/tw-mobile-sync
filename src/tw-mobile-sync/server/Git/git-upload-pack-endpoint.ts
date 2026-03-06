@@ -1,6 +1,7 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { GitHTTPResponseChunk, ITidGiGlobalService } from 'tidgi-shared';
+import { authorizeWorkspaceToken } from './utilities';
 
 /**
  * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
@@ -32,14 +33,22 @@ const handler: ServerEndpointHandler = function handler(
   response: Http.ServerResponse,
   context,
 ) {
-  response.setHeader('Access-Control-Allow-Origin', '*');
-
   void (async () => {
     try {
       const workspaceId = context.params[0];
       if (!workspaceId) {
         response.writeHead(400, { 'Content-Type': 'text/plain' });
         response.end('Missing workspace ID');
+        return;
+      }
+
+      if (!tidgiService?.workspace) {
+        response.writeHead(500, { 'Content-Type': 'text/plain' });
+        response.end('Workspace service not available');
+        return;
+      }
+
+      if (!(await authorizeWorkspaceToken(_request, response, tidgiService.workspace, workspaceId))) {
         return;
       }
 

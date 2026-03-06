@@ -1,3 +1,6 @@
+import type Http from 'http';
+import type { ITidGiGlobalService } from 'tidgi-shared';
+
 /**
  * Utilities for Git Smart HTTP protocol implementation
  */
@@ -34,4 +37,30 @@ export function sendAuthChallenge(response: import('http').ServerResponse): void
     'Content-Type': 'text/plain',
   });
   response.end('Authentication required');
+}
+
+export async function authorizeWorkspaceToken(
+  request: Http.ClientRequest & Http.InformationEvent,
+  response: Http.ServerResponse,
+  workspaceService: ITidGiGlobalService['workspace'],
+  workspaceId: string,
+): Promise<boolean> {
+  const workspaceToken = await workspaceService.getWorkspaceToken(workspaceId);
+  if (workspaceToken === undefined || workspaceToken === '') {
+    return true;
+  }
+
+  const credentials = parseBasicAuth(request.headers.authorization);
+  if (credentials === undefined) {
+    sendAuthChallenge(response);
+    return false;
+  }
+
+  const token = credentials.password === '' ? credentials.username : credentials.password;
+  if (!(await workspaceService.validateWorkspaceToken(workspaceId, token))) {
+    sendAuthChallenge(response);
+    return false;
+  }
+
+  return true;
 }

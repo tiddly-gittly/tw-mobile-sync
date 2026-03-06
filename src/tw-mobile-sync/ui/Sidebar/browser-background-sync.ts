@@ -8,6 +8,8 @@ exports.platforms = ['browser'];
 exports.after = ['render'];
 exports.synchronous = true;
 
+let syncManager: BackgroundSyncManager | undefined;
+
 class BackgroundSyncManager {
   loop: ReturnType<typeof setInterval> | undefined;
   loopInterval: number;
@@ -64,7 +66,7 @@ class BackgroundSyncManager {
         });
       });
     } catch (error) {
-      console.warn(`tw-html-nodejs-sync can't connect to tw nodejs side. Error: ${(error as Error).message}`);
+      console.warn(`tw-mobile-sync can't connect to the desktop endpoint. Error: ${(error as Error).message}`);
     }
   }
 
@@ -80,7 +82,7 @@ class BackgroundSyncManager {
 exports.startup = () => {
   // only start when feature is used
   $tw.rootWidget.addEventListener('tm-tw-mobile-sync-listen-client-info', () => {
-    const syncManager = new BackgroundSyncManager();
+    syncManager ??= new BackgroundSyncManager();
     $tw.wiki.addTiddler({ title: '$:/temp/tw-mobile-sync/listen-client-info', text: 'yes' });
     void syncManager.start();
     return true;

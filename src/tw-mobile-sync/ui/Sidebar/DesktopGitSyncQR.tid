@@ -14,7 +14,7 @@ type: text/vnd.tiddlywiki
 
 <div class="tw-mobile-sync-sidebar-qrcode">
   <$let 
-    baseUrl={{$:/info/url/full}}
+    baseUrl={{{ [{$:/info/url/host}addprefix[//]addprefix{$:/info/url/protocol}] }}}
     workspaceId={{$:/info/tidgi/workspaceID}}
     workspaceName={{$:/info/tidgi/workspaceName}}
     token={{$:/info/tidgi/workspaceToken}}
