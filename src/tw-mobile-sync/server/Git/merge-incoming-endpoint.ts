@@ -1,7 +1,7 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from 'tidgi-shared';
-import { parseBasicAuth, sendAuthChallenge } from './utilities';
+import { authorizeWorkspaceToken } from './utilities';
 
 /**
  * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
@@ -31,8 +31,6 @@ const handler: ServerEndpointHandler = function handler(
   response: Http.ServerResponse,
   context,
 ) {
-  response.setHeader('Access-Control-Allow-Origin', '*');
-
   void (async () => {
     try {
       const workspaceId = context.params[0];
@@ -49,18 +47,8 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      const workspaceToken = await tidgiService.workspace.getWorkspaceToken(workspaceId);
-      if (workspaceToken !== undefined && workspaceToken !== '') {
-        const credentials = parseBasicAuth(request.headers.authorization);
-        if (credentials === undefined) {
-          sendAuthChallenge(response);
-          return;
-        }
-        const token = credentials.password === '' ? credentials.username : credentials.password;
-        if (!(await tidgiService.workspace.validateWorkspaceToken(workspaceId, token))) {
-          sendAuthChallenge(response);
-          return;
-        }
+      if (!(await authorizeWorkspaceToken(request, response, tidgiService.workspace, workspaceId))) {
+        return;
       }
 
       if (!tidgiService.gitServer) {
