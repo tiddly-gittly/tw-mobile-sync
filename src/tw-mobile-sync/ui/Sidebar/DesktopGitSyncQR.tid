@@ -8,16 +8,20 @@ type: text/vnd.tiddlywiki
   "workspaceId": "$(workspaceId)$",
   "workspaceName": "$(workspaceName)$",
   "token": "$(token)$",
+  "tokenAuthHeaderName": "$(tokenAuthHeaderName)$",
+  "tokenAuthHeaderValue": "$(tokenAuthHeaderValue)$",
   "subWorkspaces": $(subWorkspaces)$
 }
 \end
 
 <div class="tw-mobile-sync-sidebar-qrcode">
   <$let 
-    baseUrl={{{ [{$:/info/url/host}addprefix[//]addprefix{$:/info/url/protocol}] }}}
+    baseUrl={{$:/info/url/origin}}
     workspaceId={{$:/info/tidgi/workspaceID}}
     workspaceName={{$:/info/tidgi/workspaceName}}
     token={{$:/info/tidgi/workspaceToken}}
+    tokenAuthHeaderName={{$:/info/tidgi/tokenAuthHeaderName}}
+    tokenAuthHeaderValue={{$:/info/tidgi/tokenAuthHeaderValue}}
     subWorkspaces={{$:/info/tidgi/subWorkspaces}}
     content=<<makeGitQRData>>
     size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}}
