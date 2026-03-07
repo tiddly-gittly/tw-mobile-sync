@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-import take from 'lodash/take';
 import { ITiddlerFields, ITiddlerFieldsParam } from 'tiddlywiki';
 
 export function getSyncedTiddlersText(
@@ -7,16 +5,23 @@ export function getSyncedTiddlersText(
   changedTiddlersFromServer: Array<ITiddlerFieldsParam | ITiddlerFields>,
   deletion: { client: string[]; server: string[] },
   options?: { reverse?: boolean },
-) {
+): string {
   const changedTitleDisplayLimit = 5;
 
-  const formatList = (list: string[]) => take(list, changedTitleDisplayLimit).join(' ');
-  const moreCountText = (list: string[]) => list.length > changedTitleDisplayLimit ? `And ${list.length - changedTitleDisplayLimit} more` : '';
+  const formatList = (list: string[]): string => {
+    const limitedList = list.slice(0, changedTitleDisplayLimit);
+    return limitedList.join(' ');
+  };
 
-  const clientText = formatList(changedTiddlersFromClient.map(tiddler => tiddler.caption as string ?? (tiddler.title)));
-  const clientCount = moreCountText(changedTiddlersFromClient.map(item => item.title as string));
-  const serverText = formatList(changedTiddlersFromServer.map(tiddler => tiddler.caption as string ?? (tiddler.title)));
-  const serverCount = moreCountText(changedTiddlersFromServer.map(item => item.title as string));
+  const moreCountText = (list: string[]): string => list.length > changedTitleDisplayLimit ? `And ${list.length - changedTitleDisplayLimit} more` : '';
+
+  const clientTitles = changedTiddlersFromClient.map(tiddler => (tiddler.caption as string | undefined) || (tiddler.title as string));
+  const clientText = formatList(clientTitles);
+  const clientCount = moreCountText(clientTitles);
+
+  const serverTitles = changedTiddlersFromServer.map(tiddler => (tiddler.caption as string | undefined) || (tiddler.title as string));
+  const serverText = formatList(serverTitles);
+  const serverCount = moreCountText(serverTitles);
 
   const deletionClientText = formatList(deletion.client);
   const deletionClientCount = moreCountText(deletion.client);

@@ -1,5 +1,0 @@
-title: $:/plugins/linonetwo/tw-mobile-sync/templates/save/save-lazy-all-non-skinny-tiddlywiki-tiddler-store
-
-\import $:/plugins/linonetwo/tw-mobile-sync/templates/save/lazy-all
-
-<$list filter=<<saveTiddlerFilter>> template="$:/core/templates/html-json-tiddler"/>

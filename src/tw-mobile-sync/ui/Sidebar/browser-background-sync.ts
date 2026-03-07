@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/no-array-callback-reference */
 import { clientStatusStateTiddlerTitle, getLoopInterval } from '../../data/constants';
 import { getClientInfoPoint } from '../../data/getEndPoint';
 import type { IClientInfo } from '../../types';
@@ -8,6 +7,8 @@ exports.name = 'tw-mobile-sync-browser-background-sync';
 exports.platforms = ['browser'];
 exports.after = ['render'];
 exports.synchronous = true;
+
+let syncManager: BackgroundSyncManager | undefined;
 
 class BackgroundSyncManager {
   loop: ReturnType<typeof setInterval> | undefined;
@@ -28,7 +29,7 @@ class BackgroundSyncManager {
       this.lock = false;
     }
     await this.getConnectedClientStatus();
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/promise-function-async
+
     this.loop = setInterval(() => this.getConnectedClientStatus(), this.loopInterval);
   }
 
@@ -36,13 +37,28 @@ class BackgroundSyncManager {
   async getConnectedClientStatus() {
     try {
       const baseUrl = $tw.wiki.getTiddlerText('$:/info/url/full');
-      if (baseUrl?.startsWith?.('http') !== true) {
+      if (baseUrl === undefined || !baseUrl.startsWith('http')) {
         clearInterval(this.loop);
         return;
       }
-      const response: Record<string, IClientInfo> = await fetch(getClientInfoPoint(baseUrl)).then(
-        async (response) => (await response.json()) as Record<string, IClientInfo>,
-      );
+      const endpoint = getClientInfoPoint(baseUrl);
+      const httpResponse = await fetch(endpoint);
+      if (!httpResponse.ok) {
+        throw new Error(`HTTP ${String(httpResponse.status)} ${httpResponse.statusText} from ${endpoint}`);
+      }
+      const responseText = await httpResponse.text();
+      if (responseText.trim().length === 0) {
+        throw new Error(`Empty response from ${endpoint}`);
+      }
+
+      let response: Record<string, IClientInfo>;
+      try {
+        response = JSON.parse(responseText) as Record<string, IClientInfo>;
+      } catch (error) {
+        const preview = responseText.slice(0, 200);
+        throw new Error(`Invalid JSON from ${endpoint}: ${(error as Error).message}; preview=${preview}`);
+      }
+
       Object.values(response).forEach((clientInfo) => {
         $tw.wiki.addTiddler({
           title: `${clientStatusStateTiddlerTitle}/${clientInfo['User-Agent']}`,
@@ -50,7 +66,7 @@ class BackgroundSyncManager {
         });
       });
     } catch (error) {
-      console.warn(`tw-html-nodejs-sync can't connect to tw nodejs side. Error: ${(error as Error).message}`);
+      console.warn(`tw-mobile-sync can't connect to the desktop endpoint. Error: ${(error as Error).message}`);
     }
   }
 
@@ -66,8 +82,9 @@ class BackgroundSyncManager {
 exports.startup = () => {
   // only start when feature is used
   $tw.rootWidget.addEventListener('tm-tw-mobile-sync-listen-client-info', () => {
-    const syncManager = new BackgroundSyncManager();
+    syncManager ??= new BackgroundSyncManager();
     $tw.wiki.addTiddler({ title: '$:/temp/tw-mobile-sync/listen-client-info', text: 'yes' });
     void syncManager.start();
+    return true;
   });
 };

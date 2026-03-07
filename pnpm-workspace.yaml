@@ -1,0 +1,4 @@
+onlyBuiltDependencies:
+  - dprint
+  - svelte-preprocess
+  - unrs-resolver
