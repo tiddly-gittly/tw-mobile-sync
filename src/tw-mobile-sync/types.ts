@@ -1,13 +1,13 @@
-import { ITiddlerFieldsParam } from 'tiddlywiki';
+import { ITiddlerFieldsParameter } from 'tiddlywiki';
 
 export interface ISyncEndPointRequest {
   deleted?: string[];
   lastSync: number | undefined;
-  tiddlers: Array<Partial<ITiddlerFieldsParam>>;
+  tiddlers: Array<Partial<ITiddlerFieldsParameter>>;
 }
 export interface ISyncEndPointResponse {
   deletes: string[];
-  updates: ITiddlerFieldsParam[];
+  updates: ITiddlerFieldsParameter[];
 }
 
 export interface IClientInfo {

@@ -1,8 +1,8 @@
-import { ITiddlerFields, ITiddlerFieldsParam } from 'tiddlywiki';
+import { ITiddlerFields, ITiddlerFieldsParameter } from 'tiddlywiki';
 
 export function getSyncedTiddlersText(
-  changedTiddlersFromClient: Array<ITiddlerFieldsParam | ITiddlerFields>,
-  changedTiddlersFromServer: Array<ITiddlerFieldsParam | ITiddlerFields>,
+  changedTiddlersFromClient: Array<ITiddlerFieldsParameter | ITiddlerFields>,
+  changedTiddlersFromServer: Array<ITiddlerFieldsParameter | ITiddlerFields>,
   deletion: { client: string[]; server: string[] },
   options?: { reverse?: boolean },
 ): string {

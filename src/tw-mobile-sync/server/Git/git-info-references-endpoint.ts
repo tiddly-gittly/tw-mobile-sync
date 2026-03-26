@@ -60,7 +60,7 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!tidgiService?.gitServer) {
+      if (!tidgiService.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Git server service not available');
         return;
@@ -81,7 +81,7 @@ const handler: ServerEndpointHandler = function handler(
           if (!response.headersSent) {
             response.writeHead(500, { 'Content-Type': 'text/plain' });
           }
-          response.end((error as Error).message);
+          response.end((error).message);
         },
         complete() {
           if (!response.writableEnded) response.end();

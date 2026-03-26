@@ -46,15 +46,13 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Get the wiki storage path for this workspace.
-      const wikiFolderLocation = await (tidgiService.workspace as unknown as { getWikiFolderLocation: (workspaceId: string) => Promise<string | undefined> }).getWikiFolderLocation(
-        workspaceId,
-      );
-      if (!wikiFolderLocation) {
+      const workspace = await tidgiService.workspace.get(workspaceId);
+      if (!workspace || !('wikiFolderLocation' in workspace)) {
         response.writeHead(404, { 'Content-Type': 'application/json' });
         response.end(JSON.stringify({ error: 'Workspace folder not found' }));
         return;
       }
+      const wikiFolderLocation = workspace.wikiFolderLocation;
 
       // Run `git count-objects -v` to get pack size.
       // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -1,8 +1,8 @@
-import { ITiddlerFields, ITiddlerFieldsParam } from 'tiddlywiki';
+import { ITiddlerFields, ITiddlerFieldsParameter } from 'tiddlywiki';
 
 let tiddlersToNotSync: Set<string> | undefined;
 let prefixToNotSync: string[] | undefined;
-export const filterOutNotSyncedTiddlers = <T extends ITiddlerFieldsParam | ITiddlerFields>(tiddlers: T[]): T[] => {
+export const filterOutNotSyncedTiddlers = <T extends ITiddlerFieldsParameter | ITiddlerFields>(tiddlers: T[]): T[] => {
   if (tiddlersToNotSync === undefined || prefixToNotSync === undefined) {
     tiddlersToNotSync = new Set(
       $tw.utils.parseStringArray($tw.wiki.getTiddlerText('$:/plugins/linonetwo/tw-mobile-sync/Config/TiddlersToNotSync') ?? ''),

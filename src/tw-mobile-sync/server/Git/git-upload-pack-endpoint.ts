@@ -52,20 +52,20 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!tidgiService?.gitServer) {
+      if (!tidgiService.gitServer) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Git server service not available');
         return;
       }
 
       // context.data is a Buffer populated by TiddlyWiki's bodyFormat="buffer" handling
-      const requestBody = context.data as unknown as Buffer;
+      const requestBody = context.data as unknown as Buffer | undefined;
       console.log('git-upload-pack handler', {
         workspaceId,
         bodySize: requestBody?.length ?? 0,
       });
 
-      const response$ = tidgiService.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody));
+      const response$ = tidgiService.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody ?? Buffer.alloc(0)));
 
       const subscription = response$.subscribe({
         next(chunk: GitHTTPResponseChunk) {
@@ -80,7 +80,7 @@ const handler: ServerEndpointHandler = function handler(
           if (!response.headersSent) {
             response.writeHead(500, { 'Content-Type': 'text/plain' });
           }
-          response.end((error as Error).message);
+          response.end((error).message);
         },
         complete() {
           console.log('git-upload-pack response complete', { workspaceId });
