@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  esbuild-plugin-browserslist: 1.0.2
+
 importers:
 
   .:
@@ -1525,12 +1528,12 @@ packages:
   es6-error@4.1.1:
     resolution: {integrity: sha512-Um/+FxMr9CISWh0bi5Zv0iOD+4cFh5qLeks1qhAopKVAJw3drgKbKySikp7wGhDL0HPeaja0P5ULZrxLkniUVg==}
 
-  esbuild-plugin-browserslist@2.0.0:
-    resolution: {integrity: sha512-gm8EITyyfS3h5I+f/+6C+TFXI23PWi80vHtoccIA17GIoZDSSjHYZw+MINXrlQZ7DZ57myL0JAuDsKbUZlWQgw==}
+  esbuild-plugin-browserslist@1.0.2:
+    resolution: {integrity: sha512-RFgs0SLRMExC7vBh80FnbTgN4eyTtYAuCmfPSArukMC0b6tMnfkgVmFDR/CTR2cJu6IViAomsdXyF9cfk65DsQ==}
     engines: {node: ^20.19.0 || ^22.12.0 || >23.0.0}
     peerDependencies:
-      browserslist: ^4.28.0
-      esbuild: ~0.27.0
+      browserslist: ^4.21.8
+      esbuild: ~0.25.10
 
   esbuild-style-plugin@1.6.3:
     resolution: {integrity: sha512-XPEKf4FjLjEVLv/dJH4UxDzXCrFHYpD93DBO8B+izdZARW5b7nNKQbnKv3J+7VDWJbgCU+hzfgIh2AuIZzlmXQ==}
@@ -5048,7 +5051,7 @@ snapshots:
   es6-error@4.1.1:
     optional: true
 
-  esbuild-plugin-browserslist@2.0.0(browserslist@4.28.1)(esbuild@0.27.7):
+  esbuild-plugin-browserslist@1.0.2(browserslist@4.28.1)(esbuild@0.27.7):
     dependencies:
       browserslist: 4.28.1
       debug: 4.4.3
@@ -7051,7 +7054,7 @@ snapshots:
       cli-progress: 3.12.0
       commander: 14.0.3
       esbuild: 0.27.7
-      esbuild-plugin-browserslist: 2.0.0(browserslist@4.28.1)(esbuild@0.27.7)
+      esbuild-plugin-browserslist: 1.0.2(browserslist@4.28.1)(esbuild@0.27.7)
       esbuild-style-plugin: 1.6.3
       esbuild-svelte: 0.9.4(esbuild@0.27.7)(svelte@5.20.1)
       get-port-please: 3.2.0

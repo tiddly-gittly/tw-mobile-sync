@@ -58,5 +58,10 @@
     "tiddlywiki-plugin-dev": "^0.4.4",
     "tidgi-shared": "^0.1.5",
     "ua-parser-js": "^2.0.9"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild-plugin-browserslist": "1.0.2"
+    }
   }
 }
