@@ -70,12 +70,46 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
+      // Detect base64-encoded bundle (sent from React Native where raw binary fetch is unreliable)
+      const contentType = (request as unknown as Http.IncomingMessage).headers?.['content-type'] ?? '';
+      let bundleBuffer: Buffer;
+      if (contentType.includes('base64')) {
+        bundleBuffer = Buffer.from(requestBody.toString('utf8'), 'base64');
+      } else {
+        bundleBuffer = Buffer.isBuffer(requestBody) ? requestBody : Buffer.from(requestBody);
+      }
+
       console.log('receive-bundle handler', {
         workspaceId,
-        bundleSize: requestBody.length,
+        rawSize: requestBody.length,
+        bundleSize: bundleBuffer.length,
       });
 
-      await tidgiService.gitServer.receiveBundleAndFetch(workspaceId, new Uint8Array(requestBody));
+      // Use generic git primitives exposed by TidGi Desktop so all logic lives in the plugin.
+      // These methods are added in TidGi Desktop >=0.10.x but may not be in tidgi-shared types yet.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const gitServer = tidgiService.gitServer as any;
+
+      // 1. Write bundle to .git/incoming.bundle
+      await gitServer.writeTempGitFile(workspaceId, 'incoming.bundle', new Uint8Array(bundleBuffer));
+      try {
+        // 2. Verify bundle is valid
+        const verifyResult = await gitServer.runGitCommand(workspaceId, ['bundle', 'verify', '.git/incoming.bundle']);
+        if (verifyResult.exitCode !== 0) {
+          throw new Error(`Bundle verify failed: ${verifyResult.stderr}`);
+        }
+        console.log('Bundle verified', { workspaceId, stdout: verifyResult.stdout.trim() });
+
+        // 3. Fetch from bundle: mobile's master → local mobile-incoming branch
+        const fetchResult = await gitServer.runGitCommand(workspaceId, ['fetch', '.git/incoming.bundle', 'master:mobile-incoming']);
+        if (fetchResult.exitCode !== 0) {
+          throw new Error(`Bundle fetch failed: ${fetchResult.stderr}`);
+        }
+        console.log('Bundle fetch complete', { workspaceId });
+      } finally {
+        // 4. Clean up temp file
+        await gitServer.deleteTempGitFile(workspaceId, 'incoming.bundle').catch(() => {});
+      }
 
       response.writeHead(200, { 'Content-Type': 'text/plain' });
       response.end('ok');
