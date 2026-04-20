@@ -2,7 +2,8 @@ packages:
   - '.'
 
 onlyBuiltDependencies:
+  - '@parcel/watcher'
   - dprint
+  - esbuild
   - svelte-preprocess
-  - unrs-resolver
 
