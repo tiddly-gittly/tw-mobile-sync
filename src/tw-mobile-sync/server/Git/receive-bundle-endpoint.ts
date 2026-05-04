@@ -3,6 +3,18 @@ import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from 'tidgi-shared';
 import { authorizeWorkspaceToken } from './utilities';
 
+interface IGitCommandResult {
+  exitCode: number;
+  stderr: string;
+  stdout: string;
+}
+
+interface IGitServerWithBundleReceive {
+  deleteTempGitFile(workspaceId: string, fileName: string): Promise<void>;
+  runGitCommand(workspaceId: string, arguments_: string[]): Promise<IGitCommandResult>;
+  writeTempGitFile(workspaceId: string, fileName: string, data: Uint8Array): Promise<void>;
+}
+
 /**
  * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
  */
@@ -15,7 +27,7 @@ exports.method = 'POST';
  * Git bundle receive endpoint (alternative to git-receive-pack for mobile push).
  *
  * Mobile client creates a git bundle containing unpushed commits using JGit BundleWriter,
- * then HTTP POSTs it here. Desktop uses `git fetch <bundle> master:mobile-incoming`
+ * then HTTP POSTs it here. Desktop uses `git fetch <bundle> <branch>:mobile-incoming`
  * to import the commits into the mobile-incoming branch.
  *
  * This avoids JGit's SmartHttpPushConnection bug where MultiRequestService
@@ -71,7 +83,7 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       // Detect base64-encoded bundle (sent from React Native where raw binary fetch is unreliable)
-      const contentType = (request as unknown as Http.IncomingMessage).headers?.['content-type'] ?? '';
+      const contentType = (request as unknown as Http.IncomingMessage).headers['content-type'] ?? '';
       let bundleBuffer: Buffer;
       if (contentType.includes('base64')) {
         bundleBuffer = Buffer.from(requestBody.toString('utf8'), 'base64');
@@ -87,8 +99,7 @@ const handler: ServerEndpointHandler = function handler(
 
       // Use generic git primitives exposed by TidGi Desktop so all logic lives in the plugin.
       // These methods are added in TidGi Desktop >=0.10.x but may not be in tidgi-shared types yet.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const gitServer = tidgiService.gitServer as any;
+      const gitServer = tidgiService.gitServer as unknown as IGitServerWithBundleReceive;
 
       // 1. Write bundle to .git/incoming.bundle
       await gitServer.writeTempGitFile(workspaceId, 'incoming.bundle', new Uint8Array(bundleBuffer));
