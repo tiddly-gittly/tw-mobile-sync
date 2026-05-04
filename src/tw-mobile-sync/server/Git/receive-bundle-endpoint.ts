@@ -100,8 +100,18 @@ const handler: ServerEndpointHandler = function handler(
         }
         console.log('Bundle verified', { workspaceId, stdout: verifyResult.stdout.trim() });
 
-        // 3. Fetch from bundle: mobile's master → local mobile-incoming branch
-        const fetchResult = await gitServer.runGitCommand(workspaceId, ['fetch', '.git/incoming.bundle', 'master:mobile-incoming']);
+        // 3. Detect the branch name from the bundle (mobile may use 'main' or 'master').
+        // `git bundle list-heads` outputs: "<hash> refs/heads/<branch>\n..."
+        let sourceBranch = 'master'; // fallback
+        const listHeadsResult = await gitServer.runGitCommand(workspaceId, ['bundle', 'list-heads', '.git/incoming.bundle']);
+        if (listHeadsResult.exitCode === 0 && typeof listHeadsResult.stdout === 'string') {
+          const match = /refs\/heads\/(\S+)/.exec(listHeadsResult.stdout);
+          if (match?.[1]) sourceBranch = match[1];
+        }
+        console.log('Bundle source branch detected:', { workspaceId, sourceBranch });
+
+        // Fetch from bundle: mobile's branch → local mobile-incoming branch
+        const fetchResult = await gitServer.runGitCommand(workspaceId, ['fetch', '.git/incoming.bundle', `${sourceBranch}:mobile-incoming`]);
         if (fetchResult.exitCode !== 0) {
           throw new Error(`Bundle fetch failed: ${fetchResult.stderr}`);
         }
