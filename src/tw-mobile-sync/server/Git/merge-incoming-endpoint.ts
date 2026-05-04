@@ -6,9 +6,23 @@ import { authorizeWorkspaceToken } from './utilities';
 
 const MOBILE_BRANCH = 'mobile-incoming';
 
+interface IGitCommandResult {
+  exitCode: number;
+  stderr: string;
+  stdout: string;
+}
+
+interface IGitServerMergeService {
+  readWorkspaceFile(workspaceId: string, file: string): Promise<string | undefined>;
+  runGitCommand(workspaceId: string, arguments_: string[]): Promise<IGitCommandResult>;
+  writeWorkspaceFile(workspaceId: string, file: string, content: string): Promise<void>;
+}
+
 const DESKTOP_GIT_ENV_ARGS = [
-  '-c', 'user.name=TidGi Desktop',
-  '-c', 'user.email=desktop@tidgi.fun',
+  '-c',
+  'user.name=TidGi Desktop',
+  '-c',
+  'user.email=desktop@tidgi.fun',
 ];
 
 /**
@@ -22,9 +36,9 @@ const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalServ
  */
 const activeMerges = new Set<string>();
 
-async function ensureCommittedBeforeMerge(gitServer: any, workspaceId: string): Promise<void> {
+async function ensureCommittedBeforeMerge(gitServer: IGitServerMergeService, workspaceId: string): Promise<void> {
   const statusResult = await gitServer.runGitCommand(workspaceId, ['status', '--porcelain']);
-  const statusOutput = (statusResult.stdout as string).trim();
+  const statusOutput = statusResult.stdout.trim();
   if (statusOutput.length === 0) return;
 
   const addResult = await gitServer.runGitCommand(workspaceId, ['add', '-A']);
@@ -34,7 +48,9 @@ async function ensureCommittedBeforeMerge(gitServer: any, workspaceId: string): 
 
   const commitResult = await gitServer.runGitCommand(workspaceId, [
     ...DESKTOP_GIT_ENV_ARGS,
-    'commit', '-m', `Auto commit before mobile merge ${new Date().toISOString()}`,
+    'commit',
+    '-m',
+    `Auto commit before mobile merge ${new Date().toISOString()}`,
   ]);
   if (commitResult.exitCode !== 0) {
     throw new Error(`git commit failed before merge: ${commitResult.stderr}`);
@@ -43,16 +59,16 @@ async function ensureCommittedBeforeMerge(gitServer: any, workspaceId: string): 
   console.log('Committed pending desktop changes before merging mobile-incoming', { workspaceId });
 }
 
-async function getUnmergedFiles(gitServer: any, workspaceId: string): Promise<string[]> {
+async function getUnmergedFiles(gitServer: IGitServerMergeService, workspaceId: string): Promise<string[]> {
   const unmergedResult = await gitServer.runGitCommand(workspaceId, ['diff', '--name-only', '--diff-filter=U']);
-  return (unmergedResult.stdout as string).trim().split('\n').filter(Boolean);
+  return unmergedResult.stdout.trim().split('\n').filter(Boolean);
 }
 
 function parseTidFile(content: string): Record<string, unknown> {
   const separatorMatch = /\r?\n\r?\n/.exec(content);
   const header = separatorMatch ? content.slice(0, separatorMatch.index) : content;
   const body = separatorMatch ? content.slice(separatorMatch.index + separatorMatch[0].length) : '';
-  const fields = $tw.utils.parseFields(header, Object.create(null)) as Record<string, unknown>;
+  const fields = $tw.utils.parseFields(header, {}) as Record<string, unknown>;
   fields.text = body;
   return fields;
 }
@@ -64,9 +80,16 @@ function stringifyFieldValue(name: string, value: unknown): string {
     return fieldModule.stringify.call(null, value);
   }
   if (Array.isArray(value)) {
-    return $tw.utils.stringifyList(value);
+    return $tw.utils.stringifyList(value.map(item => String(item)));
   }
-  return String(value);
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return value.toString();
+  }
+  return '';
 }
 
 function serializeTidFields(fields: Record<string, unknown>): string {
@@ -76,17 +99,17 @@ function serializeTidFields(fields: Record<string, unknown>): string {
   return `${header}\n\n${text}`;
 }
 
-async function readGitFileAtRef(gitServer: any, workspaceId: string, ref: string, file: string): Promise<string | undefined> {
-  const result = await gitServer.runGitCommand(workspaceId, ['show', `${ref}:${file}`]);
+async function readGitFileAtReference(gitServer: IGitServerMergeService, workspaceId: string, reference: string, file: string): Promise<string | undefined> {
+  const result = await gitServer.runGitCommand(workspaceId, ['show', `${reference}:${file}`]);
   if (result.exitCode !== 0) return undefined;
-  return result.stdout as string;
+  return result.stdout;
 }
 
-async function getBaseTidFields(gitServer: any, workspaceId: string, file: string): Promise<Record<string, unknown> | undefined> {
+async function getBaseTidFields(gitServer: IGitServerMergeService, workspaceId: string, file: string): Promise<Record<string, unknown> | undefined> {
   const baseResult = await gitServer.runGitCommand(workspaceId, ['merge-base', 'HEAD', MOBILE_BRANCH]);
-  const baseRef = (baseResult.stdout as string).trim();
-  if (baseResult.exitCode !== 0 || !baseRef) return undefined;
-  const baseContent = await readGitFileAtRef(gitServer, workspaceId, baseRef, file);
+  const baseReference = baseResult.stdout.trim();
+  if (baseResult.exitCode !== 0 || !baseReference) return undefined;
+  const baseContent = await readGitFileAtReference(gitServer, workspaceId, baseReference, file);
   return baseContent ? parseTidFile(baseContent) : undefined;
 }
 
@@ -154,10 +177,10 @@ function resolveTidConflictMarkers(content: string): string {
   return resolved.join('\n');
 }
 
-async function resolveTidConflict(gitServer: any, workspaceId: string, file: string, content: string): Promise<string> {
+async function resolveTidConflict(gitServer: IGitServerMergeService, workspaceId: string, file: string, content: string): Promise<string> {
   const markerResolved = resolveTidConflictMarkers(content);
-  const oursContent = await readGitFileAtRef(gitServer, workspaceId, 'HEAD', file);
-  const theirsContent = await readGitFileAtRef(gitServer, workspaceId, MOBILE_BRANCH, file);
+  const oursContent = await readGitFileAtReference(gitServer, workspaceId, 'HEAD', file);
+  const theirsContent = await readGitFileAtReference(gitServer, workspaceId, MOBILE_BRANCH, file);
   if (!oursContent || !theirsContent) {
     return markerResolved;
   }
@@ -201,13 +224,12 @@ function resolveConflictPreferMobile(content: string): string {
 
 /**
  * Resolve all conflicted files and commit using generic gitServer methods.
- * eslint-disable-next-line @typescript-eslint/no-explicit-any
  */
-async function resolveAllConflicts(gitServer: any, workspaceId: string): Promise<void> {
+async function resolveAllConflicts(gitServer: IGitServerMergeService, workspaceId: string): Promise<void> {
   const conflictedFiles = await getUnmergedFiles(gitServer, workspaceId);
 
   for (const file of conflictedFiles) {
-    const content = await gitServer.readWorkspaceFile(workspaceId, file) as string | undefined;
+    const content = await gitServer.readWorkspaceFile(workspaceId, file);
     if (!content || !content.includes('<<<<<<<')) {
       const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
       if (addResult.exitCode !== 0) {
@@ -236,11 +258,10 @@ async function resolveAllConflicts(gitServer: any, workspaceId: string): Promise
 /**
  * Merge mobile-incoming branch into main and clean up.
  * No-op if the branch does not exist.
- * eslint-disable-next-line @typescript-eslint/no-explicit-any
  */
-async function mergeMobileIncomingIfExists(gitServer: any, workspaceId: string): Promise<void> {
+async function mergeMobileIncomingIfExists(gitServer: IGitServerMergeService, workspaceId: string): Promise<void> {
   const branchCheck = await gitServer.runGitCommand(workspaceId, ['rev-parse', '--verify', `refs/heads/${MOBILE_BRANCH}`]);
-  if (branchCheck.exitCode !== 0 || !(branchCheck.stdout as string).trim()) return;
+  if (branchCheck.exitCode !== 0 || !branchCheck.stdout.trim()) return;
 
   await ensureCommittedBeforeMerge(gitServer, workspaceId);
 
@@ -248,7 +269,11 @@ async function mergeMobileIncomingIfExists(gitServer: any, workspaceId: string):
 
   const mergeResult = await gitServer.runGitCommand(workspaceId, [
     ...DESKTOP_GIT_ENV_ARGS,
-    'merge', MOBILE_BRANCH, '--no-ff', '-m', 'Merge mobile-incoming (auto-merge by TidGi Desktop)',
+    'merge',
+    MOBILE_BRANCH,
+    '--no-ff',
+    '-m',
+    'Merge mobile-incoming (auto-merge by TidGi Desktop)',
   ]);
 
   if (mergeResult.exitCode !== 0) {
@@ -321,9 +346,7 @@ const handler: ServerEndpointHandler = function handler(
 
       activeMerges.add(workspaceId);
       try {
-        // Cast to any because tidgi-shared types may not include the new generic methods yet
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const gitServer = tidgiService.gitServer as any;
+        const gitServer = tidgiService.gitServer as unknown as IGitServerMergeService;
         await mergeMobileIncomingIfExists(gitServer, workspaceId);
       } finally {
         activeMerges.delete(workspaceId);

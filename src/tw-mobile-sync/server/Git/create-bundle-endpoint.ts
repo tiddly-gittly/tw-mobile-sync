@@ -5,6 +5,17 @@ import { authorizeWorkspaceToken } from './utilities';
 
 const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
+interface IGitCommandResult {
+  exitCode: number;
+  stderr: string;
+  stdout: string;
+}
+
+interface IGitServerBundleCreator {
+  getWorkspaceRepoPath(workspaceId: string): Promise<string | undefined>;
+  runGitCommand(workspaceId: string, arguments_: string[]): Promise<IGitCommandResult>;
+}
+
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'POST';
 
@@ -67,22 +78,26 @@ const handler: ServerEndpointHandler = function handler(
         }
       } catch { /* treat as empty */ }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const gitServer = tidgiService.gitServer as any;
+      const gitServer = tidgiService.gitServer as unknown as IGitServerBundleCreator;
 
       // Auto-commit pending desktop changes
       const statusResult = await gitServer.runGitCommand(workspaceId, ['status', '--porcelain']);
-      if ((statusResult.stdout as string).trim().length > 0) {
+      if (statusResult.stdout.trim().length > 0) {
         await gitServer.runGitCommand(workspaceId, ['add', '-A']);
         await gitServer.runGitCommand(workspaceId, [
-          '-c', 'user.name=TidGi Desktop', '-c', 'user.email=desktop@tidgi.fun',
-          'commit', '-m', `Auto commit before mobile sync ${new Date().toISOString()}`,
+          '-c',
+          'user.name=TidGi Desktop',
+          '-c',
+          'user.email=desktop@tidgi.fun',
+          'commit',
+          '-m',
+          `Auto commit before mobile sync ${new Date().toISOString()}`,
         ]);
       }
 
       // Get desktop HEAD
       const headResult = await gitServer.runGitCommand(workspaceId, ['rev-parse', 'HEAD']);
-      const desktopHead = (headResult.stdout as string).trim();
+      const desktopHead = headResult.stdout.trim();
       if (!desktopHead) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Could not determine HEAD');
@@ -97,14 +112,18 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       // Build bundle. Incremental if mobile's commit exists in our history.
-      const bundleDest = `.git/${BUNDLE_FILE}`;
+      const bundleDestination = `.git/${BUNDLE_FILE}`;
       let created = false;
 
       if (haveOid) {
         const verifyResult = await gitServer.runGitCommand(workspaceId, ['cat-file', '-t', haveOid]);
-        if ((verifyResult.stdout as string).trim() === 'commit') {
+        if (verifyResult.stdout.trim() === 'commit') {
           const incResult = await gitServer.runGitCommand(workspaceId, [
-            'bundle', 'create', bundleDest, `${haveOid}..HEAD`, '--all',
+            'bundle',
+            'create',
+            bundleDestination,
+            `${haveOid}..HEAD`,
+            '--all',
           ]);
           created = incResult.exitCode === 0;
         }
@@ -113,7 +132,10 @@ const handler: ServerEndpointHandler = function handler(
       if (!created) {
         // Full bundle (first sync or diverged history)
         const fullResult = await gitServer.runGitCommand(workspaceId, [
-          'bundle', 'create', bundleDest, 'HEAD',
+          'bundle',
+          'create',
+          bundleDestination,
+          'HEAD',
         ]);
         if (fullResult.exitCode !== 0) {
           throw new Error(`Bundle create failed: ${fullResult.stderr}`);
@@ -121,12 +143,12 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       // Read bundle file using Node.js fs (available in TiddlyWiki server context)
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require('fs') as typeof import('fs');
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const path = require('path') as typeof import('path');
 
-      const repoPath = await gitServer.getWorkspaceRepoPath(workspaceId) as string | undefined;
+      const repoPath = await gitServer.getWorkspaceRepoPath(workspaceId);
       if (!repoPath) {
         response.writeHead(500, { 'Content-Type': 'text/plain' });
         response.end('Could not determine repo path');
@@ -138,13 +160,15 @@ const handler: ServerEndpointHandler = function handler(
       try {
         bundleData = fs.readFileSync(bundlePath);
       } finally {
-        try { fs.unlinkSync(bundlePath); } catch { /* ignore */ }
+        try {
+          fs.unlinkSync(bundlePath);
+        } catch { /* ignore */ }
       }
 
       console.log('create-bundle', { workspaceId, have: haveOid.slice(0, 8), head: desktopHead.slice(0, 8), bytes: bundleData.length });
 
       // Respond: base64 or raw binary depending on Accept header
-      const accept = (request as unknown as Http.IncomingMessage).headers?.accept ?? '';
+      const accept = (request as unknown as Http.IncomingMessage).headers.accept ?? '';
       if (accept.includes('base64')) {
         const base64 = bundleData.toString('base64');
         response.writeHead(200, {
