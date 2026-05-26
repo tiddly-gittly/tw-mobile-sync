@@ -16,7 +16,8 @@ type: text/vnd.tiddlywiki
 
 <div class="tw-mobile-sync-sidebar-qrcode">
   <$let 
-    baseUrl={{$:/info/url/origin}}
+    memeloopNodeUrl={{$:/info/tidgi/memeloopNodeUrl}}
+    baseUrl={{{ [<memeloopNodeUrl>match[]then{$:/info/url/origin}else<memeloopNodeUrl>] }}}
     workspaceId={{$:/info/tidgi/workspaceID}}
     workspaceName={{$:/info/tidgi/workspaceName}}
     token={{$:/info/tidgi/workspaceToken}}
