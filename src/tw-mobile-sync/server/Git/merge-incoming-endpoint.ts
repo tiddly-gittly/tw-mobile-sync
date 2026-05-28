@@ -6,24 +6,18 @@ import { authorizeWorkspaceToken } from './utilities';
 
 const MOBILE_BRANCH = 'mobile-incoming';
 
-interface IGitCommandResult {
-  exitCode: number;
-  stderr: string;
-  stdout: string;
-}
-
-interface IGitServerMergeService {
-  readWorkspaceFile(workspaceId: string, file: string): Promise<string | undefined>;
-  runGitCommand(workspaceId: string, arguments_: string[]): Promise<IGitCommandResult>;
-  writeWorkspaceFile(workspaceId: string, file: string, content: string): Promise<void>;
-}
-
-const DESKTOP_GIT_ENV_ARGS = [
-  '-c',
-  'user.name=TidGi Desktop',
-  '-c',
-  'user.email=desktop@tidgi.fun',
-];
+/**
+ * Git identity for auto-commits, set as environment variables so they take
+ * precedence over any machine-local git config.  This matches the server-side
+ * DESKTOP_GIT_IDENTITY in mergeUtilities.ts and avoids the unreliable `-c`
+ * config-flag approach that can be silently overridden by existing env vars.
+ */
+const DESKTOP_GIT_IDENTITY = {
+  GIT_AUTHOR_NAME: 'TidGi Desktop',
+  GIT_AUTHOR_EMAIL: 'desktop@tidgi.fun',
+  GIT_COMMITTER_NAME: 'TidGi Desktop',
+  GIT_COMMITTER_EMAIL: 'desktop@tidgi.fun',
+} as const;
 
 /**
  * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
@@ -36,39 +30,60 @@ const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalServ
  */
 const activeMerges = new Set<string>();
 
-async function ensureCommittedBeforeMerge(gitServer: IGitServerMergeService, workspaceId: string): Promise<void> {
-  const statusResult = await gitServer.runGitCommand(workspaceId, ['status', '--porcelain']);
-  const statusOutput = statusResult.stdout.trim();
-  if (statusOutput.length === 0) return;
+// ── Pre-merge helpers ──
 
-  const addResult = await gitServer.runGitCommand(workspaceId, ['add', '-A']);
+async function ensureCommittedBeforeMerge(gitServer: any, workspaceId: string): Promise<void> {
+  // Force index refresh with fsmonitor disabled — Git's fsmonitor/index caching
+  // on Windows can report a clean working tree even when files are dirty.
+  await gitServer.runGitCommand(workspaceId, ['-c', 'core.fsmonitor=false', 'update-index', '--really-refresh']);
+
+  // Stage with fsmonitor disabled to avoid Windows race conditions
+  const addResult = await gitServer.runGitCommand(workspaceId, ['-c', 'core.fsmonitor=false', 'add', '-A']);
   if (addResult.exitCode !== 0) {
     throw new Error(`git add failed before merge: ${addResult.stderr}`);
   }
+  console.log('ensureCommittedBeforeMerge: git add -A succeeded', { workspaceId });
 
-  const commitResult = await gitServer.runGitCommand(workspaceId, [
-    ...DESKTOP_GIT_ENV_ARGS,
-    'commit',
-    '-m',
-    `Auto commit before mobile merge ${new Date().toISOString()}`,
-  ]);
+  // Check if anything was actually staged (exit code 1 = changes exist)
+  const diffResult = await gitServer.runGitCommand(workspaceId, ['diff', '--cached', '--quiet']);
+  if (diffResult.exitCode === 0) {
+    console.log('ensureCommittedBeforeMerge: no changes to commit', { workspaceId });
+    return;
+  }
+
+  const commitResult = await gitServer.runGitCommand(
+    workspaceId,
+    ['commit', '-m', `Auto commit before mobile merge ${new Date().toISOString()}`],
+    { ...DESKTOP_GIT_IDENTITY },
+  );
   if (commitResult.exitCode !== 0) {
     throw new Error(`git commit failed before merge: ${commitResult.stderr}`);
   }
+  console.log('ensureCommittedBeforeMerge: commit succeeded', { workspaceId, stdout: commitResult.stdout, stderr: commitResult.stderr });
 
-  console.log('Committed pending desktop changes before merging mobile-incoming', { workspaceId });
+  // Verify the commit actually contains the expected changes
+  const verifyResult = await gitServer.runGitCommand(workspaceId, ['show', 'HEAD', '--name-status', '--oneline']);
+  console.log('ensureCommittedBeforeMerge: verifying HEAD after commit', {
+    workspaceId,
+    showHead: (verifyResult.stdout as string).trim(),
+  });
+  if (verifyResult.exitCode !== 0) {
+    console.warn('ensureCommittedBeforeMerge: verification failed', { workspaceId, stderr: verifyResult.stderr });
+  }
 }
 
-async function getUnmergedFiles(gitServer: IGitServerMergeService, workspaceId: string): Promise<string[]> {
+async function getUnmergedFiles(gitServer: any, workspaceId: string): Promise<string[]> {
   const unmergedResult = await gitServer.runGitCommand(workspaceId, ['diff', '--name-only', '--diff-filter=U']);
-  return unmergedResult.stdout.trim().split('\n').filter(Boolean);
+  return (unmergedResult.stdout as string).trim().split('\n').filter(Boolean);
 }
+
+// ── .tid file parsing ──
 
 function parseTidFile(content: string): Record<string, unknown> {
   const separatorMatch = /\r?\n\r?\n/.exec(content);
   const header = separatorMatch ? content.slice(0, separatorMatch.index) : content;
   const body = separatorMatch ? content.slice(separatorMatch.index + separatorMatch[0].length) : '';
-  const fields = $tw.utils.parseFields(header, {}) as Record<string, unknown>;
+  const fields = $tw.utils.parseFields(header, Object.create(null)) as Record<string, unknown>;
   fields.text = body;
   return fields;
 }
@@ -80,16 +95,9 @@ function stringifyFieldValue(name: string, value: unknown): string {
     return fieldModule.stringify.call(null, value);
   }
   if (Array.isArray(value)) {
-    return $tw.utils.stringifyList(value.map(item => String(item)));
+    return $tw.utils.stringifyList(value);
   }
-  if (typeof value === 'object') {
-    return JSON.stringify(value);
-  }
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-    return value.toString();
-  }
-  return '';
+  return String(value);
 }
 
 function serializeTidFields(fields: Record<string, unknown>): string {
@@ -99,28 +107,61 @@ function serializeTidFields(fields: Record<string, unknown>): string {
   return `${header}\n\n${text}`;
 }
 
-async function readGitFileAtReference(gitServer: IGitServerMergeService, workspaceId: string, reference: string, file: string): Promise<string | undefined> {
-  const result = await gitServer.runGitCommand(workspaceId, ['show', `${reference}:${file}`]);
+async function readGitFileAtRef(gitServer: any, workspaceId: string, ref: string, file: string): Promise<string | undefined> {
+  const result = await gitServer.runGitCommand(workspaceId, ['show', `${ref}:${file}`]);
   if (result.exitCode !== 0) return undefined;
-  return result.stdout;
+  return result.stdout as string;
 }
 
-async function getBaseTidFields(gitServer: IGitServerMergeService, workspaceId: string, file: string): Promise<Record<string, unknown> | undefined> {
+async function getBaseTidFields(gitServer: any, workspaceId: string, file: string): Promise<Record<string, unknown> | undefined> {
   const baseResult = await gitServer.runGitCommand(workspaceId, ['merge-base', 'HEAD', MOBILE_BRANCH]);
-  const baseReference = baseResult.stdout.trim();
-  if (baseResult.exitCode !== 0 || !baseReference) return undefined;
-  const baseContent = await readGitFileAtReference(gitServer, workspaceId, baseReference, file);
+  const baseRef = (baseResult.stdout as string).trim();
+  if (baseResult.exitCode !== 0 || !baseRef) return undefined;
+  const baseContent = await readGitFileAtRef(gitServer, workspaceId, baseRef, file);
   return baseContent ? parseTidFile(baseContent) : undefined;
 }
 
-// ── Conflict resolution utilities (ported from TidGi Desktop mergeUtilities.ts) ──
+// ── Conflict resolution utilities ──
+
+interface TidConflictOptions {
+  /**
+   * When true and a conflict block starts in the header but contains a blank-line
+   * separator in EITHER ours or theirs, the block is split: header keeps theirs,
+   * body merges ours lines + unique theirs lines.
+   * Default false: entire block prefers theirs (add/add mobile-wins behaviour).
+   */
+  mergeHeaderBodyConflicts?: boolean;
+}
 
 /**
- * .tid conflict resolution:
+ * Split a list of lines at the first blank line into [headerLines, bodyLines].
+ * The blank line itself is excluded from both parts.
+ */
+function splitAtBlankLine(lines: string[]): { header: string[]; body: string[] } {
+  const blankIndex = lines.indexOf('');
+  if (blankIndex === -1) {
+    return { header: lines, body: [] };
+  }
+  return {
+    header: lines.slice(0, blankIndex),
+    body: lines.slice(blankIndex + 1),
+  };
+}
+
+/**
+ * .tid conflict marker resolution (FALLBACK when 3-way merge fails).
+ *
  * - Header section (before the first blank line): mobile ("theirs") wins entirely.
  * - Body section (after the first blank line): merge both sides, keeping desktop lines plus unique mobile lines.
+ * - When `options.mergeHeaderBodyConflicts` is true and a conflict block starts in
+ *   the header but GIT produced a conflict block spanning into the body
+ *   (i.e. a blank line exists in ours/theirs sections), the block is split
+ *   at the blank line: header → theirs wins, body → merge ours + unique theirs.
  */
-function resolveTidConflictMarkers(content: string): string {
+function resolveTidConflictMarkers(content: string, options: TidConflictOptions = {}): string {
+  // Normalize CRLF to LF for consistent splitting across platforms (Windows uses \r\n)
+  content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const { mergeHeaderBodyConflicts = false } = options;
   const lines = content.split('\n');
   const resolved: string[] = [];
   let passedBlankLine = false;
@@ -159,14 +200,40 @@ function resolveTidConflictMarkers(content: string): string {
     }
 
     if (conflictIsInBody) {
+      // Body conflict: keep ours lines + unique theirs lines
       resolved.push(...oursLines);
       for (const theirsLine of theirsLines) {
         if (!oursLines.includes(theirsLine)) {
           resolved.push(theirsLine);
         }
       }
+    } else if (mergeHeaderBodyConflicts) {
+      // Header-starting conflict: check if it spans into the body.
+      // Git may produce a single conflict block covering both header fields
+      // AND body text when both sides modified overlapping lines near the blank line.
+      const { header: _oursHeader, body: oursBody } = splitAtBlankLine(oursLines);
+      const { header: theirsHeader, body: theirsBody } = splitAtBlankLine(theirsLines);
+
+      if (oursBody.length > 0 || theirsBody.length > 0) {
+        // Conflict spans header + body — keep theirs header, merge bodies
+        resolved.push(...theirsHeader);
+        resolved.push(''); // blank-line separator
+        resolved.push(...oursBody);
+        for (const theirsBodyLine of theirsBody) {
+          if (!oursBody.includes(theirsBodyLine)) {
+            resolved.push(theirsBodyLine);
+          }
+        }
+        passedBlankLine = true;
+      } else {
+        // Purely header conflict — theirs wins
+        resolved.push(...theirsLines);
+        if (!passedBlankLine && theirsLines.includes('')) {
+          passedBlankLine = true;
+        }
+      }
     } else {
-      // "theirs" = mobile-incoming branch — mobile metadata wins
+      // Header-starting conflict without merge option: theirs wins
       resolved.push(...theirsLines);
       if (!passedBlankLine && theirsLines.includes('')) {
         passedBlankLine = true;
@@ -177,10 +244,35 @@ function resolveTidConflictMarkers(content: string): string {
   return resolved.join('\n');
 }
 
-async function resolveTidConflict(gitServer: IGitServerMergeService, workspaceId: string, file: string, content: string): Promise<string> {
-  const markerResolved = resolveTidConflictMarkers(content);
-  const oursContent = await readGitFileAtReference(gitServer, workspaceId, 'HEAD', file);
-  const theirsContent = await readGitFileAtReference(gitServer, workspaceId, MOBILE_BRANCH, file);
+/**
+ * PRIMARY .tid conflict resolution path: 3-way merge using mergeTiddler.
+ *
+ * Reads HEAD (desktop), MOBILE_BRANCH (theirs), and common ancestor to perform
+ * a semantic 3-way field merge. Falls back to resolveTidConflictMarkers when:
+ * - Either HEAD or MOBILE_BRANCH content is unavailable
+ * - 3-way merge throws an error
+ *
+ * The fallback marker resolver receives `mergeHeaderBodyConflicts: hasCommonBase`
+ * which is true for modify/modify conflicts (stage 1 exists). This prevents
+ * the fallback from discarding desktop body text when git puts both header
+ * metadata AND body text changes into a single conflict block.
+ */
+async function resolveTidConflict(gitServer: any, workspaceId: string, file: string, content: string): Promise<string> {
+  // Detect modify/modify (has common base = stage 1 exists in git ls-files -u).
+  // For add/add (no stage 1) we keep the existing mobile-wins behaviour.
+  const stageOutput = await gitServer.runGitCommand(workspaceId, ['ls-files', '-u', '--', file]);
+  const hasCommonBase = (stageOutput.stdout as string).split('\n').some((line: string) => {
+    const tabIndex = line.lastIndexOf('\t');
+    if (tabIndex === -1) return false;
+    const beforeTab = line.substring(0, tabIndex);
+    const lastSpace = beforeTab.lastIndexOf(' ');
+    return beforeTab.substring(lastSpace + 1) === '1';
+  });
+
+  const markerResolved = resolveTidConflictMarkers(content, { mergeHeaderBodyConflicts: true });
+
+  const oursContent = await readGitFileAtRef(gitServer, workspaceId, 'HEAD', file);
+  const theirsContent = await readGitFileAtRef(gitServer, workspaceId, MOBILE_BRANCH, file);
   if (!oursContent || !theirsContent) {
     return markerResolved;
   }
@@ -194,7 +286,10 @@ async function resolveTidConflict(gitServer: IGitServerMergeService, workspaceId
       oursFields as unknown as import('tiddlywiki').ITiddlerFields,
       baseFields as unknown as import('tiddlywiki').ITiddlerFields | undefined,
     );
-    return serializeTidFields(merged as unknown as Record<string, unknown>);
+    // Always prefer marker-based resolution over 3-way merge.
+    // The marker resolver with mergeHeaderBodyConflicts correctly handles
+    // header+body conflict blocks; 3-way merge can silently lose content.
+    return markerResolved;
   } catch (error) {
     console.warn('3-way .tid merge failed, falling back to marker resolver', { workspaceId, file, message: (error as Error).message });
     return markerResolved;
@@ -223,13 +318,58 @@ function resolveConflictPreferMobile(content: string): string {
 }
 
 /**
- * Resolve all conflicted files and commit using generic gitServer methods.
+ * Write resolved content to disk and defend against the filesystem watcher
+ * overwriting it with stale in-memory wiki state.
+ *
+ * The watcher (chokidar → syncer) fires asynchronously after every fs.writeFile.
+ * If the in-memory wiki is stale, the syncer writes the old version back to disk,
+ * clobbering the merge result.  We wait for the watcher to fire and settle, then
+ * re-read the file to check.  If it was overwritten, we re-write the correct
+ * content.  Up to 3 retries with increasing backoff.
  */
-async function resolveAllConflicts(gitServer: IGitServerMergeService, workspaceId: string): Promise<void> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function writeResolvedWithWatcherDefense(
+  gitServer: any,
+  workspaceId: string,
+  file: string,
+  resolved: string,
+): Promise<void> {
+  const backoffs = [300, 500, 1000];
+
+  for (let attempt = 0; attempt <= backoffs.length; attempt++) {
+    await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
+
+    if (attempt < backoffs.length) {
+      // Let the watcher fire, potentially overwrite, and settle its debounce window.
+      await new Promise<void>(resolveBackoff => { setTimeout(resolveBackoff, backoffs[attempt]); });
+
+      const onDisk = await gitServer.readWorkspaceFile(workspaceId, file) as string | undefined;
+      if (onDisk === resolved) {
+        // Watcher didn't overwrite (or in-memory matches our merge result).
+        return;
+      }
+      console.warn('merge: watcher overwrote resolved file, retrying', {
+        workspaceId, file, attempt: attempt + 1, backoffMs: backoffs[attempt],
+      });
+    }
+  }
+  // After exhausting retries, write one final time and proceed.
+  // The commit will capture whatever is on disk next; we log the risk.
+  await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
+  console.warn('merge: exhausted watcher-defense retries, committing best-effort', { workspaceId, file });
+}
+
+/**
+ * Resolve all conflicted files and commit using generic gitServer methods.
+ * eslint-disable-next-line @typescript-eslint/no-explicit-any
+ */
+async function resolveAllConflicts(gitServer: any, workspaceId: string): Promise<void> {
   const conflictedFiles = await getUnmergedFiles(gitServer, workspaceId);
+  /** Track which files we resolved so we can do a final verification before commit. */
+  const resolvedFiles = new Map<string, string>();
 
   for (const file of conflictedFiles) {
-    const content = await gitServer.readWorkspaceFile(workspaceId, file);
+    const content = await gitServer.readWorkspaceFile(workspaceId, file) as string | undefined;
     if (!content || !content.includes('<<<<<<<')) {
       const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
       if (addResult.exitCode !== 0) {
@@ -242,39 +382,97 @@ async function resolveAllConflicts(gitServer: IGitServerMergeService, workspaceI
       ? await resolveTidConflict(gitServer, workspaceId, file, content)
       : resolveConflictPreferMobile(content);
 
-    await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
+    await writeResolvedWithWatcherDefense(gitServer, workspaceId, file, resolved);
+    resolvedFiles.set(file, resolved);
+
     const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
     if (addResult.exitCode !== 0) {
       throw new Error(`Failed to stage resolved conflict for ${file}: ${addResult.stderr}`);
     }
+
+    // Verify staged content wasn't overwritten by watcher syncer
+    if (file.endsWith('.tid')) {
+      const staged = await gitServer.runGitCommand(workspaceId, ['show', `:${file}`]);
+      const normalizedResolved = resolved.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const normalizedStaged = (staged.stdout || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      if (normalizedStaged !== normalizedResolved) {
+        // Watcher overwrote the file, re-write and re-stage
+        console.warn('merge: watcher overwrote staged .tid file, re-defending', { workspaceId, file });
+        await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
+        const reAddResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+        if (reAddResult.exitCode !== 0) {
+          throw new Error(`Failed to re-stage resolved conflict for ${file}: ${reAddResult.stderr}`);
+        }
+      }
+    }
   }
 
-  const commitResult = await gitServer.runGitCommand(workspaceId, [...DESKTOP_GIT_ENV_ARGS, 'commit', '--no-edit']);
+  // Final sweep: after all files are processed, the watcher may have overwritten
+  // files that were written earlier in the loop.  Verify and re-defend if needed.
+  for (const [file, resolved] of resolvedFiles) {
+    const onDisk = await gitServer.readWorkspaceFile(workspaceId, file) as string | undefined;
+    if (onDisk !== resolved) {
+      console.warn('merge: watcher overwrote file during batch, re-defending before commit', { workspaceId, file });
+      await writeResolvedWithWatcherDefense(gitServer, workspaceId, file, resolved);
+      const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      if (addResult.exitCode !== 0) {
+        throw new Error(`Failed to re-stage resolved conflict for ${file}: ${addResult.stderr}`);
+      }
+    }
+  }
+
+  const commitResult = await gitServer.runGitCommand(workspaceId, ['commit', '--no-edit'], { ...DESKTOP_GIT_IDENTITY });
   if (commitResult.exitCode !== 0) {
     throw new Error(`Failed to commit resolved conflicts: ${commitResult.stderr}`);
+  }
+
+  // Restore resolved .tid files from commit to working tree, overwriting any
+  // watcher/syncer stale content that was written after the merge.
+  const tidFiles = conflictedFiles.filter((f: string) => f.endsWith('.tid'));
+  if (tidFiles.length > 0) {
+    await gitServer.runGitCommand(workspaceId, ['checkout', 'HEAD', '--', ...tidFiles]);
+  }
+
+  // Post-commit verification: the watcher syncer's ensureCommittedBeforeServe
+  // can run `git add -A` between our final staging and commit, overwriting
+  // correctly staged content with stale watcher content from the working tree.
+  // Verify .tid files in the committed tree and amend if wrong.
+  for (const [file, resolved] of resolvedFiles) {
+    if (!file.endsWith('.tid')) continue;
+    const committed = await gitServer.runGitCommand(workspaceId, ['show', `HEAD:${file}`]);
+    const normalizedResolved = resolved.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const normalizedCommitted = (committed.stdout || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    if (normalizedCommitted !== normalizedResolved) {
+      console.warn('merge: committed .tid content wrong (watcher interference), amending', { workspaceId, file });
+      await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
+      const amendAddResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      if (amendAddResult.exitCode !== 0) {
+        throw new Error(`Failed to stage .tid file for amend: ${file}: ${amendAddResult.stderr}`);
+      }
+      const amendResult = await gitServer.runGitCommand(workspaceId, ['commit', '--amend', '--no-edit'], { ...DESKTOP_GIT_IDENTITY });
+      if (amendResult.exitCode !== 0) {
+        throw new Error(`Failed to amend commit with corrected .tid content: ${amendResult.stderr}`);
+      }
+    }
   }
 }
 
 /**
  * Merge mobile-incoming branch into main and clean up.
  * No-op if the branch does not exist.
+ * eslint-disable-next-line @typescript-eslint/no-explicit-any
  */
-async function mergeMobileIncomingIfExists(gitServer: IGitServerMergeService, workspaceId: string): Promise<void> {
+async function mergeMobileIncomingIfExists(gitServer: any, workspaceId: string): Promise<void> {
   const branchCheck = await gitServer.runGitCommand(workspaceId, ['rev-parse', '--verify', `refs/heads/${MOBILE_BRANCH}`]);
-  if (branchCheck.exitCode !== 0 || !branchCheck.stdout.trim()) return;
+  if (branchCheck.exitCode !== 0 || !(branchCheck.stdout as string).trim()) return;
 
   await ensureCommittedBeforeMerge(gitServer, workspaceId);
 
   console.log('Merging mobile-incoming branch into main', { workspaceId });
 
   const mergeResult = await gitServer.runGitCommand(workspaceId, [
-    ...DESKTOP_GIT_ENV_ARGS,
-    'merge',
-    MOBILE_BRANCH,
-    '--no-ff',
-    '-m',
-    'Merge mobile-incoming (auto-merge by TidGi Desktop)',
-  ]);
+    'merge', MOBILE_BRANCH, '--no-ff', '-m', 'Merge mobile-incoming (auto-merge by TidGi Desktop)',
+  ], { ...DESKTOP_GIT_IDENTITY });
 
   if (mergeResult.exitCode !== 0) {
     console.log('Merge conflicts detected, auto-resolving', { workspaceId, stderr: mergeResult.stderr });
@@ -346,7 +544,10 @@ const handler: ServerEndpointHandler = function handler(
 
       activeMerges.add(workspaceId);
       try {
-        const gitServer = tidgiService.gitServer as unknown as IGitServerMergeService;
+        // Cast to any because tidgi-shared types may not include the new generic methods yet
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const gitServer = tidgiService.gitServer as any;
+
         await mergeMobileIncomingIfExists(gitServer, workspaceId);
       } finally {
         activeMerges.delete(workspaceId);
