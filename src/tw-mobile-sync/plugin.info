@@ -5,6 +5,7 @@
   "core-version": ">=5.1.22",
   "plugin-type": "plugin",
   "version": "2.0.7",
-  "list": "readme ui/ServerList",
-  "dependents": ["$:/plugins/tiddlywiki/qrcode"]
+  "list": "readme ui/ServerList Config/GitRunner Config/WorkspaceToken",
+  "dependents": ["$:/plugins/tiddlywiki/qrcode"],
+  "Modern.TiddlyDev#ExternalModules": "rxjs tslib"
 }

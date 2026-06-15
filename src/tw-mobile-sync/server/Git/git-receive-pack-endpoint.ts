@@ -1,28 +1,16 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { GitHTTPResponseChunk, ITidGiGlobalService } from 'tidgi-shared';
+import { handleReceivePack } from '../../git/smartHttp';
+import { SystemGitRunner } from '../../git/systemGitRunner';
+import { getWorkspaceRepoPath, isWorkspaceReadOnly } from '../../git/workspaceResolver';
 import { authorizeWorkspaceToken } from './utilities';
 
-/**
- * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
- */
 const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'POST';
-
-/**
- * Git Smart HTTP receive-pack endpoint (git push)
- * Format: /tw-mobile-sync/git/{workspaceId}/git-receive-pack
- *
- * Write operation — requires authentication
- */
 exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/git-receive-pack$/;
-
-/**
- * TiddlyWiki reads the POST body before calling the handler.
- * "buffer" makes it available as a Buffer in context.data.
- */
 exports.bodyFormat = 'buffer';
 /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
@@ -40,30 +28,32 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Authenticate
-      if (!tidgiService?.workspace) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Workspace service not available');
+      if (!(await authorizeWorkspaceToken(request, response, tidgiService?.workspace, workspaceId))) {
         return;
       }
 
-      if (!(await authorizeWorkspaceToken(request, response, tidgiService.workspace, workspaceId))) {
+      const repoPath = await getWorkspaceRepoPath(workspaceId, tidgiService?.workspace);
+      if (!repoPath) {
+        response.writeHead(404, { 'Content-Type': 'text/plain' });
+        response.end('Workspace not found');
         return;
       }
 
-      if (!tidgiService.gitServer) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Git server service not available');
+      if (await isWorkspaceReadOnly(workspaceId, tidgiService?.workspace)) {
+        response.writeHead(403, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' });
+        response.end('Workspace is read-only');
         return;
       }
 
-      // context.data is a Buffer populated by TiddlyWiki's bodyFormat="buffer" handling
       const requestBody = context.data as unknown as Buffer | undefined;
       console.log('git-receive-pack handler', {
         workspaceId,
         bodySize: requestBody?.length ?? 0,
       });
-      const response$ = tidgiService.gitServer.gitSmartHTTPReceivePack$(workspaceId, new Uint8Array(requestBody ?? Buffer.alloc(0)));
+
+      // Smart HTTP always spawns raw git processes, so it uses the system git runner.
+      const runner = new SystemGitRunner();
+      const response$ = handleReceivePack(runner, repoPath, new Uint8Array(requestBody ?? Buffer.alloc(0)));
 
       const subscription = response$.subscribe({
         next(chunk: GitHTTPResponseChunk) {
@@ -87,7 +77,6 @@ const handler: ServerEndpointHandler = function handler(
         },
       });
 
-      // Clean up if client disconnects before Observable completes
       response.on('close', () => {
         subscription.unsubscribe();
       });

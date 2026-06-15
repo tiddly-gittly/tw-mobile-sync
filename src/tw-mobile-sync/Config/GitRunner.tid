@@ -1,0 +1,4 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/Config/GitRunner
+description: Git runner used by mobile sync endpoints. "desktop" delegates to TidGi Desktop's dugite-based gitServer; "system" uses the system git binary directly.
+
+system

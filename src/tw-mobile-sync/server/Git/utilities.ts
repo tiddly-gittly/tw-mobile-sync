@@ -39,13 +39,32 @@ export function sendAuthChallenge(response: import('http').ServerResponse): void
   response.end('Authentication required');
 }
 
+const TOKEN_CONFIG_TITLE = '$:/plugins/linonetwo/tw-mobile-sync/Config/WorkspaceToken';
+
+/**
+ * In standalone mode the workspace token is read from a config tiddler so
+ * tests can protect the mock server without starting TidGi Desktop.
+ */
+function getStandaloneWorkspaceToken(): string | undefined {
+  const token = ($tw).wiki.getTiddlerText(TOKEN_CONFIG_TITLE)?.trim();
+  return token === '' ? undefined : token;
+}
+
+/**
+ * Validate the request's Basic Auth token.
+ * In TidGi Desktop the workspace service stores and validates the token.
+ * In standalone mode the token is read from a config tiddler.
+ */
 export async function authorizeWorkspaceToken(
   request: Http.ClientRequest & Http.InformationEvent,
   response: Http.ServerResponse,
-  workspaceService: ITidGiGlobalService['workspace'],
+  workspaceService: ITidGiGlobalService['workspace'] | undefined,
   workspaceId: string,
 ): Promise<boolean> {
-  const workspaceToken = await workspaceService.getWorkspaceToken(workspaceId);
+  const workspaceToken = workspaceService !== undefined
+    ? await workspaceService.getWorkspaceToken(workspaceId)
+    : getStandaloneWorkspaceToken();
+
   if (workspaceToken === undefined || workspaceToken === '') {
     return true;
   }
@@ -57,7 +76,11 @@ export async function authorizeWorkspaceToken(
   }
 
   const token = credentials.password === '' ? credentials.username : credentials.password;
-  if (!(await workspaceService.validateWorkspaceToken(workspaceId, token))) {
+  const valid = workspaceService !== undefined
+    ? await workspaceService.validateWorkspaceToken(workspaceId, token)
+    : token === workspaceToken;
+
+  if (!valid) {
     sendAuthChallenge(response);
     return false;
   }

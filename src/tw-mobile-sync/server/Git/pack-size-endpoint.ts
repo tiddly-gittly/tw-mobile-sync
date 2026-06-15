@@ -1,6 +1,8 @@
+import { execFile } from 'child_process';
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from 'tidgi-shared';
+import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
 import { authorizeWorkspaceToken } from './utilities';
 
 const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
@@ -36,32 +38,22 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!tidgiService?.workspace) {
-        response.writeHead(500, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ error: 'Workspace service not available' }));
+      if (!(await authorizeWorkspaceToken(request, response, tidgiService?.workspace, workspaceId))) {
         return;
       }
 
-      if (!(await authorizeWorkspaceToken(request, response, tidgiService.workspace, workspaceId))) {
-        return;
-      }
-
-      const workspace = await tidgiService.workspace.get(workspaceId);
-      if (!workspace || !('wikiFolderLocation' in workspace)) {
+      const repoPath = await getWorkspaceRepoPath(workspaceId, tidgiService?.workspace);
+      if (!repoPath) {
         response.writeHead(404, { 'Content-Type': 'application/json' });
         response.end(JSON.stringify({ error: 'Workspace folder not found' }));
         return;
       }
-      const wikiFolderLocation = workspace.wikiFolderLocation;
 
-      // Run `git count-objects -v` to get pack size.
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { execFile } = require('child_process') as typeof import('child_process');
       const estimatedBytes = await new Promise<number>((resolve, reject) => {
         execFile(
           'git',
           ['count-objects', '-v'],
-          { cwd: wikiFolderLocation, timeout: 10_000 },
+          { cwd: repoPath, timeout: 10_000 },
           (error: Error | null, stdout: string) => {
             if (error) {
               reject(error);

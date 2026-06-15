@@ -1,25 +1,15 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from 'tidgi-shared';
+import { createGitRunner } from '../../git/gitRunnerFactory';
+import { generateFullArchive } from '../../git/mobileSyncGit';
+import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
 import { authorizeWorkspaceToken } from './utilities';
 
 const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'GET';
-
-/**
- * Full archive endpoint for fast mobile clone.
- *
- * Returns a tar file containing the complete working tree + minimal .git directory.
- * Supports HTTP Range requests for resumable downloads.
- *
- * Mobile uses this instead of git-upload-pack to avoid:
- * - Resolving deltas in JS (30-60 min for large repos)
- * - Checking out 19000+ files one by one via JS→Native bridge
- *
- * Format: GET /tw-mobile-sync/git/{workspaceId}/full-archive
- */
 exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/full-archive$/;
 /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
@@ -39,30 +29,19 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!tidgiService?.workspace) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Workspace service not available');
+      if (!(await authorizeWorkspaceToken(request, response, tidgiService?.workspace, workspaceId))) {
         return;
       }
 
-      if (!(await authorizeWorkspaceToken(request, response, tidgiService.workspace, workspaceId))) {
-        return;
-      }
-
-      if (!tidgiService.gitServer) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Git server service not available');
-        return;
-      }
-
-      // Check if the method exists (requires tidgi-shared >= new version)
-      if (typeof tidgiService.gitServer.generateFullArchive !== 'function') {
+      const repoPath = await getWorkspaceRepoPath(workspaceId, tidgiService?.workspace);
+      if (!repoPath) {
         response.writeHead(404, { 'Content-Type': 'text/plain' });
-        response.end('Full archive not supported by this TidGi Desktop version');
+        response.end('Workspace not found');
         return;
       }
 
-      const result = await tidgiService.gitServer.generateFullArchive(workspaceId);
+      const runner = createGitRunner(tidgiService, workspaceId);
+      const result = await generateFullArchive(runner, repoPath);
       if (!result) {
         response.writeHead(404, { 'Content-Type': 'text/plain' });
         response.end('Workspace not found or archive generation failed');

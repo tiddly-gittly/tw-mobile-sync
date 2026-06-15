@@ -34,6 +34,8 @@ function getHost(request: Http.ClientRequest & Http.InformationEvent): string {
   return request.headers.host || 'localhost';
 }
 
+const STANDALONE_WORKSPACE_ID = 'standalone';
+
 const handler: ServerEndpointHandler = function handler(
   request: Http.ClientRequest & Http.InformationEvent,
   response: Http.ServerResponse,
@@ -42,37 +44,37 @@ const handler: ServerEndpointHandler = function handler(
 
   void (async () => {
     try {
-      if (!tidgiService?.workspace) {
-        response.writeHead(500, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ error: 'Workspace service not available' }));
-        return;
-      }
+      const workspaceService = tidgiService?.workspace;
+      let fallbackWorkspace: { id: string; name?: string } | undefined;
+      let subWorkspaces: Array<{ id: string; name?: string }> = [];
 
-      const allWorkspaces = await tidgiService.workspace.getWorkspacesAsList();
-      const wikiWorkspaces = allWorkspaces.filter(workspace => isWikiWorkspace(workspace));
-      if (wikiWorkspaces.length === 0) {
-        response.writeHead(404, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ error: 'No workspace found' }));
-        return;
-      }
-      const mainWorkspaces = wikiWorkspaces.filter(workspace => !workspace.isSubWiki);
-      const fallbackWorkspace = mainWorkspaces[0] ?? wikiWorkspaces[0];
+      if (workspaceService !== undefined) {
+        const allWorkspaces = await workspaceService.getWorkspacesAsList();
+        const wikiWorkspaces = allWorkspaces.filter(workspace => isWikiWorkspace(workspace));
+        if (wikiWorkspaces.length === 0) {
+          response.writeHead(404, { 'Content-Type': 'application/json' });
+          response.end(JSON.stringify({ error: 'No workspace found' }));
+          return;
+        }
+        const mainWorkspaces = wikiWorkspaces.filter(workspace => !workspace.isSubWiki);
+        fallbackWorkspace = mainWorkspaces[0] ?? wikiWorkspaces[0];
 
-      const workspaceToken = await tidgiService.workspace.getWorkspaceToken(fallbackWorkspace.id);
+        const workspaceToken = await workspaceService.getWorkspaceToken(fallbackWorkspace.id);
+        if (typeof workspaceToken === 'string' && workspaceToken.length > 0) {
+          response.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+          response.end(JSON.stringify({ error: 'token_protected' }));
+          return;
+        }
 
-      // If a token is configured, this endpoint must not expose it.
-      // The client should scan the QR code instead.
-      if (typeof workspaceToken === 'string' && workspaceToken.length > 0) {
-        response.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
-        response.end(JSON.stringify({ error: 'token_protected' }));
-        return;
+        subWorkspaces = await workspaceService.getSubWorkspacesAsList(fallbackWorkspace.id);
+      } else {
+        // Standalone mode: serve the only available wiki.
+        fallbackWorkspace = { id: STANDALONE_WORKSPACE_ID, name: 'Standalone Wiki' };
       }
 
       const host = getHost(request);
       const protocol = getProtocol(request);
       const baseUrl = `${protocol}://${host}`;
-
-      const subWorkspaces = await tidgiService.workspace.getSubWorkspacesAsList(fallbackWorkspace.id);
 
       const payload = {
         baseUrl,

@@ -17,6 +17,9 @@ importers:
       npm-check-updates:
         specifier: ^20.0.1
         version: 20.0.1
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
       tiddlywiki:
         specifier: ^5.3.8
         version: 5.3.8
@@ -24,8 +27,11 @@ importers:
         specifier: ^0.5.7
         version: 0.5.7(@types/node@25.6.0)(postcss-load-config@6.0.1(jiti@2.6.1)(postcss@8.5.9)(yaml@2.8.2))(postcss@8.5.9)(svelte@5.20.1)(tiddlywiki@5.3.8)(typescript@6.0.2)
       tidgi-shared:
-        specifier: ^0.1.5
-        version: 0.1.5(electron@40.2.1)(rxjs@7.8.2)
+        specifier: ^0.1.6
+        version: 0.1.6(electron@40.2.1)(rxjs@7.8.2)
+      tslib:
+        specifier: ^2.8.1
+        version: 2.8.1
       ua-parser-js:
         specifier: ^2.0.9
         version: 2.0.9
@@ -3433,9 +3439,10 @@ packages:
     resolution: {integrity: sha512-T25acZfdhAX/lUVPY/9SXo7bMJKgSaMs5PDOb83S2WKbTCD7DnOUQ4aC3qDy0j5XqlCn4ih3mzMWct3xnQx+Mw==}
     engines: {node: '>=0.8.2'}
     hasBin: true
+    bundledDependencies: []
 
-  tidgi-shared@0.1.5:
-    resolution: {integrity: sha512-lzJf3KV6BnoX4BOkkz+lxmvMMr75ydmIji6dSTxNBRqi0YQ3eaSK7H/KEGtFh/1V5wE6G82VEApMOfFXvNPrPw==}
+  tidgi-shared@0.1.6:
+    resolution: {integrity: sha512-WvaalnjTp8etX8pidivDOzQ3yaP4lnR080pliPgkRaZEM/0A5FvYkAWejcRvTxmJRXQnQZi0AVJDn6+DX9M45A==}
     peerDependencies:
       rxjs: '>=7'
     peerDependenciesMeta:
@@ -3494,8 +3501,8 @@ packages:
   tslib@2.3.0:
     resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
 
-  tslib@2.6.2:
-    resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
   tsutils@3.21.0:
     resolution: {integrity: sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA==}
@@ -3799,17 +3806,17 @@ snapshots:
   '@emnapi/core@1.8.1':
     dependencies:
       '@emnapi/wasi-threads': 1.1.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     optional: true
 
   '@emnapi/runtime@1.8.1':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
     optional: true
 
   '@emnapi/wasi-threads@1.1.0':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
     optional: true
 
   '@esbuild/aix-ppc64@0.28.0':
@@ -4309,7 +4316,7 @@ snapshots:
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
     optional: true
 
   '@types/cacheable-request@6.0.3':
@@ -4912,7 +4919,7 @@ snapshots:
   camel-case@4.1.2:
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   caniuse-lite@1.0.30001769: {}
 
@@ -5097,7 +5104,7 @@ snapshots:
   dot-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   dprint@0.49.1:
     optionalDependencies:
@@ -6441,7 +6448,7 @@ snapshots:
 
   lower-case@2.0.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   lowercase-keys@2.0.0: {}
 
@@ -6536,7 +6543,7 @@ snapshots:
   no-case@3.0.4:
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   node-addon-api@7.1.1:
     optional: true
@@ -6637,7 +6644,7 @@ snapshots:
   param-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   parent-module@1.0.1:
     dependencies:
@@ -6654,7 +6661,7 @@ snapshots:
   pascal-case@3.1.2:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   path-exists@4.0.0: {}
 
@@ -6905,7 +6912,7 @@ snapshots:
 
   rxjs@7.8.2:
     dependencies:
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   safe-array-concat@1.1.3:
     dependencies:
@@ -7280,7 +7287,7 @@ snapshots:
 
   tiddlywiki@5.3.8: {}
 
-  tidgi-shared@0.1.5(electron@40.2.1)(rxjs@7.8.2):
+  tidgi-shared@0.1.6(electron@40.2.1)(rxjs@7.8.2):
     dependencies:
       electron-ipc-cat: 2.4.0(electron@40.2.1)(rxjs@7.8.2)
     optionalDependencies:
@@ -7341,7 +7348,7 @@ snapshots:
 
   tslib@2.3.0: {}
 
-  tslib@2.6.2: {}
+  tslib@2.8.1: {}
 
   tsutils@3.21.0(typescript@6.0.2):
     dependencies:

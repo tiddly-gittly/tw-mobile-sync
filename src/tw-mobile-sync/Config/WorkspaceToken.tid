@@ -1,0 +1,4 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/Config/WorkspaceToken
+description: Token required for write operations when running outside TidGi Desktop (e.g. E2E mock server). Leave empty to disable authentication.
+
+

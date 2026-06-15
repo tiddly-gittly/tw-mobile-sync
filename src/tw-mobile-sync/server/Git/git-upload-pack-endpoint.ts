@@ -1,30 +1,16 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { GitHTTPResponseChunk, ITidGiGlobalService } from 'tidgi-shared';
+import { handleUploadPack } from '../../git/smartHttp';
+import { SystemGitRunner } from '../../git/systemGitRunner';
+import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
 import { authorizeWorkspaceToken } from './utilities';
 
-/**
- * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
- */
 const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'POST';
-
-/**
- * Git Smart HTTP upload-pack endpoint (git fetch/pull)
- * Format: /tw-mobile-sync/git/{workspaceId}/git-upload-pack
- *
- * Read-only — no authentication required
- */
 exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/git-upload-pack$/;
-
-/**
- * TiddlyWiki reads the POST body before calling the handler.
- * "buffer" makes it available as a Buffer in context.data.
- * Without this, the default "string" mode consumes the stream as UTF-8
- * and the binary git protocol data would be corrupted / unavailable.
- */
 exports.bodyFormat = 'buffer';
 /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
@@ -42,30 +28,26 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!tidgiService?.workspace) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Workspace service not available');
+      if (!(await authorizeWorkspaceToken(_request, response, tidgiService?.workspace, workspaceId))) {
         return;
       }
 
-      if (!(await authorizeWorkspaceToken(_request, response, tidgiService.workspace, workspaceId))) {
+      const repoPath = await getWorkspaceRepoPath(workspaceId, tidgiService?.workspace);
+      if (!repoPath) {
+        response.writeHead(404, { 'Content-Type': 'text/plain' });
+        response.end('Workspace not found');
         return;
       }
 
-      if (!tidgiService.gitServer) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Git server service not available');
-        return;
-      }
-
-      // context.data is a Buffer populated by TiddlyWiki's bodyFormat="buffer" handling
       const requestBody = context.data as unknown as Buffer | undefined;
       console.log('git-upload-pack handler', {
         workspaceId,
         bodySize: requestBody?.length ?? 0,
       });
 
-      const response$ = tidgiService.gitServer.gitSmartHTTPUploadPack$(workspaceId, new Uint8Array(requestBody ?? Buffer.alloc(0)));
+      // Smart HTTP always spawns raw git processes, so it uses the system git runner.
+      const runner = new SystemGitRunner();
+      const response$ = handleUploadPack(runner, repoPath, new Uint8Array(requestBody ?? Buffer.alloc(0)));
 
       const subscription = response$.subscribe({
         next(chunk: GitHTTPResponseChunk) {
@@ -88,7 +70,6 @@ const handler: ServerEndpointHandler = function handler(
         },
       });
 
-      // Clean up if client disconnects before Observable completes
       response.on('close', () => {
         subscription.unsubscribe();
       });

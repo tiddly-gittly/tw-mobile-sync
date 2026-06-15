@@ -2,26 +2,15 @@ import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { GitHTTPResponseChunk, ITidGiGlobalService } from 'tidgi-shared';
 import { URL } from 'url';
+import { handleInfoReferences } from '../../git/smartHttp';
+import { SystemGitRunner } from '../../git/systemGitRunner';
+import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
 import { authorizeWorkspaceToken } from './utilities';
 
-/**
- * Access TidGi service proxies via $tw.tidgi.service.
- * TiddlyWiki route modules run inside a vm.runInContext sandbox where
- * globalThis/global point to an empty V8 context — NOT the worker's real globalThis.
- * Only $tw (injected as a sandbox parameter) is available, so TidGi-Desktop
- * attaches its IPC service proxies as $tw.tidgi.service before boot.
- */
 const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'GET';
-
-/**
- * Git Smart HTTP info/refs endpoint
- * Format: /tw-mobile-sync/git/{workspaceId}/info/refs?service=git-upload-pack
- *
- * This endpoint is called first by git clients to discover available refs
- */
 exports.path = /^\/tw-mobile-sync\/git\/([^/]+)\/info\/refs$/;
 /* eslint-enable @typescript-eslint/no-unsafe-member-access */
 
@@ -39,7 +28,6 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Parse ?service= query param
       const requestWithUrl = request as Http.ClientRequest & Http.InformationEvent & { url?: string };
       const url = new URL(requestWithUrl.url || '', `http://${request.headers.host || 'localhost'}`);
       const service = url.searchParams.get('service');
@@ -50,24 +38,20 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      if (!tidgiService?.workspace) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Workspace service not available');
+      if (!(await authorizeWorkspaceToken(request, response, tidgiService?.workspace, workspaceId))) {
         return;
       }
 
-      if (!(await authorizeWorkspaceToken(request, response, tidgiService.workspace, workspaceId))) {
+      const repoPath = await getWorkspaceRepoPath(workspaceId, tidgiService?.workspace);
+      if (!repoPath) {
+        response.writeHead(404, { 'Content-Type': 'text/plain' });
+        response.end('Workspace not found');
         return;
       }
 
-      if (!tidgiService.gitServer) {
-        response.writeHead(500, { 'Content-Type': 'text/plain' });
-        response.end('Git server service not available');
-        return;
-      }
-
-      // Subscribe to Observable — IPC streams response chunks back to this worker
-      const response$ = tidgiService.gitServer.gitSmartHTTPInfoRefs$(workspaceId, service);
+      // Smart HTTP always spawns raw git processes, so it uses the system git runner.
+      const runner = new SystemGitRunner();
+      const response$ = handleInfoReferences(runner, repoPath, service);
       const subscription = response$.subscribe({
         next(chunk: GitHTTPResponseChunk) {
           if (chunk.type === 'headers') {
@@ -88,7 +72,6 @@ const handler: ServerEndpointHandler = function handler(
         },
       });
 
-      // Clean up if client disconnects before Observable completes
       response.on('close', () => {
         subscription.unsubscribe();
       });
