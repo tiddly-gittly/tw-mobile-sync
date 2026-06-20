@@ -6,7 +6,9 @@
     "dev": "tiddlywiki-plugin-dev dev",
     "dev:lan": "tiddlywiki-plugin-dev dev --lan",
     "dev:wiki": "tiddlywiki-plugin-dev dev --write-wiki",
-    "test": "tiddlywiki-plugin-dev test",
+    "test": "pnpm run test:wiki && pnpm run test:unit",
+    "test:wiki": "tiddlywiki-plugin-dev test",
+    "test:unit": "tsx --test src/**/__tests__/**/*.test.ts",
     "build": "npm run clean && tiddlywiki-plugin-dev build",
     "lint": "eslint ./src --ext js,ts,tsx,json",
     "lint:fix": "eslint ./src --ext ts,tsx,json --fix",
@@ -51,6 +53,7 @@
     "postcss": "^8.5.9",
     "rimraf": "^6.1.3",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.4",
     "tw5-typed": "^1.1.5",
     "typescript": "^6.0.2"
   },
