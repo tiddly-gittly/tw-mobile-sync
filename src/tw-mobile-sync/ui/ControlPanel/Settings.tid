@@ -1,8 +1,10 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/ControlPanel/Settings
-caption: MobileSync
+caption: <<lingo SidebarTab/Caption $:/plugins/linonetwo/tw-mobile-sync/language/>>
 tags: $:/tags/ControlPanel/SettingsTab
 
-These settings let you customise the behaviour of TW-MobileSync plugin.
+\procedure lingo-base() $:/plugins/linonetwo/tw-mobile-sync/language/
+
+<<lingo ControlPanel/Settings/Description>>
 
 ---
 
@@ -11,9 +13,7 @@ These settings let you customise the behaviour of TW-MobileSync plugin.
 
 !!! Sync Interval
 
-Normally, sync happened in local wiki, so it is free, so you can sync it frequently. This setting takes effect after refresh.
-
-Minutes between sync:
+<<lingo ControlPanel/Settings/MinutesBetweenSync>>
 
 <$edit-text
 	tiddler="$:/plugins/linonetwo/tw-mobile-sync/Config/SyncInterval"

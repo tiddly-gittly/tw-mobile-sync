@@ -1,6 +1,6 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/SidebarTab
 tags: $:/tags/SideBar
-caption: MobileSync
+caption: <<lingo SidebarTab/Caption $:/plugins/linonetwo/tw-mobile-sync/language/>>
 type: text/vnd.tiddlywiki
 
 <!-- only display Sync With Desktop tab in Tiddloid, which will use content scheme to load -->

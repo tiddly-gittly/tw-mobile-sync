@@ -1,19 +1,19 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/SidebarDesktopContent
 type: text/vnd.tiddlywiki
 
+\procedure lingo-base() $:/plugins/linonetwo/tw-mobile-sync/language/
+
 \define image()
 <img src=<<makeqr text:"""$(content)$""" size:"""$(size)$""">>/>
 \end
 
 <$reveal type="match" state="$:/info/tidgi/enableHTTPAPI" text="no">
-  Firstly, Open TidGi-desktop's HTTP API feature on current workspace's setting, see [[Official TidGi Feature Handbook|https://tidgi.fun/#TidGi%20Feature%20Handbook%2FEnabling%20HTTP%20API]] for details.
-
-  请先开启太记桌面版，当前 Wiki 工作区设置里的 HTTP API，详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]。
+  <<lingo SidebarDesktopContent/HTTPAPIRequired>>
 </$reveal>
 
 <$reveal type="nomatch" state="$:/info/tidgi/enableHTTPAPI" text="no">
 
-QRCode for Git Synchronization / Git 同步二维码
+<<lingo SidebarDesktopContent/QRCodeTitle>>
 
 <!-- Works on TidGi with enableHTTPAPI, or nodejs that is not TidGi Desktop -->
 <% if [{$:/info/tidgi/enableHTTPAPI}match[yes]]:else[{$:/info/tidgi}!match[yes]] %>
@@ -30,11 +30,11 @@ QRCode for Git Synchronization / Git 同步二维码
 <fieldset class="tw-mobile-sync-sidebar-fieldset tw-mobile-sync-sidebar-desktop">
   <legend>
   <% if [[$:/temp/tw-mobile-sync/listen-client-info]get[text]compare:eq[yes]] %>
-    已连接客户端列表
+    <<lingo SidebarDesktopContent/ConnectedClients>>
   <% else %>
   <$button>
     <$action-sendmessage $message="tm-tw-mobile-sync-listen-client-info" />
-    点击查看已连接客户端
+    <<lingo SidebarDesktopContent/ViewConnectedClients>>
   </$button>
   <% endif %>
   </legend>

@@ -1,5 +1,5 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopSkinnyHtmlQR
-caption: Skinny (TidGi-Mobile)
+caption: <<lingo DesktopSkinnyHtmlQR/Caption $:/plugins/linonetwo/tw-mobile-sync/language/>>
 type: text/vnd.tiddlywiki
 
 <div class="tw-mobile-sync-sidebar-qrcode">

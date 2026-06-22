@@ -1,6 +1,8 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/DesktopGitSyncQR
-caption: Git Sync (TidGi-Mobile)
+caption: <<lingo DesktopGitSyncQR/Caption $:/plugins/linonetwo/tw-mobile-sync/language/>>
 type: text/vnd.tiddlywiki
+
+\procedure lingo-base() $:/plugins/linonetwo/tw-mobile-sync/language/
 
 \define makeGitQRData()
 {
@@ -27,13 +29,10 @@ type: text/vnd.tiddlywiki
   >
     <% if [<workspaceId>match[]] %>
       <div class="tc-error">
-        WorkspaceID not available. This feature requires TidGi Desktop with workspace service enabled.
-
-        工作区 ID 不可用。此功能需要 TidGi Desktop 并启用工作区服务。
+        <<lingo DesktopGitSyncQR/WorkspaceIDError>>
       </div>
     <% else %>
-      <div>Scan this QR code with TidGi Mobile to enable Git synchronization</div>
-      <div>使用太记移动版扫描此二维码以启用 Git 同步</div>
+      <div><<lingo DesktopGitSyncQR/ScanInstructions>></div>
 
       <% if [<memeloopNodeUrl>!match[]] %>
         <!-- Custom memeloopNodeUrl is set: show single QR with custom URL -->
@@ -44,7 +43,7 @@ type: text/vnd.tiddlywiki
           <<image>>
 
           <details style="margin-top: 10px;">
-            <summary>Show QR code data / 显示二维码数据</summary>
+            <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
             <pre><<content>></pre>
           </details>
         </$let>
@@ -58,7 +57,7 @@ type: text/vnd.tiddlywiki
             <<image>>
 
             <details style="margin-top: 10px;">
-              <summary>Show QR code data / 显示二维码数据</summary>
+              <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
               <pre><<content>></pre>
             </details>
           </$let>
@@ -76,7 +75,7 @@ type: text/vnd.tiddlywiki
                 <<image>>
 
                 <details style="margin-top: 10px;">
-                  <summary>Show QR code data / 显示二维码数据</summary>
+                  <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
                   <pre><<content>></pre>
                 </details>
               </$let>

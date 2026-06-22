@@ -17,8 +17,7 @@ type: text/vnd.tiddlywiki
   <$reveal type="nomatch" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
     <$button class="tw-mobile-sync-sync-button">
       <div><$text text={{!!name}}/></div>
-      <div>启用同步并立即同步</div>
-      <div>Enable and Sync Now</div>
+      <div><<lingo ServerItemViewTemplateBasic/EnableAndSync $:/plugins/linonetwo/tw-mobile-sync/language/>></div>
       <$action-sendmessage $message="tw-mobile-sync-set-active-server-and-sync" title={{!!title}} />
     </$button>
   </$reveal>
@@ -26,8 +25,7 @@ type: text/vnd.tiddlywiki
   <$reveal type="match" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
     <$button class="tw-mobile-sync-sync-button">
       <div><$text text={{!!name}}/></div>
-      <div>立即同步</div>
-      <div>Sync Now</div>
+      <div><<lingo ServerItemViewTemplateBasic/SyncNow $:/plugins/linonetwo/tw-mobile-sync/language/>></div>
       <$action-sendmessage $message="tw-mobile-sync-sync-start" />
     </$button>
   </$reveal>

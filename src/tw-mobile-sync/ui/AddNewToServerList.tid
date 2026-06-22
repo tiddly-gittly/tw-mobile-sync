@@ -1,6 +1,8 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/ui/AddNewToServerList
 type: text/vnd.tiddlywiki
 
+\procedure lingo-base() $:/plugins/linonetwo/tw-mobile-sync/language/
+
 <div>
   {{$:/plugins/linonetwo/tw-mobile-sync/ui/DownloadFullHtml}}
 </div>
@@ -8,26 +10,26 @@ type: text/vnd.tiddlywiki
 <div class="tw-mobile-sync-new-server-field-fields-container-outer1">
   <div class="tw-mobile-sync-new-server-field-fields-container-outer2">
     <fieldset>
-      <legend>智能识别黏贴框 Smart Identify Sticky Box</legend>
+      <legend><<lingo AddNewToServerList/SmartIdentify/Legend>></legend>
 
       <div class="tw-mobile-sync-new-server-field-fields-container">
         <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="text" default=""/>
 
         <div class="tw-mobile-sync-new-server-field-fields-buttons">
           <$button>
-            智能识别 Smart Identify
+            <<lingo AddNewToServerList/SmartIdentify/Button>>
             <$action-sendmessage $message="tw-mobile-sync-smart-recognize-ip-address" from="$:/state/tw-mobile-sync/server/new"/>
           </$button>
 
           <$reveal type="nomatch" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes">
             <$button>
-              扫二维码 Scan QR
+              <<lingo AddNewToServerList/ScanQR/Button>>
               <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes" />
             </$button>
           </$reveal>
           <$reveal type="match" state="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="yes">
             <$button>
-              停止扫码 Stop Scan
+              <<lingo AddNewToServerList/StopScan/Button>>
               <$action-setfield $tiddler="$:/state/tw-mobile-sync/server/new/scan-qr-widget-open" text="no" />
             </$button>
           </$reveal>
@@ -40,21 +42,20 @@ type: text/vnd.tiddlywiki
 
     </fieldset>
     <fieldset>
-      <legend>服务器名 Server Name</legend>
+      <legend><<lingo AddNewToServerList/ServerName/Legend>></legend>
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="name" default="" />
     </fieldset>
     <fieldset>
-      <legend>服务器IP Server IP</legend>
+      <legend><<lingo AddNewToServerList/ServerIP/Legend>></legend>
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="ipAddress" default="" />
     </fieldset>
     <fieldset>
-      <legend>服务器端口 Server Port</legend>
+      <legend><<lingo AddNewToServerList/ServerPort/Legend>></legend>
       <$edit-text tiddler="$:/state/tw-mobile-sync/server/new" field="port" default="" />
     </fieldset>
   </div>
   <$button style="width: 160px; margin-top: 10px;">
-    <div>新增服务器</div>
-    <div>Add New</div>
+    <<lingo AddNewToServerList/AddNew/Button>>
     <$set name="existedServers" filter={{$:/plugins/linonetwo/tw-mobile-sync/ServerListFilter}} >
       <$set name="latestLastSync" filter="[<existedServers>sort[lastSync]limit[1]get[lastSync]]" emptyValue=<<now "[UTC]YYYY0MM0DD0hh0mm0ssXXX">> >
         <$action-createtiddler
