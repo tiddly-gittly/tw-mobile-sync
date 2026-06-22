@@ -2,16 +2,6 @@
   "url": "https://tiddly-gittly.github.io/Modern.TiddlyDev/",
   "license": "MIT",
   "version": "0.0.9",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "dprint",
-      "electron",
-      "esbuild",
-      "svelte-preprocess",
-      "unrs-resolver"
-    ]
-  },
   "scripts": {
     "dev": "tiddlywiki-plugin-dev dev",
     "dev:lan": "tiddlywiki-plugin-dev dev --lan",

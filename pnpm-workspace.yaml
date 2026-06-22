@@ -4,6 +4,8 @@ packages:
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - dprint
+  - electron
   - esbuild
   - svelte-preprocess
+  - unrs-resolver
 
