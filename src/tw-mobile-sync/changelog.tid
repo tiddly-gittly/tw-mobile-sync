@@ -3,6 +3,11 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.0.9
+
+* Show multiple QR codes for multi-NIC devices. The HTTP server now listens on `0.0.0.0` and the QR tab iterates over all local IPs, showing one QR code per network interface with its URL displayed below.
+* Compatibility: this release is intended for TidGi Desktop `>= 0.13.1` with the matching HTTP API info injection update.
+
 !! v2.0.8
 
 * Fix Desktop packaged runtime compatibility by removing external `rxjs` and `tslib` requirements from the Smart HTTP implementation. The plugin now ships its own lightweight response stream and does not require TidGi Desktop to copy those packages into the wiki worker runtime.
