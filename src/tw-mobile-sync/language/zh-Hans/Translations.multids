@@ -1,71 +1,39 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/language/zh-Hans/
 
-SidebarTab/Caption:
-手机同步
-DesktopSkinnyHtmlQR/Caption:
-瘦同步 (TidGi-移动版)
-DesktopGitSyncQR/Caption:
-Git 同步 (TidGi-移动版)
-ControlPanel/Settings/Description:
-这些设置允许你自定义 TW-MobileSync 插件的行为。
-ControlPanel/Settings/MinutesBetweenSync:
-同步间隔（分钟）:
+SidebarTab/Caption: 手机同步
+DesktopSkinnyHtmlQR/Caption: 瘦同步 (TidGi-移动版)
+DesktopGitSyncQR/Caption: Git 同步 (TidGi-移动版)
+ControlPanel/Settings/Description: 这些设置允许你自定义 TW-MobileSync 插件的行为。
+ControlPanel/Settings/MinutesBetweenSync: 同步间隔（分钟）: 
+AddNewToServerList/SmartIdentify/Legend: 智能识别黏贴框
+AddNewToServerList/SmartIdentify/Button: 智能识别
+AddNewToServerList/ScanQR/Button: 扫二维码
+AddNewToServerList/StopScan/Button: 停止扫码
+AddNewToServerList/ServerName/Legend: 服务器名
+AddNewToServerList/ServerIP/Legend: 服务器IP
+AddNewToServerList/ServerPort/Legend: 服务器端口
+AddNewToServerList/AddNew/Button: 新增服务器
 
-AddNewToServerList/SmartIdentify/Legend:
-智能识别黏贴框
-AddNewToServerList/SmartIdentify/Button:
-智能识别
-AddNewToServerList/ScanQR/Button:
-扫二维码
-AddNewToServerList/StopScan/Button:
-停止扫码
-AddNewToServerList/ServerName/Legend:
-服务器名
-AddNewToServerList/ServerIP/Legend:
-服务器IP
-AddNewToServerList/ServerPort/Legend:
-服务器端口
-AddNewToServerList/AddNew/Button:
-新增服务器
+DownloadFullHtml/Summary: 拉取并覆盖
+DownloadFullHtml/Legend: 拉取服务端最新完整内容覆盖本地所有内容
+DownloadFullHtml/WarningPluginUpdate: 如果你在电脑端更新或安装了插件，则需要在移动端点下面的按钮做一次完整拉取。
+DownloadFullHtml/WarningUnsynced: 请慎重点击，本地若有未同步内容将丢失！如果确保本地没有未同步内容，则可以放心拉取。
+DownloadFullHtml/PullButton: 拉取内容覆盖本地
 
-DownloadFullHtml/Summary:
-拉取并覆盖
-DownloadFullHtml/Legend:
-拉取服务端最新完整内容覆盖本地所有内容
-DownloadFullHtml/WarningPluginUpdate:
-如果你在电脑端更新或安装了插件，则需要在移动端点下面的按钮做一次完整拉取。
-DownloadFullHtml/WarningUnsynced:
-请慎重点击，本地若有未同步内容将丢失！如果确保本地没有未同步内容，则可以放心拉取。
-DownloadFullHtml/PullButton:
-拉取内容覆盖本地
+ServerItemCopyTemplate/Button: 复制
 
-ServerItemCopyTemplate/Button:
-复制
+ServerItemViewTemplateBasic/EnableAndSync: 启用同步并立即同步
+ServerItemViewTemplateBasic/SyncNow: 立即同步
 
-ServerItemViewTemplateBasic/EnableAndSync:
-启用同步并立即同步
-ServerItemViewTemplateBasic/SyncNow:
-立即同步
+DesktopGitSyncQR/WorkspaceIDError: 工作区 ID 不可用。此功能需要 TidGi Desktop 并启用工作区服务。
+DesktopGitSyncQR/ScanInstructions: 使用太记移动版扫描此二维码以启用 Git 同步
+DesktopGitSyncQR/ShowQRData: 显示二维码数据
 
-DesktopGitSyncQR/WorkspaceIDError:
-工作区 ID 不可用。此功能需要 TidGi Desktop 并启用工作区服务。
-DesktopGitSyncQR/ScanInstructions:
-使用太记移动版扫描此二维码以启用 Git 同步
-DesktopGitSyncQR/ShowQRData:
-显示二维码数据
+SidebarDesktopContent/HTTPAPIRequired: 请先开启太记桌面版，当前 Wiki 工作区设置里的 HTTP API，详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]。
+SidebarDesktopContent/QRCodeTitle: Git 同步二维码
+SidebarDesktopContent/ConnectedClients: 已连接客户端列表
+SidebarDesktopContent/ViewConnectedClients: 点击查看已连接客户端
 
-SidebarDesktopContent/HTTPAPIRequired:
-请先开启太记桌面版，当前 Wiki 工作区设置里的 HTTP API，详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]。
-SidebarDesktopContent/QRCodeTitle:
-Git 同步二维码
-SidebarDesktopContent/ConnectedClients:
-已连接客户端列表
-SidebarDesktopContent/ViewConnectedClients:
-点击查看已连接客户端
-
-SidebarMobileContent/SyncWithDesktop:
-与桌面端同步
-SidebarMobileContent/UseWikiList:
-使用 TidGi-Mobile 的 wiki 列表进行同步（长按列表里的 wiki 条目打开菜单）
-SidebarMobileContent/ServerList:
-服务器列表
+SidebarMobileContent/SyncWithDesktop: 与桌面端同步
+SidebarMobileContent/UseWikiList: 使用 TidGi-Mobile 的 wiki 列表进行同步（长按列表里的 wiki 条目打开菜单）
+SidebarMobileContent/ServerList: 服务器列表
