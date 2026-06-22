@@ -41,6 +41,10 @@ export function sendAuthChallenge(response: import('http').ServerResponse): void
 
 const TOKEN_CONFIG_TITLE = '$:/plugins/linonetwo/tw-mobile-sync/Config/WorkspaceToken';
 
+export function getTidGiService(): ITidGiGlobalService | undefined {
+  return ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
+}
+
 /**
  * In standalone mode the workspace token is read from a config tiddler so
  * tests can protect the mock server without starting TidGi Desktop.

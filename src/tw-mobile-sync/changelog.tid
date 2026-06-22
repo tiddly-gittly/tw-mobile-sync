@@ -3,6 +3,13 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.0.8
+
+* Fix Desktop packaged runtime compatibility by removing external `rxjs` and `tslib` requirements from the Smart HTTP implementation. The plugin now ships its own lightweight response stream and does not require TidGi Desktop to copy those packages into the wiki worker runtime.
+* Fix Git endpoint service discovery by resolving TidGi Desktop services at request time instead of module-load time, so startup-provided `gitServer` and `workspace` services are used reliably.
+* Add and verify the Desktop GitRunner path used by TidGi Mobile sync tests, so mobile sync now covers the same `gitServer` delegation path used inside TidGi Desktop.
+* Compatibility: this release is intended for TidGi Desktop `>= 0.13.1` and TidGi Mobile `>= 0.10.2`. Older Desktop or Mobile builds should keep using tw-mobile-sync `<= 2.0.7` because they do not include the matching Smart HTTP and mobile sync integration behavior.
+
 !! v1.1.0
 
 * Fix System Tiddler Sync: Now correctly syncs modified system and shadow tiddlers (e.g. plugin configs)

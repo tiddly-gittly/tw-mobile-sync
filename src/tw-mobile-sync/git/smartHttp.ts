@@ -1,9 +1,25 @@
 import type { ChildProcess } from 'child_process';
-import { Observable } from 'rxjs';
 import { ensureCommittedBeforeServe, ensureReceivePackConfig } from './mobileSyncGit';
-import type { GitHTTPResponseChunk, IGitRunner } from './types';
+import type { GitHTTPResponseChunk, IGitRunner, SmartHttpObservable, SmartHttpSubscriber, SmartHttpSubscription } from './types';
 
 const ALLOWED_GIT_SERVICES = new Set(['git-upload-pack', 'git-receive-pack']);
+
+class SmartHttpStream<T> implements SmartHttpObservable<T> {
+  constructor(private readonly start: (subscriber: SmartHttpSubscriber<T>) => (() => void) | undefined) {}
+
+  subscribe(subscriber: SmartHttpSubscriber<T>): SmartHttpSubscription {
+    const teardown = this.start(subscriber);
+    return {
+      unsubscribe() {
+        teardown?.();
+      },
+    };
+  }
+}
+
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
+}
 
 function runSmartHttpProcess(
   runner: IGitRunner,
@@ -12,8 +28,8 @@ function runSmartHttpProcess(
   gitArguments: string[],
   requestBody: Uint8Array,
   extraEnvironment?: Record<string, string>,
-): Observable<GitHTTPResponseChunk> {
-  return new Observable<GitHTTPResponseChunk>((subscriber) => {
+): SmartHttpObservable<GitHTTPResponseChunk> {
+  return new SmartHttpStream<GitHTTPResponseChunk>((subscriber) => {
     let git: ChildProcess | undefined;
     (() => {
       try {
@@ -56,7 +72,7 @@ function runSmartHttpProcess(
 
         git.stdin.end(Buffer.from(requestBody));
       } catch (error) {
-        subscriber.error(error);
+        subscriber.error(toError(error));
       }
     })();
     return () => {
@@ -72,8 +88,8 @@ export function handleInfoReferences(
   runner: IGitRunner,
   repoPath: string,
   service: string,
-): Observable<GitHTTPResponseChunk> {
-  return new Observable<GitHTTPResponseChunk>((subscriber) => {
+): SmartHttpObservable<GitHTTPResponseChunk> {
+  return new SmartHttpStream<GitHTTPResponseChunk>((subscriber) => {
     let git: ChildProcess | undefined;
     void (async () => {
       try {
@@ -127,7 +143,7 @@ export function handleInfoReferences(
           subscriber.complete();
         });
       } catch (error) {
-        subscriber.error(error);
+        subscriber.error(toError(error));
       }
     })();
     return () => {
@@ -143,9 +159,9 @@ export function handleUploadPack(
   runner: IGitRunner,
   repoPath: string,
   requestBody: Uint8Array,
-): Observable<GitHTTPResponseChunk> {
-  return new Observable<GitHTTPResponseChunk>((subscriber) => {
-    let innerSubscription: import('rxjs').Subscription | undefined;
+): SmartHttpObservable<GitHTTPResponseChunk> {
+  return new SmartHttpStream<GitHTTPResponseChunk>((subscriber) => {
+    let innerSubscription: SmartHttpSubscription | undefined;
     void (async () => {
       try {
         await ensureCommittedBeforeServe(runner, repoPath);
@@ -157,7 +173,7 @@ export function handleUploadPack(
           requestBody,
         ).subscribe(subscriber);
       } catch (error) {
-        subscriber.error(error);
+        subscriber.error(toError(error));
       }
     })();
     return () => {
@@ -173,9 +189,9 @@ export function handleReceivePack(
   runner: IGitRunner,
   repoPath: string,
   requestBody: Uint8Array,
-): Observable<GitHTTPResponseChunk> {
-  return new Observable<GitHTTPResponseChunk>((subscriber) => {
-    let innerSubscription: import('rxjs').Subscription | undefined;
+): SmartHttpObservable<GitHTTPResponseChunk> {
+  return new SmartHttpStream<GitHTTPResponseChunk>((subscriber) => {
+    let innerSubscription: SmartHttpSubscription | undefined;
     void (async () => {
       try {
         await ensureCommittedBeforeServe(runner, repoPath);
@@ -188,7 +204,7 @@ export function handleReceivePack(
           requestBody,
         ).subscribe(subscriber);
       } catch (error) {
-        subscriber.error(error);
+        subscriber.error(toError(error));
       }
     })();
     return () => {

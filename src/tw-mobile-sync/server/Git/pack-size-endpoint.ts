@@ -1,11 +1,8 @@
 import { execFile } from 'child_process';
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { ITidGiGlobalService } from 'tidgi-shared';
 import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
-import { authorizeWorkspaceToken } from './utilities';
-
-const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
+import { authorizeWorkspaceToken, getTidGiService } from './utilities';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'GET';
@@ -38,6 +35,7 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
+      const tidgiService = getTidGiService();
       if (!(await authorizeWorkspaceToken(request, response, tidgiService?.workspace, workspaceId))) {
         return;
       }

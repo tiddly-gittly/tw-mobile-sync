@@ -1,12 +1,9 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { ITidGiGlobalService } from 'tidgi-shared';
 import { mergeMobileIncomingIfExists } from '../../git/conflictResolution';
 import { createGitRunner } from '../../git/gitRunnerFactory';
 import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
-import { authorizeWorkspaceToken } from './utilities';
-
-const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
+import { authorizeWorkspaceToken, getTidGiService } from './utilities';
 
 /**
  * Per-workspace merge mutex: reject concurrent merge requests for the same workspace.
@@ -40,6 +37,7 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
+      const tidgiService = getTidGiService();
       if (!(await authorizeWorkspaceToken(request, response, tidgiService?.workspace, workspaceId))) {
         return;
       }

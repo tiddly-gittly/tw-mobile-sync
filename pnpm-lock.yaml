@@ -17,9 +17,6 @@ importers:
       npm-check-updates:
         specifier: ^20.0.1
         version: 20.0.1
-      rxjs:
-        specifier: ^7.8.1
-        version: 7.8.2
       tiddlywiki:
         specifier: ^5.3.8
         version: 5.3.8
@@ -29,9 +26,6 @@ importers:
       tidgi-shared:
         specifier: ^0.1.6
         version: 0.1.6(electron@40.2.1)(rxjs@7.8.2)
-      tslib:
-        specifier: ^2.8.1
-        version: 2.8.1
       ua-parser-js:
         specifier: ^2.0.9
         version: 2.0.9

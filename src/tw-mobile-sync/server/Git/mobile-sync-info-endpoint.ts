@@ -1,8 +1,6 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { ITidGiGlobalService } from 'tidgi-shared';
-
-const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
+import { getTidGiService } from './utilities';
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 exports.method = 'GET';
@@ -44,6 +42,7 @@ const handler: ServerEndpointHandler = function handler(
 
   void (async () => {
     try {
+      const tidgiService = getTidGiService();
       const workspaceService = tidgiService?.workspace;
       let fallbackWorkspace: { id: string; name?: string } | undefined;
       let subWorkspaces: Array<{ id: string; name?: string }> = [];

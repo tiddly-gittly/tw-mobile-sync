@@ -1,5 +1,4 @@
 import type { ChildProcess } from 'child_process';
-import type { Observable } from 'rxjs';
 
 /**
  * A chunk of Git Smart HTTP response transported via Observable.
@@ -56,7 +55,21 @@ export interface IGitRunner {
   deleteTempGitFile(cwd: string, fileName: string): Promise<void>;
 }
 
+export interface SmartHttpSubscriber<T> {
+  next(value: T): void;
+  error(error: Error): void;
+  complete(): void;
+}
+
+export interface SmartHttpSubscription {
+  unsubscribe(): void;
+}
+
+export interface SmartHttpObservable<T> {
+  subscribe(subscriber: SmartHttpSubscriber<T>): SmartHttpSubscription;
+}
+
 /**
- * Shape of a function that can produce an Observable of Smart HTTP chunks.
+ * Shape of a function that can produce a stream of Smart HTTP chunks.
  */
-export type SmartHttpHandler = (repoPath: string, requestBody: Uint8Array, runner: IGitRunner, options?: { readOnlyMode?: boolean }) => Observable<GitHTTPResponseChunk>;
+export type SmartHttpHandler = (repoPath: string, requestBody: Uint8Array, runner: IGitRunner, options?: { readOnlyMode?: boolean }) => SmartHttpObservable<GitHTTPResponseChunk>;
