@@ -3,6 +3,18 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.1.1
+
+* Fix missing changelog entry for v2.1.0.
+* Fix `.multids` file format issues.
+
+!! v2.1.0
+
+* Internationalization (i18n) support: migrate all hardcoded bilingual UI text to `<<lingo>>` macro with `.multids` locale files.
+** New `language/en-GB/Translations.multids` and `language/zh-Hans/Translations.multids`.
+** Sidebar tab caption, button labels, form legends, settings descriptions, QR instructions, and warnings now switch language automatically based on wiki locale.
+** Consistency: follow the same lingo pattern used by the `itonnote` plugin by the same author.
+
 !! v2.0.9
 
 * Show multiple QR codes for multi-NIC devices. The HTTP server now listens on `0.0.0.0` and the QR tab iterates over all local IPs, showing one QR code per network interface with its URL displayed below.
