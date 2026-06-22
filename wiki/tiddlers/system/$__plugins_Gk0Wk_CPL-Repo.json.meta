@@ -1,0 +1,8 @@
+author: Gk0Wk
+description: TiddlyWiki Community Plugin Library - Frontend
+list: docs/readme docs/tree background-actions views/system/settings docs/changelog procedures
+name: CPL Repo
+plugin-type: plugin
+title: $:/plugins/Gk0Wk/CPL-Repo
+type: application/json
+version: 2026.06.14-2
