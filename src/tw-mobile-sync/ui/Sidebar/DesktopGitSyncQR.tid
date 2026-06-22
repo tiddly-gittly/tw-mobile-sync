@@ -17,14 +17,12 @@ type: text/vnd.tiddlywiki
 <div class="tw-mobile-sync-sidebar-qrcode">
   <$let 
     memeloopNodeUrl={{$:/info/tidgi/memeloopNodeUrl}}
-    baseUrl={{{ [<memeloopNodeUrl>match[]then{$:/info/url/origin}else<memeloopNodeUrl>] }}}
     workspaceId={{$:/info/tidgi/workspaceID}}
     workspaceName={{$:/info/tidgi/workspaceName}}
     token={{$:/info/tidgi/workspaceToken}}
     tokenAuthHeaderName={{$:/info/tidgi/tokenAuthHeaderName}}
     tokenAuthHeaderValue={{$:/info/tidgi/tokenAuthHeaderValue}}
     subWorkspaces={{$:/info/tidgi/subWorkspaces}}
-    content=<<makeGitQRData>>
     size={{{ [{$:/themes/tiddlywiki/vanilla/metrics/sidebarwidth}getSidebarWidthInPx[]] }}}
   >
     <% if [<workspaceId>match[]] %>
@@ -37,13 +35,55 @@ type: text/vnd.tiddlywiki
       <div>Scan this QR code with TidGi Mobile to enable Git synchronization</div>
       <div>使用太记移动版扫描此二维码以启用 Git 同步</div>
 
-      <!-- QR Code Image First -->
-      <<image>>
+      <% if [<memeloopNodeUrl>!match[]] %>
+        <!-- Custom memeloopNodeUrl is set: show single QR with custom URL -->
+        <$let 
+          baseUrl={{{ [<memeloopNodeUrl>match[]then{$:/info/url/origin}else<memeloopNodeUrl>] }}}
+          content=<<makeGitQRData>>
+        >
+          <<image>>
 
-      <details style="margin-top: 10px;">
-        <summary>Show QR code data / 显示二维码数据</summary>
-        <pre><<content>></pre>
-      </details>
+          <details style="margin-top: 10px;">
+            <summary>Show QR code data / 显示二维码数据</summary>
+            <pre><<content>></pre>
+          </details>
+        </$let>
+      <% else %>
+        <% if [{$:/info/url/localIPCount}compare:lte[1]] %>
+          <!-- Single or no local IP: use origin (backward compat) -->
+          <$let 
+            baseUrl={{$:/info/url/origin}}
+            content=<<makeGitQRData>>
+          >
+            <<image>>
+
+            <details style="margin-top: 10px;">
+              <summary>Show QR code data / 显示二维码数据</summary>
+              <pre><<content>></pre>
+            </details>
+          </$let>
+        <% else %>
+          <!-- Multiple local IPs: show one QR code per IP -->
+          <$list filter="[prefix[$:/info/url/localIP/]sort[]]" variable="ipTiddler">
+            <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid <<colour tiddler-border>>; padding-bottom: 16px;">
+              <div style="word-break: break-all; margin-bottom: 8px; font-size: 0.9em;">
+                {{!!text}}
+              </div>
+              <$let 
+                baseUrl={{{ [<ipTiddler>get[text]] }}}
+                content=<<makeGitQRData>>
+              >
+                <<image>>
+
+                <details style="margin-top: 10px;">
+                  <summary>Show QR code data / 显示二维码数据</summary>
+                  <pre><<content>></pre>
+                </details>
+              </$let>
+            </div>
+          </$list>
+        <% endif %>
+      <% endif %>
 
       <!-- Security Warning -->
       <% if [<token>match[]] %>
