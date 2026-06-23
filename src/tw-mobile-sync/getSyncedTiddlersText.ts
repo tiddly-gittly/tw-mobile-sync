@@ -1,4 +1,5 @@
 import { ITiddlerFields, ITiddlerFieldsParameter } from 'tiddlywiki';
+import { lingo, lingoWithCount } from './data/lingo';
 
 export function getSyncedTiddlersText(
   changedTiddlersFromClient: Array<ITiddlerFieldsParameter | ITiddlerFields>,
@@ -13,7 +14,7 @@ export function getSyncedTiddlersText(
     return limitedList.join(' ');
   };
 
-  const moreCountText = (list: string[]): string => list.length > changedTitleDisplayLimit ? `And ${list.length - changedTitleDisplayLimit} more` : '';
+  const moreCountText = (list: string[]): string => list.length > changedTitleDisplayLimit ? lingoWithCount('GitSyncSummary/AndMore', list.length - changedTitleDisplayLimit) : '';
 
   const clientTitles = changedTiddlersFromClient.map(tiddler => (tiddler.caption as string | undefined) || (tiddler.title as string));
   const clientText = formatList(clientTitles);
@@ -34,6 +35,6 @@ export function getSyncedTiddlersText(
   return `${up} ${changedTiddlersFromClient.length} ${down} ${changedTiddlersFromServer.length}${
     changedTiddlersFromClient.length > 0 ? `\n\n${up}: ${clientText} ${clientCount}` : ''
   }${changedTiddlersFromServer.length > 0 ? `\n\n${down}: ${serverText} ${serverCount}` : ''}${
-    deletion.client.length > 0 ? `\n\nDeleted on Client: ${deletionClientText} ${deletionClientCount}` : ''
-  }${deletion.server.length > 0 ? `\n\nDeleted on Server: ${deletionServerText} ${deletionServerCount}` : ''}`;
+    deletion.client.length > 0 ? `\n\n${lingo('GitSyncSummary/DeletedOnClient')}: ${deletionClientText} ${deletionClientCount}` : ''
+  }${deletion.server.length > 0 ? `\n\n${lingo('GitSyncSummary/DeletedOnServer')}: ${deletionServerText} ${deletionServerCount}` : ''}`;
 }

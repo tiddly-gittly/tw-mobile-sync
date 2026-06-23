@@ -2,6 +2,7 @@ import fs from 'fs';
 import type Http from 'http';
 import path from 'path';
 import type { ServerEndpointHandler } from 'tiddlywiki';
+import { lingo } from '../../data/lingo';
 import { updateClientFromRequest } from '../../data/updateClientFromRequest';
 import { createGitRunner } from '../../git/gitRunnerFactory';
 import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
@@ -67,7 +68,7 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       if (haveOid === desktopHead) {
-        updateClientFromRequest(request, { recentlySyncedString: '↓ Already up to date' });
+        updateClientFromRequest(request, { recentlySyncedString: lingo('GitSync/AlreadyUpToDate') });
         response.writeHead(204);
         response.end();
         return;
@@ -106,7 +107,7 @@ const handler: ServerEndpointHandler = function handler(
 
       console.log('create-bundle', { workspaceId, have: haveOid.slice(0, 8), head: desktopHead.slice(0, 8), bytes: bundleData.length });
 
-      updateClientFromRequest(request, { recentlySyncedString: '↓ Bundle sent to mobile' });
+      updateClientFromRequest(request, { recentlySyncedString: lingo('GitSync/BundleSent') });
 
       const accept = (request as unknown as Http.IncomingMessage).headers.accept ?? '';
       if (accept.includes('base64')) {

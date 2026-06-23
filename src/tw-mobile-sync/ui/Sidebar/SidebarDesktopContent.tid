@@ -18,7 +18,7 @@ type: text/vnd.tiddlywiki
 
 <% else %>
 
-  需要开启 HTTP API，详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]。
+  <<lingo SidebarDesktopContent/HTTPAPIRequired>>
 
 <% endif %>
 

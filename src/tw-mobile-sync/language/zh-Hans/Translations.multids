@@ -16,6 +16,15 @@ ServerItemCopyTemplate/Button: 复制
 DesktopGitSyncQR/WorkspaceIDError: 工作区 ID 不可用。此功能需要 TidGi Desktop 并启用工作区服务。
 DesktopGitSyncQR/ScanInstructions: 使用太记移动版扫描此二维码以启用 Git 同步
 DesktopGitSyncQR/ShowQRData: 显示二维码数据
+DesktopGitSyncQR/NoTokenWarning: "⚠️ 警告：未配置工作区令牌。Git 同步可以工作但不安全。局域网内任何人都可以访问此工作区。"
+
+GitSync/BundleReceived: ↑ 已收到移动端 bundle
+GitSync/BundleSent: ↓ 已向移动端发送 bundle
+GitSync/AlreadyUpToDate: ↓ 已是最新
+GitSync/NoTidChanges: Git 同步完成（无 .tid 变更）
+GitSyncSummary/AndMore: 还有 {{count}} 条
+GitSyncSummary/DeletedOnClient: 客户端删除
+GitSyncSummary/DeletedOnServer: 服务端删除
 
 SidebarDesktopContent/HTTPAPIRequired: 请先开启太记桌面版，当前 Wiki 工作区设置里的 HTTP API，详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]。
 SidebarDesktopContent/QRCodeTitle: Git 同步二维码
@@ -25,3 +34,16 @@ SidebarDesktopContent/ViewConnectedClients: 点击查看已连接客户端
 SidebarMobileContent/SyncWithDesktop: 与桌面端同步
 SidebarMobileContent/UseWikiList: 使用 TidGi-Mobile 的 wiki 列表进行同步（长按列表里的 wiki 条目打开菜单）
 SidebarMobileContent/ServerList: 服务器列表
+
+Readme/Title: 在桌面端和太记移动端之间同步
+Readme/Intro: 本插件提供 Git Smart HTTP 同步端点，供 TidGi-Mobile 通过 `isomorphic-git` 与 TidGi Desktop 工作区同步数据。
+Readme/Diagram: 手机应用 ↔ 桌面应用 ↔ 云端
+Readme/TiddloidNote: 不支持 Tiddloid。请改用 `tw-html-nodejs-sync` 插件。
+Readme/HowToUse/Title: 使用方法
+Readme/HowToUse/Step1: 在 TidGi Desktop 中开启当前工作区的 HTTP API（详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]）
+Readme/HowToUse/Step2: 打开侧边栏的「手机同步」标签页，使用 TidGi-Mobile 扫描 Git 同步二维码
+Readme/HowToUse/Step3: 在 TidGi-Mobile 的 wiki 列表中管理同步（长按 wiki 条目打开菜单）
+Readme/ConnectedClients/Title: 已连接客户端
+Readme/ConnectedClients/Body: 在桌面端侧边栏点击「查看已连接客户端」后，会显示最近通过 Git 同步端点连接的移动端，以及最近一次同步摘要。
+Readme/Requirements/Title: 依赖
+Readme/Requirements/Body: 侧边栏二维码需要安装官方插件 [[$:/plugins/tiddlywiki/qrcode]]。

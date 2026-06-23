@@ -95,9 +95,7 @@ type: text/vnd.tiddlywiki
       <!-- Security Warning -->
       <% if [<token>match[]] %>
         <div style="margin: 10px 0; padding: 10px; background-color:<<colour alert-background>>; border: 1px solid <<colour alert-border>>; color:<<colour alert-muted-foreground>>; border-radius: 4px;">
-          ⚠️ Warning: No workspace token configured. Git synchronization will work but is NOT SECURE. Anyone on your network can access this workspace.
-          <br/><br/>
-          ⚠️ 警告：未配置工作区令牌。Git 同步可以工作但不安全。局域网内任何人都可以访问此工作区。
+          <<lingo DesktopGitSyncQR/NoTokenWarning>>
         </div>
       <% endif %>
     <% endif %>

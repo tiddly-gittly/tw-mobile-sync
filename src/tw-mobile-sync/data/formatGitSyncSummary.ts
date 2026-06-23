@@ -1,4 +1,5 @@
 import { getSyncedTiddlersText } from '../getSyncedTiddlersText';
+import { lingo } from './lingo';
 
 function filePathToTiddlerTitle(filePath: string): string {
   const basename = filePath.split('/').pop() ?? filePath;
@@ -8,7 +9,7 @@ function filePathToTiddlerTitle(filePath: string): string {
 export function formatGitMergeSummary(changedFiles: string[]): string {
   const tidFiles = changedFiles.filter((filePath) => filePath.endsWith('.tid'));
   if (tidFiles.length === 0) {
-    return 'Git sync complete (no .tid changes)';
+    return lingo('GitSync/NoTidChanges');
   }
 
   const titles = tidFiles.map(filePathToTiddlerTitle);

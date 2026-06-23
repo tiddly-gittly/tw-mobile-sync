@@ -11,6 +11,11 @@ void describe('formatGitMergeSummary', () => {
   });
 
   void test('handles empty changes', () => {
+    (globalThis as typeof globalThis & { $tw?: typeof $tw }).$tw = {
+      wiki: {
+        getTiddlerText: (title: string) => title.endsWith('/GitSync/NoTidChanges') ? 'Git sync complete (no .tid changes)' : undefined,
+      },
+    } as typeof $tw;
     const summary = formatGitMergeSummary(['README.md']);
     assert.equal(summary, 'Git sync complete (no .tid changes)');
   });

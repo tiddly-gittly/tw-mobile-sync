@@ -3,6 +3,13 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.1.3
+
+* i18n: migrate remaining hardcoded UI strings (workspace token security warning, TidGi HTTP API hint).
+* i18n: localize Git sync status messages shown in connected-client list (`GitSync/*`, `GitSyncSummary/*`).
+* i18n: refactor plugin readme to `<<lingo>>` macros with `Readme/*` translation keys.
+* Add server-side `lingo()` helper for Node.js endpoint handlers.
+
 !! v2.1.2
 
 * Fix QR codes not appearing when `localIPCount` is set but `$:/info/url/localIP/*` tiddlers are missing (regression from v2.0.9 multi-NIC support).

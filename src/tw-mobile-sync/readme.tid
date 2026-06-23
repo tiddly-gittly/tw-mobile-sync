@@ -2,36 +2,26 @@ title: $:/plugins/linonetwo/tw-mobile-sync/readme
 creator: LinOnetwo
 type: text/vnd.tiddlywiki
 
-! Sync Between TidGi Desktop and TidGi-Mobile 在桌面端和太记移动端之间同步
+\procedure lingo-base() $:/plugins/linonetwo/tw-mobile-sync/language/
 
-本插件提供 Git Smart HTTP 同步端点，供 TidGi-Mobile 通过 `isomorphic-git` 与 TidGi Desktop 工作区同步数据。
+! <<lingo Readme/Title>>
 
-手机应用 ↔ 桌面应用 ↔ 云端
+<<lingo Readme/Intro>>
 
-不支持 Tiddloid。请改用 `tw-html-nodejs-sync` 插件。
+<<lingo Readme/Diagram>>
 
-This plugin provides Git Smart HTTP sync endpoints for TidGi-Mobile to sync with TidGi Desktop workspaces via `isomorphic-git`.
+<<lingo Readme/TiddloidNote>>
 
-TidGi-Mobile App ↔ Desktop App ↔ Cloud
+!! <<lingo Readme/HowToUse/Title>>
 
-Tiddloid is not supported. Use the `tw-html-nodejs-sync` plugin instead.
+# <<lingo Readme/HowToUse/Step1>>
+# <<lingo Readme/HowToUse/Step2>>
+# <<lingo Readme/HowToUse/Step3>>
 
-!! How to use 使用方法
+!! <<lingo Readme/ConnectedClients/Title>>
 
-# 在 TidGi Desktop 中开启当前工作区的 HTTP API（详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]）
-# 打开侧边栏的「手机同步」标签页，使用 TidGi-Mobile 扫描 Git 同步二维码
-# 在 TidGi-Mobile 的 wiki 列表中管理同步（长按 wiki 条目打开菜单）
+<<lingo Readme/ConnectedClients/Body>>
 
-# Enable HTTP API on the current workspace in TidGi Desktop (see [[Official TidGi Feature Handbook|https://tidgi.fun/#TidGi%20Feature%20Handbook%2FEnabling%20HTTP%20API]])
-# Open the MobileSync sidebar tab and scan the Git sync QR code with TidGi-Mobile
-# Manage sync from TidGi-Mobile's wiki list (long press a wiki item to open the menu)
+!! <<lingo Readme/Requirements/Title>>
 
-!! Connected clients 已连接客户端
-
-在桌面端侧边栏点击「查看已连接客户端」后，会显示最近通过 Git 同步端点连接的移动端，以及最近一次同步摘要。
-
-After clicking "View connected clients" in the desktop sidebar, recently connected mobile clients and their latest sync summary are shown.
-
-!! Requirements 依赖
-
-Needs official QR plugin [[$:/plugins/tiddlywiki/qrcode]] for QR codes in the sidebar. 侧边栏二维码需要安装官方插件 [[$:/plugins/tiddlywiki/qrcode]]。
+<<lingo Readme/Requirements/Body>>

@@ -1,5 +1,6 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
+import { lingo } from '../../data/lingo';
 import { updateClientFromRequest } from '../../data/updateClientFromRequest';
 import { createGitRunner } from '../../git/gitRunnerFactory';
 import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
@@ -88,7 +89,7 @@ const handler: ServerEndpointHandler = function handler(
         await runner.deleteTempGitFile(repoPath, 'incoming.bundle').catch(() => {});
       }
 
-      updateClientFromRequest(request, { recentlySyncedString: '↑ Bundle received from mobile' });
+      updateClientFromRequest(request, { recentlySyncedString: lingo('GitSync/BundleReceived') });
 
       response.writeHead(200, { 'Content-Type': 'text/plain' });
       response.end('ok');
