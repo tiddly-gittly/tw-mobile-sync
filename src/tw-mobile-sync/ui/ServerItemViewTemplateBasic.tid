@@ -13,21 +13,4 @@ type: text/vnd.tiddlywiki
     <div>{{!!text}}</div>
     <div><$view field=lastSync format=date template="YYYY-0MM-0DD 0hh:0mm:0ss" /></div>
   </div>
-
-  <$reveal type="nomatch" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
-    <$button class="tw-mobile-sync-sync-button">
-      <div><$text text={{!!name}}/></div>
-      <div><<lingo ServerItemViewTemplateBasic/EnableAndSync $:/plugins/linonetwo/tw-mobile-sync/language/>></div>
-      <$action-sendmessage $message="tw-mobile-sync-set-active-server-and-sync" title={{!!title}} />
-    </$button>
-  </$reveal>
-
-  <$reveal type="match" state=<<currentTiddler>> text="onlineActive" class="tw-mobile-sync-sync-reveal">
-    <$button class="tw-mobile-sync-sync-button">
-      <div><$text text={{!!name}}/></div>
-      <div><<lingo ServerItemViewTemplateBasic/SyncNow $:/plugins/linonetwo/tw-mobile-sync/language/>></div>
-      <$action-sendmessage $message="tw-mobile-sync-sync-start" />
-    </$button>
-  </$reveal>
-
 </div>

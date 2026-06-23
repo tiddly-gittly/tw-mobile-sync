@@ -1,29 +1,17 @@
 title: $:/plugins/linonetwo/tw-mobile-sync/language/en-GB/
 
 SidebarTab/Caption: MobileSync
-DesktopSkinnyHtmlQR/Caption: Skinny (TidGi-Mobile)
 DesktopGitSyncQR/Caption: Git Sync (TidGi-Mobile)
 ControlPanel/Settings/Description: These settings let you customise the behaviour of TW-MobileSync plugin.
 ControlPanel/Settings/MinutesBetweenSync: Minutes between sync: 
-AddNewToServerList/SmartIdentify/Legend: Smart Identify Sticky Box
-AddNewToServerList/SmartIdentify/Button: Smart Identify
-AddNewToServerList/ScanQR/Button: Scan QR
-AddNewToServerList/StopScan/Button: Stop Scan
+AddNewToServerList/ServerAddress/Legend: Server Address
+AddNewToServerList/ServerAddress/Hint: Paste JSON from the desktop Git sync QR code, or fill in the fields below manually.
 AddNewToServerList/ServerName/Legend: Server Name
 AddNewToServerList/ServerIP/Legend: Server IP
 AddNewToServerList/ServerPort/Legend: Server Port
 AddNewToServerList/AddNew/Button: Add New
 
-DownloadFullHtml/Summary: Pull and override
-DownloadFullHtml/Legend: Pull the latest complete content from the server to cover all local content
-DownloadFullHtml/WarningPluginUpdate: If you have updated or installed the plugin on your computer, you will need to do a full pull on the mobile side by clicking the button below.
-DownloadFullHtml/WarningUnsynced: Please click carefully, local unsynced content will be lost if there is any! If you make sure there is no unsynced content locally, you can pull it without worry.
-DownloadFullHtml/PullButton: Pull content to cover local
-
 ServerItemCopyTemplate/Button: Copy
-
-ServerItemViewTemplateBasic/EnableAndSync: Enable and Sync Now
-ServerItemViewTemplateBasic/SyncNow: Sync Now
 
 DesktopGitSyncQR/WorkspaceIDError: WorkspaceID not available. This feature requires TidGi Desktop with workspace service enabled.
 DesktopGitSyncQR/ScanInstructions: Scan this QR code with TidGi Mobile to enable Git synchronization

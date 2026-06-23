@@ -10,19 +10,10 @@ type: text/vnd.tiddlywiki
   overflow: overlay;
 }
 
-.tw-mobile-sync-sync-button {
-  width: 100%; height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center;
-  max-width: 300px;
-  min-width: 175px;
-}
 .tw-mobile-sync-copy-button {
   height: 100%;
   display: flex; flex-direction: column; justify-content: center; align-items: center;
   margin-left: 10px !important;
-}
-
-.tw-mobile-sync-sync-reveal {
-  margin-left: 20px;
 }
 
 .tw-mobile-sync-new-server-field-fields-container-outer2 textarea,

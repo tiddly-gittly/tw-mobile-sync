@@ -16,6 +16,24 @@ type: text/vnd.tiddlywiki
 }
 \end
 
+\define image()
+<img src=<<makeqr text:"""$(content)$""" size:"""$(size)$""">>/>
+\end
+
+\define originQrBlock()
+<$let 
+  baseUrl={{$:/info/url/origin}}
+  content=<<makeGitQRData>>
+>
+  <<image>>
+
+  <details style="margin-top: 10px;">
+    <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
+    <pre><<content>></pre>
+  </details>
+</$let>
+\end
+
 <div class="tw-mobile-sync-sidebar-qrcode">
   <$let 
     memeloopNodeUrl={{$:/info/tidgi/memeloopNodeUrl}}
@@ -48,21 +66,8 @@ type: text/vnd.tiddlywiki
           </details>
         </$let>
       <% else %>
-        <% if [{$:/info/url/localIPCount}compare:lte[1]] %>
-          <!-- Single or no local IP: use origin (backward compat) -->
-          <$let 
-            baseUrl={{$:/info/url/origin}}
-            content=<<makeGitQRData>>
-          >
-            <<image>>
-
-            <details style="margin-top: 10px;">
-              <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
-              <pre><<content>></pre>
-            </details>
-          </$let>
-        <% else %>
-          <!-- Multiple local IPs: show one QR code per IP -->
+        <% if [prefix[$:/info/url/localIP/]limit[1]!match[]] %>
+          <!-- One QR per local IP when TidGi injects localIP tiddlers -->
           <$list filter="[prefix[$:/info/url/localIP/]sort[]]" variable="ipTiddler">
             <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid <<colour tiddler-border>>; padding-bottom: 16px;">
               <div style="word-break: break-all; margin-bottom: 8px; font-size: 0.9em;">
@@ -81,6 +86,9 @@ type: text/vnd.tiddlywiki
               </$let>
             </div>
           </$list>
+        <% else %>
+          <!-- Fallback: single QR using origin when localIP tiddlers are unavailable -->
+          <<originQrBlock>>
         <% endif %>
       <% endif %>
 

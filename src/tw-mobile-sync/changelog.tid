@@ -3,6 +3,16 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.1.2
+
+* Fix QR codes not appearing when `localIPCount` is set but `$:/info/url/localIP/*` tiddlers are missing (regression from v2.0.9 multi-NIC support).
+* Move the QR `image` macro into `DesktopGitSyncQR` so transclusion always has access to it.
+* Restore connected-client tracking on Git sync endpoints (`receive-bundle`, `merge-incoming`, `create-bundle`) after v1 sync API removal.
+* Show recently synced content again via merge commit diff summary on `merge-incoming`.
+* Prune stale client-status tiddlers when polling `/tw-mobile-sync/client-info`.
+* Remove unused legacy UI: skinny HTML QR, pull-and-override download, broken scan-QR widget, and broken sync buttons.
+* Remove orphaned v1 sync data layer (`mergeTiddler`, `filterOutNotSyncedTiddlers`, sync endpoint types, etc.).
+
 !! v2.1.1
 
 * Fix missing changelog entry for v2.1.0.

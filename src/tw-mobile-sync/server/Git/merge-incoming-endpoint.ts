@@ -1,5 +1,7 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
+import { formatGitMergeSummary } from '../../data/formatGitSyncSummary';
+import { updateClientFromRequest } from '../../data/updateClientFromRequest';
 import { mergeMobileIncomingIfExists } from '../../git/conflictResolution';
 import { createGitRunner } from '../../git/gitRunnerFactory';
 import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
@@ -56,12 +58,22 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       activeMerges.add(workspaceId);
+      let mergeSummary: string | undefined;
       try {
         const runner = createGitRunner(tidgiService, workspaceId);
+        const headBefore = (await runner.run(['rev-parse', 'HEAD'], repoPath)).stdout.trim();
         await mergeMobileIncomingIfExists(runner, repoPath);
+        const headAfter = (await runner.run(['rev-parse', 'HEAD'], repoPath)).stdout.trim();
+        if (headAfter !== headBefore) {
+          const diffResult = await runner.run(['diff-tree', '--no-commit-id', '--name-only', '-r', headAfter], repoPath);
+          const changedFiles = diffResult.stdout.trim().split('\n').filter((filePath) => filePath.length > 0);
+          mergeSummary = formatGitMergeSummary(changedFiles);
+        }
       } finally {
         activeMerges.delete(workspaceId);
       }
+
+      updateClientFromRequest(request, mergeSummary !== undefined ? { recentlySyncedString: mergeSummary } : undefined);
 
       response.writeHead(200, { 'Content-Type': 'text/plain' });
       response.end('ok');

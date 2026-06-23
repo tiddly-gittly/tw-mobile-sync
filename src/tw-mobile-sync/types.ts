@@ -1,15 +1,3 @@
-import { ITiddlerFieldsParameter } from 'tiddlywiki';
-
-export interface ISyncEndPointRequest {
-  deleted?: string[];
-  lastSync: number | undefined;
-  tiddlers: Array<Partial<ITiddlerFieldsParameter>>;
-}
-export interface ISyncEndPointResponse {
-  deletes: string[];
-  updates: ITiddlerFieldsParameter[];
-}
-
 export interface IClientInfo {
   Origin: string;
   'User-Agent': string;

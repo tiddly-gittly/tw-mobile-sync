@@ -65,6 +65,14 @@ class BackgroundSyncManager {
           ...clientInfo,
         });
       });
+
+      const activeUserAgents = new Set(Object.values(response).map((clientInfo) => clientInfo['User-Agent']));
+      $tw.wiki.filterTiddlers(`[prefix[${clientStatusStateTiddlerTitle}/]]`).forEach((title) => {
+        const userAgent = title.slice(`${clientStatusStateTiddlerTitle}/`.length);
+        if (!activeUserAgents.has(userAgent)) {
+          $tw.wiki.deleteTiddler(title);
+        }
+      });
     } catch (error) {
       console.warn(`tw-mobile-sync can't connect to the desktop endpoint. Error: ${(error as Error).message}`);
     }

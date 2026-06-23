@@ -3,10 +3,6 @@ type: text/vnd.tiddlywiki
 
 \procedure lingo-base() $:/plugins/linonetwo/tw-mobile-sync/language/
 
-\define image()
-<img src=<<makeqr text:"""$(content)$""" size:"""$(size)$""">>/>
-\end
-
 <$reveal type="match" state="$:/info/tidgi/enableHTTPAPI" text="no">
   <<lingo SidebarDesktopContent/HTTPAPIRequired>>
 </$reveal>
