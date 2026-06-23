@@ -3,6 +3,10 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.1.5
+
+* Fix `merge-incoming` endpoint to resolve TidGi Desktop services at request time instead of module-load time, matching the fix already applied to other Git endpoints. This ensures startup-provided `gitServer` and `workspace` services are used reliably in mock-server and Desktop worker environments.
+
 !! v2.1.4
 
 * Fix `receive-bundle` endpoint to reset the `mobile-incoming` ref before fetching a new bundle. This prevents "non-fast-forward" failures when the same workspace is re-imported or synced from a fresh mobile device after the server repository changed.

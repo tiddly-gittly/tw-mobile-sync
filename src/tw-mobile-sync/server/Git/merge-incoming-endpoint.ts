@@ -1,9 +1,8 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
-import type { ITidGiGlobalService } from 'tidgi-shared';
 import { formatGitMergeSummary } from '../../data/formatGitSyncSummary';
 import { updateClientFromRequest } from '../../data/updateClientFromRequest';
-import { authorizeWorkspaceToken } from './utilities';
+import { authorizeWorkspaceToken, getTidGiService } from './utilities';
 
 /**
  * Local interface for git server methods used by merge logic.
@@ -30,11 +29,6 @@ const DESKTOP_GIT_IDENTITY = {
   GIT_COMMITTER_NAME: 'TidGi Desktop',
   GIT_COMMITTER_EMAIL: 'desktop@tidgi.fun',
 } as const;
-
-/**
- * Access TidGi service proxies via $tw.tidgi.service (see git-info-references-endpoint.ts for details).
- */
-const tidgiService = ($tw as typeof $tw & { tidgi?: { service?: ITidGiGlobalService } }).tidgi?.service;
 
 /**
  * Per-workspace merge mutex: reject concurrent merge requests for the same workspace.
@@ -441,6 +435,8 @@ const handler: ServerEndpointHandler = function handler(
         response.end('Missing workspace ID');
         return;
       }
+
+      const tidgiService = getTidGiService();
 
       // Authenticate (same as receive-pack — write operation)
       if (!tidgiService?.workspace) {
