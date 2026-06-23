@@ -3,6 +3,10 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.1.4
+
+* Fix `receive-bundle` endpoint to reset the `mobile-incoming` ref before fetching a new bundle. This prevents "non-fast-forward" failures when the same workspace is re-imported or synced from a fresh mobile device after the server repository changed.
+
 !! v2.1.3
 
 * i18n: migrate remaining hardcoded UI strings (workspace token security warning, TidGi HTTP API hint).

@@ -77,6 +77,13 @@ const handler: ServerEndpointHandler = function handler(
         }
         console.log('Bundle source branch detected:', { workspaceId, sourceBranch });
 
+        // The mobile-incoming branch represents the mobile client's current
+        // HEAD. If a previous sync already created it (e.g. from a different
+        // device or after the server repo was reset), a plain fetch would fail
+        // with "non-fast-forward". Delete the old ref first so the incoming
+        // bundle always becomes the new mobile-incoming.
+        await runner.run(['update-ref', '-d', 'refs/heads/mobile-incoming'], repoPath);
+
         const fetchResult = await runner.run(
           ['fetch', '.git/incoming.bundle', `${sourceBranch}:mobile-incoming`],
           repoPath,
