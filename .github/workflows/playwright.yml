@@ -54,11 +54,22 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Check for Playwright test files
+        id: check-tests
+        shell: bash
+        run: |
+          if find wiki/tiddlers/tests/playwright -maxdepth 2 -type f -name '*.ts' -not -name '*.d.ts' | grep -q .; then
+            echo "has_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run Playwright tests
+        if: steps.check-tests.outputs.has_tests == 'true'
         run: pnpm test:playwright
 
       - name: Upload Playwright report
-        if: always()
+        if: always() && steps.check-tests.outputs.has_tests == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report

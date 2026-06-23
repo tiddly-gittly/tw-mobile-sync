@@ -3,6 +3,10 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.1.6
+
+* CI: skip Playwright E2E job when no `.ts` test files exist in `wiki/tiddlers/tests/playwright`.
+
 !! v2.1.5
 
 * Fix `merge-incoming` endpoint to resolve TidGi Desktop services at request time instead of module-load time, matching the fix already applied to other Git endpoints. This ensures startup-provided `gitServer` and `workspace` services are used reliably in mock-server and Desktop worker environments.
