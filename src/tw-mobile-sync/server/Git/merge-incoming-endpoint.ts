@@ -1,7 +1,8 @@
 import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { ITidGiGlobalService } from 'tidgi-shared';
-import { mergeTiddler } from '../../data/mergeTiddler';
+import { formatGitMergeSummary } from '../../data/formatGitSyncSummary';
+import { updateClientFromRequest } from '../../data/updateClientFromRequest';
 import { authorizeWorkspaceToken } from './utilities';
 
 /**
@@ -86,31 +87,6 @@ async function ensureCommittedBeforeMerge(gitServer: IGitServerMethods, workspac
 async function getUnmergedFiles(gitServer: IGitServerMethods, workspaceId: string): Promise<string[]> {
   const unmergedResult = await gitServer.runGitCommand(workspaceId, ['diff', '--name-only', '--diff-filter=U']);
   return unmergedResult.stdout.trim().split('\n').filter(Boolean);
-}
-
-// ── .tid file parsing ──
-
-function parseTidFile(content: string): Record<string, unknown> {
-  const separatorMatch = /\r?\n\r?\n/.exec(content);
-  const header = separatorMatch ? content.slice(0, separatorMatch.index) : content;
-  const body = separatorMatch ? content.slice(separatorMatch.index + separatorMatch[0].length) : '';
-  const fields = $tw.utils.parseFields(header, Object.create(null) as Record<string, unknown>) as Record<string, unknown>;
-  fields.text = body;
-  return fields;
-}
-
-async function readGitFileAtReference(gitServer: IGitServerMethods, workspaceId: string, reference: string, file: string): Promise<string | undefined> {
-  const result = await gitServer.runGitCommand(workspaceId, ['show', `${reference}:${file}`]);
-  if (result.exitCode !== 0) return undefined;
-  return result.stdout;
-}
-
-async function getBaseTidFields(gitServer: IGitServerMethods, workspaceId: string, file: string): Promise<Record<string, unknown> | undefined> {
-  const baseResult = await gitServer.runGitCommand(workspaceId, ['merge-base', 'HEAD', MOBILE_BRANCH]);
-  const baseReference = baseResult.stdout.trim();
-  if (baseResult.exitCode !== 0 || !baseReference) return undefined;
-  const baseContent = await readGitFileAtReference(gitServer, workspaceId, baseReference, file);
-  return baseContent ? parseTidFile(baseContent) : undefined;
 }
 
 // ── Conflict resolution utilities ──
@@ -237,55 +213,10 @@ function resolveTidConflictMarkers(content: string, options: TidConflictOptions 
 }
 
 /**
- * PRIMARY .tid conflict resolution path: 3-way merge using mergeTiddler.
- *
- * Reads HEAD (desktop), MOBILE_BRANCH (theirs), and common ancestor to perform
- * a semantic 3-way field merge. Falls back to resolveTidConflictMarkers when:
- * - Either HEAD or MOBILE_BRANCH content is unavailable
- * - 3-way merge throws an error
- *
- * The fallback marker resolver receives `mergeHeaderBodyConflicts: hasCommonBase`
- * which is true for modify/modify conflicts (stage 1 exists). This prevents
- * the fallback from discarding desktop body text when git puts both header
- * metadata AND body text changes into a single conflict block.
+ * .tid conflict resolution via marker parsing (mobile-wins header, merged body).
  */
-async function resolveTidConflict(gitServer: IGitServerMethods, workspaceId: string, file: string, content: string): Promise<string> {
-  // Detect modify/modify (has common base = stage 1 exists in git ls-files -u).
-  // For add/add (no stage 1) we keep the existing mobile-wins behaviour.
-  const stageOutput = await gitServer.runGitCommand(workspaceId, ['ls-files', '-u', '--', file]);
-  const _hasCommonBase = stageOutput.stdout.split('\n').some((line: string) => {
-    const tabIndex = line.lastIndexOf('\t');
-    if (tabIndex === -1) return false;
-    const beforeTab = line.substring(0, tabIndex);
-    const lastSpace = beforeTab.lastIndexOf(' ');
-    return beforeTab.substring(lastSpace + 1) === '1';
-  });
-
-  const markerResolved = resolveTidConflictMarkers(content, { mergeHeaderBodyConflicts: true });
-
-  const oursContent = await readGitFileAtReference(gitServer, workspaceId, 'HEAD', file);
-  const theirsContent = await readGitFileAtReference(gitServer, workspaceId, MOBILE_BRANCH, file);
-  if (!oursContent || !theirsContent) {
-    return markerResolved;
-  }
-
-  try {
-    const oursFields = parseTidFile(oursContent);
-    const theirsFields = parseTidFile(theirsContent);
-    const baseFields = await getBaseTidFields(gitServer, workspaceId, file);
-    mergeTiddler(
-      theirsFields as unknown as import('tiddlywiki').ITiddlerFields,
-      oursFields as unknown as import('tiddlywiki').ITiddlerFields,
-      baseFields as unknown as import('tiddlywiki').ITiddlerFields | undefined,
-    );
-    // Always prefer marker-based resolution over 3-way merge.
-    // The marker resolver with mergeHeaderBodyConflicts correctly handles
-    // header+body conflict blocks; 3-way merge can silently lose content.
-    return markerResolved;
-  } catch (error) {
-    console.warn('3-way .tid merge failed, falling back to marker resolver', { workspaceId, file, message: (error as Error).message });
-    return markerResolved;
-  }
+function resolveTidConflict(_gitServer: IGitServerMethods, _workspaceId: string, _file: string, content: string): string {
+  return resolveTidConflictMarkers(content, { mergeHeaderBodyConflicts: true });
 }
 
 /**
@@ -372,7 +303,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
     }
 
     const resolved = file.endsWith('.tid')
-      ? await resolveTidConflict(gitServer, workspaceId, file, content)
+      ? resolveTidConflict(gitServer, workspaceId, file, content)
       : resolveConflictPreferMobile(content);
 
     await writeResolvedWithWatcherDefense(gitServer, workspaceId, file, resolved);
@@ -535,13 +466,22 @@ const handler: ServerEndpointHandler = function handler(
       }
 
       activeMerges.add(workspaceId);
+      let mergeSummary: string | undefined;
       try {
         const gitServer = tidgiService.gitServer as unknown as IGitServerMethods;
-
+        const headBefore = (await gitServer.runGitCommand(workspaceId, ['rev-parse', 'HEAD'])).stdout.trim();
         await mergeMobileIncomingIfExists(gitServer, workspaceId);
+        const headAfter = (await gitServer.runGitCommand(workspaceId, ['rev-parse', 'HEAD'])).stdout.trim();
+        if (headAfter !== headBefore) {
+          const diffResult = await gitServer.runGitCommand(workspaceId, ['diff-tree', '--no-commit-id', '--name-only', '-r', headAfter]);
+          const changedFiles = diffResult.stdout.trim().split('\n').filter((filePath) => filePath.length > 0);
+          mergeSummary = formatGitMergeSummary(changedFiles);
+        }
       } finally {
         activeMerges.delete(workspaceId);
       }
+
+      updateClientFromRequest(request, mergeSummary !== undefined ? { recentlySyncedString: mergeSummary } : undefined);
 
       response.writeHead(200, { 'Content-Type': 'text/plain' });
       response.end('ok');
