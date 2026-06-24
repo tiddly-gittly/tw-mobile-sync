@@ -14,7 +14,7 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -59,6 +59,13 @@ jobs:
           else
             echo "has_tests=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Cache Playwright browsers
+        if: steps.check-tests.outputs.has_tests == 'true'
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install Playwright browser
         if: steps.check-tests.outputs.has_tests == 'true'

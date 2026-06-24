@@ -52,6 +52,13 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      - name: Cache Playwright browsers
+        if: ${{ hashFiles('wiki/tiddlers/tests/playwright/**/*.ts') != '' }}
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
+
       - name: Install Playwright Browser
         if: ${{ hashFiles('wiki/tiddlers/tests/playwright/**/*.ts') != '' }}
         run: pnpm exec playwright install --with-deps chromium
