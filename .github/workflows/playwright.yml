@@ -13,7 +13,6 @@ concurrency:
 
 jobs:
   e2e:
-    if: ${{ hashFiles('wiki/tiddlers/tests/playwright/**/*.ts') != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -51,9 +50,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
-
       - name: Check for Playwright test files
         id: check-tests
         shell: bash
@@ -63,6 +59,10 @@ jobs:
           else
             echo "has_tests=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Install Playwright browser
+        if: steps.check-tests.outputs.has_tests == 'true'
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Playwright tests
         if: steps.check-tests.outputs.has_tests == 'true'
