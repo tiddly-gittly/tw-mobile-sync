@@ -4,15 +4,6 @@ SidebarTab/Caption: MobileSync
 DesktopGitSyncQR/Caption: Git Sync (TidGi-Mobile)
 ControlPanel/Settings/Description: These settings let you customise the behaviour of TW-MobileSync plugin.
 ControlPanel/Settings/MinutesBetweenSync: Minutes between sync: 
-AddNewToServerList/ServerAddress/Legend: Server Address
-AddNewToServerList/ServerAddress/Hint: Paste JSON from the desktop Git sync QR code, or fill in the fields below manually.
-AddNewToServerList/ServerName/Legend: Server Name
-AddNewToServerList/ServerIP/Legend: Server IP
-AddNewToServerList/ServerPort/Legend: Server Port
-AddNewToServerList/AddNew/Button: Add New
-
-ServerItemCopyTemplate/Button: Copy
-
 DesktopGitSyncQR/WorkspaceIDError: WorkspaceID not available. This feature requires TidGi Desktop with workspace service enabled.
 DesktopGitSyncQR/ScanInstructions: Scan this QR code with TidGi Mobile to enable Git synchronization
 DesktopGitSyncQR/ShowQRData: Show QR code data
@@ -31,10 +22,6 @@ SidebarDesktopContent/OpenHTTPAPISettings: Open Settings
 SidebarDesktopContent/QRCodeTitle: QRCode for Git Synchronization
 SidebarDesktopContent/ConnectedClients: Connected clients
 SidebarDesktopContent/ViewConnectedClients: Click to view connected clients
-
-SidebarMobileContent/SyncWithDesktop: Sync With Desktop
-SidebarMobileContent/UseWikiList: Use TidGi-Mobile's wiki list to sync (long press wiki item in the list to open menu)
-SidebarMobileContent/ServerList: Server List
 
 Readme/Title: Sync Between TidGi Desktop and TidGi-Mobile
 Readme/Intro: This plugin provides Git Smart HTTP sync endpoints for TidGi-Mobile to sync with TidGi Desktop workspaces via `isomorphic-git`.

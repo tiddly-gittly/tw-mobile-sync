@@ -15,13 +15,6 @@ test.describe('tw-mobile-sync plugin docs', () => {
     await expect(page.locator('.tc-tiddler-frame[data-tiddler-title="$:/plugins/linonetwo/tw-mobile-sync/readme"]')).toBeVisible();
   });
 
-  test('plugin server list control panel renders', async ({ page }) => {
-    await page.goto('/#%24%3A%2Fplugins%2Flinonetwo%2Ftw-mobile-sync%2Fui%2FServerList');
-    const frame = page.locator('.tc-tiddler-frame[data-tiddler-title="$:/plugins/linonetwo/tw-mobile-sync/ui/ServerList"]');
-    await expect(frame).toBeVisible();
-    await expect(frame.locator('text=ServerList')).toBeVisible();
-  });
-
   test('plugin changelog is reachable', async ({ page }) => {
     await page.goto('/#%24%3A%2Fplugins%2Flinonetwo%2Ftw-mobile-sync%2Fchangelog');
     await expect(page.getByRole('heading', { name: 'Changelog', exact: true })).toBeVisible();

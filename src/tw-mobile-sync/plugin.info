@@ -5,6 +5,6 @@
   "core-version": ">=5.4.0",
   "plugin-type": "plugin",
   "version": "2.2.0",
-  "list": "readme ui/ServerList Config/GitRunner Config/WorkspaceToken",
+  "list": "readme Config/GitRunner Config/WorkspaceToken",
   "dependents": ["$:/plugins/tiddlywiki/qrcode"]
 }

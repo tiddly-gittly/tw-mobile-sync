@@ -4,15 +4,6 @@ SidebarTab/Caption: 手机同步
 DesktopGitSyncQR/Caption: Git 同步 (TidGi-移动版)
 ControlPanel/Settings/Description: 这些设置允许你自定义 TW-MobileSync 插件的行为。
 ControlPanel/Settings/MinutesBetweenSync: 同步间隔（分钟）: 
-AddNewToServerList/ServerAddress/Legend: 服务器地址
-AddNewToServerList/ServerAddress/Hint: 粘贴从桌面端 Git 同步二维码解析出的 JSON，或手动填写下方字段。
-AddNewToServerList/ServerName/Legend: 服务器名
-AddNewToServerList/ServerIP/Legend: 服务器IP
-AddNewToServerList/ServerPort/Legend: 服务器端口
-AddNewToServerList/AddNew/Button: 新增服务器
-
-ServerItemCopyTemplate/Button: 复制
-
 DesktopGitSyncQR/WorkspaceIDError: 工作区 ID 不可用。此功能需要 TidGi Desktop 并启用工作区服务。
 DesktopGitSyncQR/ScanInstructions: 使用太记移动版扫描此二维码以启用 Git 同步
 DesktopGitSyncQR/ShowQRData: 显示二维码数据
@@ -31,10 +22,6 @@ SidebarDesktopContent/OpenHTTPAPISettings: 开启设置
 SidebarDesktopContent/QRCodeTitle: Git 同步二维码
 SidebarDesktopContent/ConnectedClients: 已连接客户端列表
 SidebarDesktopContent/ViewConnectedClients: 点击查看已连接客户端
-
-SidebarMobileContent/SyncWithDesktop: 与桌面端同步
-SidebarMobileContent/UseWikiList: 使用 TidGi-Mobile 的 wiki 列表进行同步（长按列表里的 wiki 条目打开菜单）
-SidebarMobileContent/ServerList: 服务器列表
 
 Readme/Title: 在桌面端和太记移动端之间同步
 Readme/Intro: 本插件提供 Git Smart HTTP 同步端点，供 TidGi-Mobile 通过 `isomorphic-git` 与 TidGi Desktop 工作区同步数据。
