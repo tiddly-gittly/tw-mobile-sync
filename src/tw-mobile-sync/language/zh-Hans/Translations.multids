@@ -27,6 +27,7 @@ GitSyncSummary/DeletedOnClient: 客户端删除
 GitSyncSummary/DeletedOnServer: 服务端删除
 
 SidebarDesktopContent/HTTPAPIRequired: 请先开启太记桌面版，当前 Wiki 工作区设置里的 HTTP API，详见[[官方太记功能手册|https://tidgi.fun/#%E5%A4%AA%E8%AE%B0%E5%8A%9F%E8%83%BD%E6%89%8B%E5%86%8C%2F%E5%BC%80%E5%90%AF%20HTTP%20API]]。
+SidebarDesktopContent/OpenHTTPAPISettings: 开启设置
 SidebarDesktopContent/QRCodeTitle: Git 同步二维码
 SidebarDesktopContent/ConnectedClients: 已连接客户端列表
 SidebarDesktopContent/ViewConnectedClients: 点击查看已连接客户端

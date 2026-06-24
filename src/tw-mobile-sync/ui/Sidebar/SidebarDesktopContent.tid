@@ -5,6 +5,13 @@ type: text/vnd.tiddlywiki
 
 <$reveal type="match" state="$:/info/tidgi/enableHTTPAPI" text="no">
   <<lingo SidebarDesktopContent/HTTPAPIRequired>>
+  <div style="margin-top: 8px;">
+    <$link to="tidgi://preferences/externalAPI" external="yes">
+      <$button class="tc-btn-invisible" style="padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
+        <<lingo SidebarDesktopContent/OpenHTTPAPISettings>>
+      </$button>
+    </$link>
+  </div>
 </$reveal>
 
 <$reveal type="nomatch" state="$:/info/tidgi/enableHTTPAPI" text="no">
@@ -19,6 +26,13 @@ type: text/vnd.tiddlywiki
 <% else %>
 
   <<lingo SidebarDesktopContent/HTTPAPIRequired>>
+  <div style="margin-top: 8px;">
+    <$link to="tidgi://preferences/externalAPI" external="yes">
+      <$button class="tc-btn-invisible" style="padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
+        <<lingo SidebarDesktopContent/OpenHTTPAPISettings>>
+      </$button>
+    </$link>
+  </div>
 
 <% endif %>
 

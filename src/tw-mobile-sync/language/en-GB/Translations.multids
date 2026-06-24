@@ -27,6 +27,7 @@ GitSyncSummary/DeletedOnClient: Deleted on Client
 GitSyncSummary/DeletedOnServer: Deleted on Server
 
 SidebarDesktopContent/HTTPAPIRequired: Firstly, Open TidGi-desktop's HTTP API feature on current workspace's setting, see [[Official TidGi Feature Handbook|https://tidgi.fun/#TidGi%20Feature%20Handbook%2FEnabling%20HTTP%20API]] for details.
+SidebarDesktopContent/OpenHTTPAPISettings: Open Settings
 SidebarDesktopContent/QRCodeTitle: QRCode for Git Synchronization
 SidebarDesktopContent/ConnectedClients: Connected clients
 SidebarDesktopContent/ViewConnectedClients: Click to view connected clients
