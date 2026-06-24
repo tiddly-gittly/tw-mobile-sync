@@ -3,6 +3,15 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.3.0
+
+* Feat: add "Open Settings" button below the HTTP API required hint. Clicking opens TidGi Desktop preferences and jumps to the External API section via `tidgi://preferences/externalAPI` deeplink.
+* Cleanup: remove legacy ServerList UI and SidebarMobileContent. These were only used for the now-unsupported Tiddloid app; server management is handled natively in TidGi-Mobile.
+
+!! v2.2.0
+
+* Not documented.
+
 !! v2.1.6
 
 * CI: skip Playwright E2E job when no `.ts` test files exist in `wiki/tiddlers/tests/playwright`.

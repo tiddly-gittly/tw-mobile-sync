@@ -4,7 +4,7 @@
   "description": "Sync data between TidGi-Mobile <-> Desktop NodeJS App (TidGi) ",
   "core-version": ">=5.4.0",
   "plugin-type": "plugin",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "list": "readme Config/GitRunner Config/WorkspaceToken",
   "dependents": ["$:/plugins/tiddlywiki/qrcode"]
 }
