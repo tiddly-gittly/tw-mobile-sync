@@ -1,5 +1,5 @@
 packages:
-  - '.'
+  - .
 
 allowBuilds:
   '@parcel/watcher': true
@@ -8,3 +8,13 @@ allowBuilds:
   esbuild: true
   svelte-preprocess: true
   unrs-resolver: true
+
+ignoredBuiltDependencies:
+  - electron
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - dprint
+  - esbuild
+  - svelte-preprocess
+  - unrs-resolver
