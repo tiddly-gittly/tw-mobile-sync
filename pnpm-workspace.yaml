@@ -4,7 +4,7 @@ packages:
 allowBuilds:
   '@parcel/watcher': true
   dprint: true
-  electron: true
+  electron: false
   esbuild: true
   svelte-preprocess: true
   unrs-resolver: true

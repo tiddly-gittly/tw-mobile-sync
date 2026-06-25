@@ -62,7 +62,7 @@
     "lodash": "^4.17.23",
     "npm-check-updates": "^20.0.1",
     "tiddlywiki": "^5.4.0",
-    "tiddlywiki-plugin-dev": "^0.5.11",
+    "tiddlywiki-plugin-dev": "^0.5.12",
     "tidgi-shared": "^0.1.6",
     "ua-parser-js": "^2.0.10"
   }
