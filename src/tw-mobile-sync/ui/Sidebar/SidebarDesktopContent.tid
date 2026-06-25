@@ -3,19 +3,6 @@ type: text/vnd.tiddlywiki
 
 \procedure lingo-base() $:/plugins/linonetwo/tw-mobile-sync/language/
 
-<$reveal type="match" state="$:/info/tidgi/enableHTTPAPI" text="no">
-  <<lingo SidebarDesktopContent/HTTPAPIRequired>>
-  <div style="margin-top: 8px;">
-    <$link to="tidgi://preferences/externalAPI" external="yes">
-      <$button class="tc-btn-invisible" style="padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
-        <<lingo SidebarDesktopContent/OpenHTTPAPISettings>>
-      </$button>
-    </$link>
-  </div>
-</$reveal>
-
-<$reveal type="nomatch" state="$:/info/tidgi/enableHTTPAPI" text="no">
-
 <<lingo SidebarDesktopContent/QRCodeTitle>>
 
 <!-- Works on TidGi with enableHTTPAPI, or nodejs that is not TidGi Desktop -->
@@ -27,11 +14,9 @@ type: text/vnd.tiddlywiki
 
   <<lingo SidebarDesktopContent/HTTPAPIRequired>>
   <div style="margin-top: 8px;">
-    <$link to="tidgi://preferences/externalAPI" external="yes">
-      <$button class="tc-btn-invisible" style="padding: 4px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
-        <<lingo SidebarDesktopContent/OpenHTTPAPISettings>>
-      </$button>
-    </$link>
+    <a href="tidgi://preferences/externalAPI" class="tc-btn-invisible tw-mobile-sync-open-settings-btn">
+      <<lingo SidebarDesktopContent/OpenHTTPAPISettings>>
+    </a>
   </div>
 
 <% endif %>
@@ -60,5 +45,3 @@ type: text/vnd.tiddlywiki
     </$list>
   </$vars>
 </fieldset>
-
-</$reveal>

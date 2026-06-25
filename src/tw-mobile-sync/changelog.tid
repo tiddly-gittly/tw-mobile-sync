@@ -3,6 +3,13 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.3.1
+
+* Fix: remove duplicated `<$reveal>` blocks in `SidebarDesktopContent` where both the outer `match`/`nomatch` and the inner `<% else %>` rendered the same HTTP API hint + settings button.
+* Fix: replace `<$link to="tidgi://..." external="yes">` with plain `<a>` tag; the `<$link>` widget does not reliably handle custom protocol URIs.
+* Refactor: split `style.tid` into `style-variable.tid` (palette colors via `<<colour>>` + `<<sidebarbreakpoint>>` media queries) and `style.css` (pure layout CSS).
+* Style: use `<<colour button-border>>` from the vanilla palette for the Open Settings button instead of hardcoded `#ccc`.
+
 !! v2.3.0
 
 * Feat: add "Open Settings" button below the HTTP API required hint. Clicking opens TidGi Desktop preferences and jumps to the External API section via `tidgi://preferences/externalAPI` deeplink.
