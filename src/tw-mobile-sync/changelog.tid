@@ -3,11 +3,15 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.3.3
+
+* Fix: correct settings deeplink to `tidgi://{workspaceID}/preferences/server` to match the latest TidGi deeplink protocol (the `workspace` alias is no longer supported).
+
 !! v2.3.2
 
 * Fix: hide connected-client list when HTTP API is not enabled. The fieldset was rendered outside the conditional block.
 * Fix: restore button border lost by `tc-btn-invisible`. Remove `tc-btn-invisible` from the link and use `<<colour muted-foreground>>` for `border-color` (vanilla palette's `button-border` is empty).
-* Fix: change settings deeplink from `tidgi://preferences/` (global) to `tidgi://workspace/preferences/` (workspace-scoped).
+* Fix: change settings deeplink from `tidgi://preferences/` (global) to `tidgi://workspace/{workspaceID}/preferences/server` (workspace-scoped, correct "博客和服务器设置" section).
 
 !! v2.3.1
 

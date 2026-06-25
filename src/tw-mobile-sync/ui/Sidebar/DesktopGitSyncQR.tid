@@ -20,17 +20,30 @@ type: text/vnd.tiddlywiki
 <img src=<<makeqr text:"""$(content)$""" size:"""$(size)$""">>/>
 \end
 
-\define originQrBlock()
+\define qrBlock()
 <$let 
-  baseUrl={{$:/info/url/origin}}
+  baseUrl="$(url)$"
   content=<<makeGitQRData>>
 >
+  <div style="margin-bottom: 8px; font-size: 0.9em;">
+    <a href=<<url>> target="_blank" rel="noopener noreferrer" style="word-break: break-all;">
+      <$text text={{{ [<url>split[/]nth[3]] }}}}/>
+    </a>
+  </div>
   <<image>>
 
   <details style="margin-top: 10px;">
     <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
     <pre><<content>></pre>
   </details>
+</$let>
+\end
+
+\define originQrBlock()
+<$let 
+  url={{$:/info/url/origin}}
+>
+  <<qrBlock>>
 </$let>
 \end
 
@@ -54,40 +67,30 @@ type: text/vnd.tiddlywiki
 
       <% if [<memeloopNodeUrl>!match[]] %>
         <!-- Custom memeloopNodeUrl is set: show single QR with custom URL -->
-        <$let 
-          baseUrl={{{ [<memeloopNodeUrl>match[]then{$:/info/url/origin}else<memeloopNodeUrl>] }}}
-          content=<<makeGitQRData>>
-        >
-          <<image>>
-
-          <details style="margin-top: 10px;">
-            <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
-            <pre><<content>></pre>
-          </details>
+        <$let url={{{ [<memeloopNodeUrl>match[]then{$:/info/url/origin}else<memeloopNodeUrl>] }}}>
+          <<qrBlock>>
         </$let>
       <% else %>
-        <% if [prefix[$:/info/url/localIP/]limit[1]!match[]] %>
-          <!-- One QR per local IP when TidGi injects localIP tiddlers -->
+        <% if [{$:/info/url/localIPs}jsonindexes[]limit[1]!match[]] %>
+          <!-- New upstream format: iterate over JSON array of all local URLs (multi-NIC support) -->
+          <$list filter="[{$:/info/url/localIPs}jsonindexes[]]" variable="ipIndex">
+            <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid <<colour tiddler-border>>; padding-bottom: 16px;">
+              <$let url={{{ [{$:/info/url/localIPs}jsonget<ipIndex>] }}}>
+                <<qrBlock>>
+              </$let>
+            </div>
+          </$list>
+        <% elseif [prefix[$:/info/url/localIP/]limit[1]!match[]] %>
+          <!-- Legacy per-IP tiddlers (TidGi Desktop < 0.13.x) -->
           <$list filter="[prefix[$:/info/url/localIP/]sort[]]" variable="ipTiddler">
             <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid <<colour tiddler-border>>; padding-bottom: 16px;">
-              <div style="word-break: break-all; margin-bottom: 8px; font-size: 0.9em;">
-                {{!!text}}
-              </div>
-              <$let 
-                baseUrl={{{ [<ipTiddler>get[text]] }}}
-                content=<<makeGitQRData>>
-              >
-                <<image>>
-
-                <details style="margin-top: 10px;">
-                  <summary><<lingo DesktopGitSyncQR/ShowQRData>></summary>
-                  <pre><<content>></pre>
-                </details>
+              <$let url={{{ [<ipTiddler>get[text]] }}}>
+                <<qrBlock>>
               </$let>
             </div>
           </$list>
         <% else %>
-          <!-- Fallback: single QR using origin when localIP tiddlers are unavailable -->
+          <!-- Fallback: single QR using origin when localIP info is unavailable -->
           <<originQrBlock>>
         <% endif %>
       <% endif %>

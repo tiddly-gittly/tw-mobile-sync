@@ -38,9 +38,11 @@ type: text/vnd.tiddlywiki
 
   <<lingo SidebarDesktopContent/HTTPAPIRequired>>
   <div style="margin-top: 8px;">
-    <a href="tidgi://workspace/preferences/externalAPI" class="tw-mobile-sync-open-settings-btn">
-      <<lingo SidebarDesktopContent/OpenHTTPAPISettings>>
-    </a>
+    <$vars deeplink={{{ [{$:/info/tidgi/workspaceID}addprefix[tidgi://]addsuffix[/preferences/server]] }}}>
+      <a href=<<deeplink>> class="tw-mobile-sync-open-settings-btn">
+        <<lingo SidebarDesktopContent/OpenHTTPAPISettings>>
+      </a>
+    </$vars>
   </div>
 
 <% endif %>
