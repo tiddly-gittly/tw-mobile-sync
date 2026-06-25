@@ -5,7 +5,7 @@ type: text/vnd.tiddlywiki
 
 !! v2.3.3
 
-* Fix: correct settings deeplink to `tidgi://workspace/{workspaceID}/preferences/server` to match the latest TidGi deeplink protocol.
+* Fix: correct settings deeplink to `tidgi://{workspaceID}/preferences/server` to match the latest TidGi deeplink protocol (the `workspace` alias is no longer supported).
 
 !! v2.3.2
 
