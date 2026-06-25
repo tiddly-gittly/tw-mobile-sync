@@ -13,4 +13,8 @@
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
+  background: none;
+  color: inherit;
+  border-width: 1px;
+  border-style: solid;
 }

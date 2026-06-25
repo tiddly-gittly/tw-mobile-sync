@@ -5,7 +5,7 @@ type: text/vnd.tiddlywiki
 \import [[$:/themes/tiddlywiki/vanilla/base]]
 
 .tw-mobile-sync-open-settings-btn {
-  border: 1px solid <<colour button-border>>;
+  border-color: <<colour muted-foreground>>;
 }
 
 @media (min-width: <<sidebarbreakpoint>>) {
