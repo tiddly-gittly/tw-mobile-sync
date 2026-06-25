@@ -1,0 +1,21 @@
+title: $:/plugins/linonetwo/tw-mobile-sync/ui/Sidebar/style-variable.css
+tags: $:/tags/Stylesheet
+type: text/vnd.tiddlywiki
+
+\import [[$:/themes/tiddlywiki/vanilla/base]]
+
+.tw-mobile-sync-open-settings-btn {
+  border-color: <<colour muted-foreground>>;
+}
+
+@media (min-width: <<sidebarbreakpoint>>) {
+  .tw-mobile-sync-sidebar-mobile-content {
+    display: none;
+  }
+}
+
+@media (max-width: <<sidebarbreakpoint>>) {
+  .tw-mobile-sync-sidebar-desktop-content {
+    display: none;
+  }
+}
