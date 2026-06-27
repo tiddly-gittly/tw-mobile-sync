@@ -3,6 +3,12 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.3.4
+
+* Fix: remove the `Config/GitRunner` tiddler and always prefer the TidGi Desktop bundled Git runner when the Desktop service is available. System Git is now only used in standalone/mock/mobile E2E environments.
+* Fix: Smart HTTP Git endpoints (`info/refs`, `upload-pack`, `receive-pack`) now locate the bundled Git directory through the existing Desktop `context` service instead of relying on a new Desktop API, keeping the fix plugin-side only.
+* Test: stabilize `@mobilesync` Detox/Cucumber E2E by using a fresh mock-server wiki per scenario and host-side Git status checks.
+
 !! v2.3.3
 
 * Fix: correct settings deeplink to `tidgi://{workspaceID}/preferences/server` to match the latest TidGi deeplink protocol (the `workspace` alias is no longer supported).

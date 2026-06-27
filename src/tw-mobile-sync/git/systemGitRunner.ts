@@ -3,16 +3,28 @@ import fs from 'fs/promises';
 import path from 'path';
 import type { GitRunResult, IGitRunner } from './types';
 
+type GitEnvironmentFactory = (baseEnvironment: NodeJS.ProcessEnv) => NodeJS.ProcessEnv;
+
 /**
  * Git runner backed by the system `git` binary.
  * Used when tw-mobile-sync runs outside TidGi Desktop (e.g. mock server in E2E tests).
  */
 export class SystemGitRunner implements IGitRunner {
+  constructor(
+    private readonly gitBinaryPath = 'git',
+    private readonly createEnvironment?: GitEnvironmentFactory,
+  ) {}
+
+  private getEnvironment(options?: { env?: NodeJS.ProcessEnv }): NodeJS.ProcessEnv {
+    const baseEnvironment = { ...process.env, ...(options?.env ?? {}) };
+    return this.createEnvironment === undefined ? baseEnvironment : this.createEnvironment(baseEnvironment);
+  }
+
   public run(gitArguments: string[], cwd: string, options?: { env?: NodeJS.ProcessEnv }): Promise<GitRunResult> {
     return new Promise<GitRunResult>((resolve, reject) => {
-      const child = execFile('git', gitArguments, {
+      const child = execFile(this.gitBinaryPath, gitArguments, {
         cwd,
-        env: options?.env ?? process.env,
+        env: this.getEnvironment(options),
         maxBuffer: 50 * 1024 * 1024,
       });
       let stdout = '';
@@ -31,9 +43,9 @@ export class SystemGitRunner implements IGitRunner {
   }
 
   public spawn(gitArguments: string[], cwd: string, options?: { env?: NodeJS.ProcessEnv }): ChildProcess {
-    return spawn('git', gitArguments, {
+    return spawn(this.gitBinaryPath, gitArguments, {
       cwd,
-      env: options?.env ?? process.env,
+      env: this.getEnvironment(options),
     });
   }
 
