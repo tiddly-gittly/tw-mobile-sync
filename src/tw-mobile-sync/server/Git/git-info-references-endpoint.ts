@@ -2,8 +2,8 @@ import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import type { GitHTTPResponseChunk } from 'tidgi-shared';
 import { URL } from 'url';
+import { createSpawnGitRunner } from '../../git/gitRunnerFactory';
 import { handleInfoReferences } from '../../git/smartHttp';
-import { SystemGitRunner } from '../../git/systemGitRunner';
 import { getWorkspaceRepoPath } from '../../git/workspaceResolver';
 import { authorizeWorkspaceToken, getTidGiService } from './utilities';
 
@@ -48,8 +48,9 @@ const handler: ServerEndpointHandler = function handler(
         return;
       }
 
-      // Smart HTTP always spawns raw git processes, so it uses the system git runner.
-      const runner = new SystemGitRunner();
+      // Smart HTTP still needs a spawn-capable runner, but in TidGi Desktop it
+      // should spawn the bundled git binary rather than rely on PATH.
+      const runner = await createSpawnGitRunner(tidgiService);
       const response$ = handleInfoReferences(runner, repoPath, service);
       const subscription = response$.subscribe({
         next(chunk: GitHTTPResponseChunk) {
