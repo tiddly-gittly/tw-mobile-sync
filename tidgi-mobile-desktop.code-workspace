@@ -1,13 +1,13 @@
 {
 	"folders": [
 		{
-			"path": "../.."
+			"path": "."
 		},
 		{
-			"path": "../../../TidGi-Mobile"
+			"path": ".../TidGi-Mobile"
 		},
 		{
-			"path": "../../../TidGi-Desktop"
+			"path": ".../TidGi-Desktop"
 		}
 	],
 	"settings": {
