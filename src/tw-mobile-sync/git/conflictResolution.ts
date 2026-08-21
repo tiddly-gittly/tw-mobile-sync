@@ -1,3 +1,4 @@
+import { parseNullDelimitedGitPaths } from './pathOutput';
 import type { IGitRunner } from './types';
 
 export const MOBILE_BRANCH = 'mobile-incoming';
@@ -188,8 +189,27 @@ async function writeResolvedWithWatcherDefense(
 }
 
 async function getUnmergedFiles(runner: IGitRunner, repoPath: string): Promise<string[]> {
-  const unmergedResult = await runner.run(['diff', '--name-only', '--diff-filter=U'], repoPath);
-  return unmergedResult.stdout.trim().split('\n').filter(Boolean);
+  const unmergedResult = await runner.run(['diff', '--name-only', '--diff-filter=U', '-z'], repoPath);
+  return parseNullDelimitedGitPaths(unmergedResult.stdout);
+}
+
+async function ensureNoMergeInProgress(runner: IGitRunner, repoPath: string): Promise<void> {
+  const mergeHead = await runner.run(['rev-parse', '--verify', 'MERGE_HEAD'], repoPath);
+  if (mergeHead.exitCode === 0) {
+    throw new Error('Repository already has a merge in progress; resolve or abort it before mobile sync');
+  }
+}
+
+async function abortMergeAfterFailure(runner: IGitRunner, repoPath: string, cause: unknown): Promise<never> {
+  const mergeHead = await runner.run(['rev-parse', '--verify', 'MERGE_HEAD'], repoPath);
+  if (mergeHead.exitCode === 0) {
+    const abortResult = await runner.run(['merge', '--abort'], repoPath);
+    if (abortResult.exitCode !== 0) {
+      const causeMessage = cause instanceof Error ? cause.message : String(cause);
+      throw new Error(`${causeMessage}; additionally failed to abort merge: ${abortResult.stderr}`);
+    }
+  }
+  throw cause;
 }
 
 /**
@@ -287,6 +307,7 @@ export async function mergeMobileIncomingIfExists(runner: IGitRunner, repoPath: 
   const branchCheck = await runner.run(['rev-parse', '--verify', `refs/heads/${MOBILE_BRANCH}`], repoPath);
   if (branchCheck.exitCode !== 0 || !branchCheck.stdout.trim()) return;
 
+  await ensureNoMergeInProgress(runner, repoPath);
   await ensureCommittedBeforeMerge(runner, repoPath);
 
   console.log('Merging mobile-incoming branch into main', { repoPath });
@@ -299,11 +320,15 @@ export async function mergeMobileIncomingIfExists(runner: IGitRunner, repoPath: 
 
   if (mergeResult.exitCode !== 0) {
     console.log('Merge conflicts detected, auto-resolving', { repoPath, stderr: mergeResult.stderr });
-    const conflictedFiles = await getUnmergedFiles(runner, repoPath);
-    if (conflictedFiles.length === 0) {
-      throw new Error(`Merge failed before conflict markers were created: ${mergeResult.stderr || mergeResult.stdout}`);
+    try {
+      const conflictedFiles = await getUnmergedFiles(runner, repoPath);
+      if (conflictedFiles.length === 0) {
+        throw new Error(`Merge failed before conflict markers were created: ${mergeResult.stderr || mergeResult.stdout}`);
+      }
+      await resolveAllConflicts(runner, repoPath);
+    } catch (error) {
+      await abortMergeAfterFailure(runner, repoPath, error);
     }
-    await resolveAllConflicts(runner, repoPath);
   }
 
   const deleteBranchResult = await runner.run(['branch', '-D', MOBILE_BRANCH], repoPath);
