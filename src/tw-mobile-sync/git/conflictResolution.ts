@@ -1,3 +1,4 @@
+import { parseNullDelimitedGitPaths } from './pathOutput';
 import type { IGitRunner } from './types';
 
 export const MOBILE_BRANCH = 'mobile-incoming';
@@ -188,8 +189,27 @@ async function writeResolvedWithWatcherDefense(
 }
 
 async function getUnmergedFiles(runner: IGitRunner, repoPath: string): Promise<string[]> {
-  const unmergedResult = await runner.run(['diff', '--name-only', '--diff-filter=U'], repoPath);
-  return unmergedResult.stdout.trim().split('\n').filter(Boolean);
+  const unmergedResult = await runner.run(['diff', '--name-only', '--diff-filter=U', '-z'], repoPath);
+  return parseNullDelimitedGitPaths(unmergedResult.stdout);
+}
+
+async function ensureNoMergeInProgress(runner: IGitRunner, repoPath: string): Promise<void> {
+  const mergeHead = await runner.run(['rev-parse', '--verify', 'MERGE_HEAD'], repoPath);
+  if (mergeHead.exitCode === 0) {
+    throw new Error('Repository already has a merge in progress; resolve or abort it before mobile sync');
+  }
+}
+
+async function abortMergeAfterFailure(runner: IGitRunner, repoPath: string, cause: unknown): Promise<never> {
+  const mergeHead = await runner.run(['rev-parse', '--verify', 'MERGE_HEAD'], repoPath);
+  if (mergeHead.exitCode === 0) {
+    const abortResult = await runner.run(['merge', '--abort'], repoPath);
+    if (abortResult.exitCode !== 0) {
+      const causeMessage = cause instanceof Error ? cause.message : String(cause);
+      throw new Error(`${causeMessage}; additionally failed to abort merge: ${abortResult.stderr}`);
+    }
+  }
+  throw cause instanceof Error ? cause : new Error(String(cause));
 }
 
 /**
@@ -203,7 +223,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
   for (const file of conflictedFiles) {
     const content = await runner.readFile(repoPath, file);
     if (!content || !content.includes('<<<<<<<')) {
-      const addResult = await runner.run(['add', file], repoPath);
+      const addResult = await runner.run(['add', '--', file], repoPath);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to stage conflicted file ${file}: ${addResult.stderr}`);
       }
@@ -217,7 +237,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
     await writeResolvedWithWatcherDefense(runner, repoPath, file, resolved);
     resolvedFiles.set(file, resolved);
 
-    const addResult = await runner.run(['add', file], repoPath);
+    const addResult = await runner.run(['add', '--', file], repoPath);
     if (addResult.exitCode !== 0) {
       throw new Error(`Failed to stage resolved conflict for ${file}: ${addResult.stderr}`);
     }
@@ -229,7 +249,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
       if (normalizedStaged !== normalizedResolved) {
         console.warn('merge: watcher overwrote staged .tid file, re-defending', { repoPath, file });
         await runner.writeFile(repoPath, file, resolved);
-        const reAddResult = await runner.run(['add', file], repoPath);
+        const reAddResult = await runner.run(['add', '--', file], repoPath);
         if (reAddResult.exitCode !== 0) {
           throw new Error(`Failed to re-stage resolved conflict for ${file}: ${reAddResult.stderr}`);
         }
@@ -242,7 +262,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
     if (onDisk !== resolved) {
       console.warn('merge: watcher overwrote file during batch, re-defending before commit', { repoPath, file });
       await writeResolvedWithWatcherDefense(runner, repoPath, file, resolved);
-      const addResult = await runner.run(['add', file], repoPath);
+      const addResult = await runner.run(['add', '--', file], repoPath);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to re-stage resolved conflict for ${file}: ${addResult.stderr}`);
       }
@@ -267,7 +287,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
     if (normalizedCommitted !== normalizedResolved) {
       console.warn('merge: committed .tid content wrong (watcher interference), amending', { repoPath, file });
       await runner.writeFile(repoPath, file, resolved);
-      const amendAddResult = await runner.run(['add', file], repoPath);
+      const amendAddResult = await runner.run(['add', '--', file], repoPath);
       if (amendAddResult.exitCode !== 0) {
         throw new Error(`Failed to stage .tid file for amend: ${file}: ${amendAddResult.stderr}`);
       }
@@ -287,6 +307,7 @@ export async function mergeMobileIncomingIfExists(runner: IGitRunner, repoPath: 
   const branchCheck = await runner.run(['rev-parse', '--verify', `refs/heads/${MOBILE_BRANCH}`], repoPath);
   if (branchCheck.exitCode !== 0 || !branchCheck.stdout.trim()) return;
 
+  await ensureNoMergeInProgress(runner, repoPath);
   await ensureCommittedBeforeMerge(runner, repoPath);
 
   console.log('Merging mobile-incoming branch into main', { repoPath });
@@ -299,11 +320,15 @@ export async function mergeMobileIncomingIfExists(runner: IGitRunner, repoPath: 
 
   if (mergeResult.exitCode !== 0) {
     console.log('Merge conflicts detected, auto-resolving', { repoPath, stderr: mergeResult.stderr });
-    const conflictedFiles = await getUnmergedFiles(runner, repoPath);
-    if (conflictedFiles.length === 0) {
-      throw new Error(`Merge failed before conflict markers were created: ${mergeResult.stderr || mergeResult.stdout}`);
+    try {
+      const conflictedFiles = await getUnmergedFiles(runner, repoPath);
+      if (conflictedFiles.length === 0) {
+        throw new Error(`Merge failed before conflict markers were created: ${mergeResult.stderr || mergeResult.stdout}`);
+      }
+      await resolveAllConflicts(runner, repoPath);
+    } catch (error) {
+      await abortMergeAfterFailure(runner, repoPath, error);
     }
-    await resolveAllConflicts(runner, repoPath);
   }
 
   const deleteBranchResult = await runner.run(['branch', '-D', MOBILE_BRANCH], repoPath);

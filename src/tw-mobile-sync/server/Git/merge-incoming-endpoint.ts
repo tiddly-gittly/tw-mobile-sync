@@ -2,6 +2,7 @@ import type Http from 'http';
 import type { ServerEndpointHandler } from 'tiddlywiki';
 import { formatGitMergeSummary } from '../../data/formatGitSyncSummary';
 import { updateClientFromRequest } from '../../data/updateClientFromRequest';
+import { parseNullDelimitedGitPaths } from '../../git/pathOutput';
 import { authorizeWorkspaceToken, getTidGiService } from './utilities';
 
 /**
@@ -79,8 +80,27 @@ async function ensureCommittedBeforeMerge(gitServer: IGitServerMethods, workspac
 }
 
 async function getUnmergedFiles(gitServer: IGitServerMethods, workspaceId: string): Promise<string[]> {
-  const unmergedResult = await gitServer.runGitCommand(workspaceId, ['diff', '--name-only', '--diff-filter=U']);
-  return unmergedResult.stdout.trim().split('\n').filter(Boolean);
+  const unmergedResult = await gitServer.runGitCommand(workspaceId, ['diff', '--name-only', '--diff-filter=U', '-z']);
+  return parseNullDelimitedGitPaths(unmergedResult.stdout);
+}
+
+async function ensureNoMergeInProgress(gitServer: IGitServerMethods, workspaceId: string): Promise<void> {
+  const mergeHead = await gitServer.runGitCommand(workspaceId, ['rev-parse', '--verify', 'MERGE_HEAD']);
+  if (mergeHead.exitCode === 0) {
+    throw new Error('Repository already has a merge in progress; resolve or abort it before mobile sync');
+  }
+}
+
+async function abortMergeAfterFailure(gitServer: IGitServerMethods, workspaceId: string, cause: unknown): Promise<never> {
+  const mergeHead = await gitServer.runGitCommand(workspaceId, ['rev-parse', '--verify', 'MERGE_HEAD']);
+  if (mergeHead.exitCode === 0) {
+    const abortResult = await gitServer.runGitCommand(workspaceId, ['merge', '--abort']);
+    if (abortResult.exitCode !== 0) {
+      const causeMessage = cause instanceof Error ? cause.message : String(cause);
+      throw new Error(`${causeMessage}; additionally failed to abort merge: ${abortResult.stderr}`);
+    }
+  }
+  throw cause instanceof Error ? cause : new Error(String(cause));
 }
 
 // ── Conflict resolution utilities ──
@@ -289,7 +309,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
   for (const file of conflictedFiles) {
     const content = await gitServer.readWorkspaceFile(workspaceId, file);
     if (!content || !content.includes('<<<<<<<')) {
-      const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      const addResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to stage conflicted file ${file}: ${addResult.stderr}`);
       }
@@ -303,7 +323,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
     await writeResolvedWithWatcherDefense(gitServer, workspaceId, file, resolved);
     resolvedFiles.set(file, resolved);
 
-    const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+    const addResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
     if (addResult.exitCode !== 0) {
       throw new Error(`Failed to stage resolved conflict for ${file}: ${addResult.stderr}`);
     }
@@ -317,7 +337,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
         // Watcher overwrote the file, re-write and re-stage
         console.warn('merge: watcher overwrote staged .tid file, re-defending', { workspaceId, file });
         await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
-        const reAddResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+        const reAddResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
         if (reAddResult.exitCode !== 0) {
           throw new Error(`Failed to re-stage resolved conflict for ${file}: ${reAddResult.stderr}`);
         }
@@ -332,7 +352,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
     if (onDisk !== resolved) {
       console.warn('merge: watcher overwrote file during batch, re-defending before commit', { workspaceId, file });
       await writeResolvedWithWatcherDefense(gitServer, workspaceId, file, resolved);
-      const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      const addResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to re-stage resolved conflict for ${file}: ${addResult.stderr}`);
       }
@@ -363,7 +383,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
     if (normalizedCommitted !== normalizedResolved) {
       console.warn('merge: committed .tid content wrong (watcher interference), amending', { workspaceId, file });
       await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
-      const amendAddResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      const amendAddResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
       if (amendAddResult.exitCode !== 0) {
         throw new Error(`Failed to stage .tid file for amend: ${file}: ${amendAddResult.stderr}`);
       }
@@ -379,6 +399,7 @@ async function mergeMobileIncomingIfExists(gitServer: IGitServerMethods, workspa
   const branchCheck = await gitServer.runGitCommand(workspaceId, ['rev-parse', '--verify', `refs/heads/${MOBILE_BRANCH}`]);
   if (branchCheck.exitCode !== 0 || !branchCheck.stdout.trim()) return;
 
+  await ensureNoMergeInProgress(gitServer, workspaceId);
   await ensureCommittedBeforeMerge(gitServer, workspaceId);
 
   console.log('Merging mobile-incoming branch into main', { workspaceId });
@@ -393,11 +414,15 @@ async function mergeMobileIncomingIfExists(gitServer: IGitServerMethods, workspa
 
   if (mergeResult.exitCode !== 0) {
     console.log('Merge conflicts detected, auto-resolving', { workspaceId, stderr: mergeResult.stderr });
-    const conflictedFiles = await getUnmergedFiles(gitServer, workspaceId);
-    if (conflictedFiles.length === 0) {
-      throw new Error(`Merge failed before conflict markers were created: ${mergeResult.stderr || mergeResult.stdout}`);
+    try {
+      const conflictedFiles = await getUnmergedFiles(gitServer, workspaceId);
+      if (conflictedFiles.length === 0) {
+        throw new Error(`Merge failed before conflict markers were created: ${mergeResult.stderr || mergeResult.stdout}`);
+      }
+      await resolveAllConflicts(gitServer, workspaceId);
+    } catch (error) {
+      await abortMergeAfterFailure(gitServer, workspaceId, error);
     }
-    await resolveAllConflicts(gitServer, workspaceId);
   }
 
   // Delete mobile-incoming branch only after merge resolution committed successfully.
@@ -469,8 +494,8 @@ const handler: ServerEndpointHandler = function handler(
         await mergeMobileIncomingIfExists(gitServer, workspaceId);
         const headAfter = (await gitServer.runGitCommand(workspaceId, ['rev-parse', 'HEAD'])).stdout.trim();
         if (headAfter !== headBefore) {
-          const diffResult = await gitServer.runGitCommand(workspaceId, ['diff-tree', '--no-commit-id', '--name-only', '-r', headAfter]);
-          const changedFiles = diffResult.stdout.trim().split('\n').filter((filePath) => filePath.length > 0);
+          const diffResult = await gitServer.runGitCommand(workspaceId, ['diff-tree', '--no-commit-id', '--name-only', '-z', '-r', headAfter]);
+          const changedFiles = parseNullDelimitedGitPaths(diffResult.stdout);
           mergeSummary = formatGitMergeSummary(changedFiles);
         }
       } finally {

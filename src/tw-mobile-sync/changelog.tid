@@ -3,6 +3,12 @@ type: text/vnd.tiddlywiki
 
 ! Changelog
 
+!! v2.3.5
+
+* Fix: parse conflicted and changed Git paths as NUL-delimited raw output so Unicode, quoted, whitespace, and newline-containing filenames can be passed safely back to Git.
+* Safety: reject mobile merges when the repository already has an unfinished merge, and abort a newly-started merge if automatic conflict resolution fails while preserving `mobile-incoming` for a safe retry.
+* Test: cover real Git conflict resolution for a Chinese `.tid` filename, raw path parsing, failed-resolution cleanup, and existing-merge protection.
+
 !! v2.3.4
 
 * Fix: remove the `Config/GitRunner` tiddler and always prefer the TidGi Desktop bundled Git runner when the Desktop service is available. System Git is now only used in standalone/mock/mobile E2E environments.
