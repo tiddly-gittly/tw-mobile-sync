@@ -77,7 +77,9 @@ void describe('mergeMobileIncomingIfExists', () => {
         if (arguments_[0] === 'diff' && arguments_.includes('--cached')) return Promise.resolve(ok());
         if (arguments_[0] === 'merge' && arguments_[1] === 'mobile-incoming') return Promise.resolve(failed('CONFLICT'));
         if (arguments_[0] === 'diff' && arguments_.includes('--diff-filter=U')) return Promise.resolve(ok(`${unicodePath}\0`));
-        if (arguments_[0] === 'add' && arguments_[1] === unicodePath) return Promise.resolve(failed('injected staging failure'));
+        if (arguments_[0] === 'add' && arguments_[1] === '--' && arguments_[2] === unicodePath) {
+          return Promise.resolve(failed('injected staging failure'));
+        }
         if (arguments_[0] === 'merge' && arguments_[1] === '--abort') return Promise.resolve(ok());
         throw new Error(`Unexpected git command: ${arguments_.join(' ')}`);
       },
@@ -96,7 +98,7 @@ void describe('mergeMobileIncomingIfExists', () => {
       () => mergeMobileIncomingIfExists(runner, '/repo'),
       /injected staging failure/,
     );
-    assert.ok(calls.some(arguments_ => arguments_[0] === 'add' && arguments_[1] === unicodePath));
+    assert.ok(calls.some(arguments_ => arguments_[0] === 'add' && arguments_[1] === '--' && arguments_[2] === unicodePath));
     assert.ok(calls.some(arguments_ => arguments_[0] === 'merge' && arguments_[1] === '--abort'));
     assert.ok(!calls.some(arguments_ => arguments_[0] === 'branch' && arguments_[1] === '-D'));
   });
