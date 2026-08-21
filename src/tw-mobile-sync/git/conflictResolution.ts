@@ -209,7 +209,7 @@ async function abortMergeAfterFailure(runner: IGitRunner, repoPath: string, caus
       throw new Error(`${causeMessage}; additionally failed to abort merge: ${abortResult.stderr}`);
     }
   }
-  throw cause;
+  throw cause instanceof Error ? cause : new Error(String(cause));
 }
 
 /**
@@ -223,7 +223,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
   for (const file of conflictedFiles) {
     const content = await runner.readFile(repoPath, file);
     if (!content || !content.includes('<<<<<<<')) {
-      const addResult = await runner.run(['add', file], repoPath);
+      const addResult = await runner.run(['add', '--', file], repoPath);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to stage conflicted file ${file}: ${addResult.stderr}`);
       }
@@ -237,7 +237,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
     await writeResolvedWithWatcherDefense(runner, repoPath, file, resolved);
     resolvedFiles.set(file, resolved);
 
-    const addResult = await runner.run(['add', file], repoPath);
+    const addResult = await runner.run(['add', '--', file], repoPath);
     if (addResult.exitCode !== 0) {
       throw new Error(`Failed to stage resolved conflict for ${file}: ${addResult.stderr}`);
     }
@@ -249,7 +249,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
       if (normalizedStaged !== normalizedResolved) {
         console.warn('merge: watcher overwrote staged .tid file, re-defending', { repoPath, file });
         await runner.writeFile(repoPath, file, resolved);
-        const reAddResult = await runner.run(['add', file], repoPath);
+        const reAddResult = await runner.run(['add', '--', file], repoPath);
         if (reAddResult.exitCode !== 0) {
           throw new Error(`Failed to re-stage resolved conflict for ${file}: ${reAddResult.stderr}`);
         }
@@ -262,7 +262,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
     if (onDisk !== resolved) {
       console.warn('merge: watcher overwrote file during batch, re-defending before commit', { repoPath, file });
       await writeResolvedWithWatcherDefense(runner, repoPath, file, resolved);
-      const addResult = await runner.run(['add', file], repoPath);
+      const addResult = await runner.run(['add', '--', file], repoPath);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to re-stage resolved conflict for ${file}: ${addResult.stderr}`);
       }
@@ -287,7 +287,7 @@ export async function resolveAllConflicts(runner: IGitRunner, repoPath: string):
     if (normalizedCommitted !== normalizedResolved) {
       console.warn('merge: committed .tid content wrong (watcher interference), amending', { repoPath, file });
       await runner.writeFile(repoPath, file, resolved);
-      const amendAddResult = await runner.run(['add', file], repoPath);
+      const amendAddResult = await runner.run(['add', '--', file], repoPath);
       if (amendAddResult.exitCode !== 0) {
         throw new Error(`Failed to stage .tid file for amend: ${file}: ${amendAddResult.stderr}`);
       }

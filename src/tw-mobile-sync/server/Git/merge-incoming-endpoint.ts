@@ -100,7 +100,7 @@ async function abortMergeAfterFailure(gitServer: IGitServerMethods, workspaceId:
       throw new Error(`${causeMessage}; additionally failed to abort merge: ${abortResult.stderr}`);
     }
   }
-  throw cause;
+  throw cause instanceof Error ? cause : new Error(String(cause));
 }
 
 // ── Conflict resolution utilities ──
@@ -309,7 +309,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
   for (const file of conflictedFiles) {
     const content = await gitServer.readWorkspaceFile(workspaceId, file);
     if (!content || !content.includes('<<<<<<<')) {
-      const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      const addResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to stage conflicted file ${file}: ${addResult.stderr}`);
       }
@@ -323,7 +323,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
     await writeResolvedWithWatcherDefense(gitServer, workspaceId, file, resolved);
     resolvedFiles.set(file, resolved);
 
-    const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+    const addResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
     if (addResult.exitCode !== 0) {
       throw new Error(`Failed to stage resolved conflict for ${file}: ${addResult.stderr}`);
     }
@@ -337,7 +337,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
         // Watcher overwrote the file, re-write and re-stage
         console.warn('merge: watcher overwrote staged .tid file, re-defending', { workspaceId, file });
         await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
-        const reAddResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+        const reAddResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
         if (reAddResult.exitCode !== 0) {
           throw new Error(`Failed to re-stage resolved conflict for ${file}: ${reAddResult.stderr}`);
         }
@@ -352,7 +352,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
     if (onDisk !== resolved) {
       console.warn('merge: watcher overwrote file during batch, re-defending before commit', { workspaceId, file });
       await writeResolvedWithWatcherDefense(gitServer, workspaceId, file, resolved);
-      const addResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      const addResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
       if (addResult.exitCode !== 0) {
         throw new Error(`Failed to re-stage resolved conflict for ${file}: ${addResult.stderr}`);
       }
@@ -383,7 +383,7 @@ async function resolveAllConflicts(gitServer: IGitServerMethods, workspaceId: st
     if (normalizedCommitted !== normalizedResolved) {
       console.warn('merge: committed .tid content wrong (watcher interference), amending', { workspaceId, file });
       await gitServer.writeWorkspaceFile(workspaceId, file, resolved);
-      const amendAddResult = await gitServer.runGitCommand(workspaceId, ['add', file]);
+      const amendAddResult = await gitServer.runGitCommand(workspaceId, ['add', '--', file]);
       if (amendAddResult.exitCode !== 0) {
         throw new Error(`Failed to stage .tid file for amend: ${file}: ${amendAddResult.stderr}`);
       }
