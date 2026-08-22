@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { ChildProcess } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, test } from 'node:test';
@@ -12,9 +12,9 @@ const ok = (stdout = ''): GitRunResult => ({ exitCode: 0, stderr: '', stdout });
 const failed = (stderr = ''): GitRunResult => ({ exitCode: 1, stderr, stdout: '' });
 
 void describe('mergeMobileIncomingIfExists', () => {
-  void test('resolves a real Git conflict whose path contains Unicode', async () => {
+  void test('resolves a real Git conflict whose path contains Unicode and starts with a dash', async () => {
     const repoPath = await mkdtemp(join(tmpdir(), 'tw-mobile-sync-unicode-conflict-'));
-    const unicodePath = 'tiddlers/500毫克维生素C胶囊.tid';
+    const unicodePath = '-500毫克维生素C胶囊.tid';
     const runner = new SystemGitRunner();
     const run = async (arguments_: string[]) => {
       const result = await runner.run(arguments_, repoPath);
@@ -26,19 +26,18 @@ void describe('mergeMobileIncomingIfExists', () => {
       await run(['init', '--initial-branch=master']);
       await run(['config', 'user.name', 'Test']);
       await run(['config', 'user.email', 'test@example.com']);
-      await mkdir(join(repoPath, 'tiddlers'));
       await writeFile(join(repoPath, unicodePath), 'title: Vitamin C\n\nbase\n', 'utf8');
-      await run(['add', unicodePath]);
+      await run(['add', '--', unicodePath]);
       await run(['commit', '-m', 'base']);
 
       await run(['checkout', '-b', 'mobile-incoming']);
       await writeFile(join(repoPath, unicodePath), 'title: Vitamin C Mobile\n\nmobile\n', 'utf8');
-      await run(['add', unicodePath]);
+      await run(['add', '--', unicodePath]);
       await run(['commit', '-m', 'mobile']);
 
       await run(['checkout', 'master']);
       await writeFile(join(repoPath, unicodePath), 'title: Vitamin C Desktop\n\ndesktop\n', 'utf8');
-      await run(['add', unicodePath]);
+      await run(['add', '--', unicodePath]);
       await run(['commit', '-m', 'desktop']);
 
       await mergeMobileIncomingIfExists(runner, repoPath);
